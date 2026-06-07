@@ -1,0 +1,40 @@
+body {
+  font-family: system-ui, "Segoe UI", Arial, sans-serif;
+  max-width: 720px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  color: #222;
+}
+
+h1 { margin-bottom: 1rem; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+th, td {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid #ddd;
+}
+
+.flash-success {
+  background: #e6f4ea;
+  border: 1px solid #b7dfc1;
+  color: #1e7e34;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+}
+
+.done { color: #1e7e34; font-weight: 600; }
+.pending { color: #b26a00; }
+
+button {
+  cursor: pointer;
+}
+
+.form-group, dl { margin-bottom: 1rem; }
+
+label { display: block; font-weight: 600; margin-bottom: 0.25rem; }

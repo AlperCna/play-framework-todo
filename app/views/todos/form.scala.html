@@ -1,0 +1,37 @@
+@*
+ * Hem olusturma (CREATE) hem duzenleme (UPDATE) icin kullanilan ortak form.
+ *
+ * Parametreler:
+ *   - todoForm: gosterilecek/doldurulacak form (hata varsa hatalari da icerir).
+ *   - postUrl:  formun gonderilecegi adres (create ya da update).
+ *   - heading:  sayfa basligi.
+ *   - request (implicit): form helper'lari mesaj/dogrulama icin ister.
+ *@
+@(todoForm: Form[models.TodoFormData], postUrl: Call, heading: String)(implicit request: MessagesRequestHeader)
+
+@main(heading) {
+
+  <h1>@heading</h1>
+
+  @* @helper.form, postUrl'e POST yapan bir <form> uretir. *@
+  @helper.form(action = postUrl) {
+
+    @* CSRF korumasi: Play'in CSRF filtresi POST isteklerinde gizli bir token bekler. *@
+    @helper.CSRF.formField
+
+    @helper.inputText(
+      todoForm("title"),
+      Symbol("_label") -> "Baslik"
+    )
+
+    @helper.checkbox(
+      todoForm("completed"),
+      Symbol("_label") -> "Tamamlandi mi?"
+    )
+
+    <div>
+      <button type="submit">Kaydet</button>
+      <a href="@routes.TodoController.list()">Iptal</a>
+    </div>
+  }
+}

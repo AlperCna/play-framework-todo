@@ -1,0 +1,58 @@
+@*
+ * Todo listesi sayfasi (READ).
+ *
+ * Parametreler:
+ *   - todos: gosterilecek todo'lar.
+ *   - request (implicit): flash mesajlarina (orn. "Todo silindi") erismek icin.
+ *@
+@(todos: Seq[models.Todo])(implicit request: RequestHeader)
+
+@main("Todo Listesi") {
+
+  <h1>Todo Listesi</h1>
+
+  @* Bir onceki istekten gelen basari mesaji (flash scope). *@
+  @request.flash.get("success").map { message =>
+    <p class="flash-success">@message</p>
+  }
+
+  <p><a href="@routes.TodoController.createForm()">+ Yeni Todo Ekle</a></p>
+
+  @if(todos.isEmpty) {
+    <p>Henuz hic todo yok. Yukaridan yeni bir tane ekleyebilirsin.</p>
+  } else {
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Baslik</th>
+          <th>Durum</th>
+          <th>Islemler</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for(todo <- todos) {
+          <tr>
+            <td>@todo.id</td>
+            <td>@todo.title</td>
+            <td>
+              @if(todo.completed) {
+                <span class="done">Tamamlandi</span>
+              } else {
+                <span class="pending">Bekliyor</span>
+              }
+            </td>
+            <td>
+              <a href="@routes.TodoController.editForm(todo.id)">Duzenle</a>
+              @* Silme islemi veri degistirdigi icin GET degil POST ile yapilir. *@
+              @helper.form(action = routes.TodoController.delete(todo.id), Symbol("style") -> "display:inline") {
+                @helper.CSRF.formField
+                <button type="submit" onclick="return confirm('Silinsin mi?')">Sil</button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+}
