@@ -13,7 +13,10 @@
 
   <h1>@heading</h1>
 
-  @* @helper.form, postUrl'e POST yapan bir <form> uretir. *@
+  @* @helper.form, postUrl'e POST yapan bir <form> uretir. 
+    Kullanici submit butonuna bastiginda html'in standart davranisi olarak
+    form icindeki name'li alanlar toplanip http body'si icine konulur ve 
+    http istegi otomatik sekilde olusturulup gonderilir.*@
   @helper.form(action = postUrl) {
 
     @* CSRF korumasi: Play'in CSRF filtresi POST isteklerinde gizli bir token bekler. *@
