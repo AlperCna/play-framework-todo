@@ -1,0 +1,38 @@
+# =========================================================================
+# English translations (alternative language)
+# Used when the active language is "en" (e.g. play.i18n.langs starts with "en"
+# or the client's Accept-Language header prefers English).
+# =========================================================================
+
+# --- Todo field labels (the _label values of form helpers) ---
+todo.title = Title
+todo.completed = Completed?
+
+# --- Form / page texts ---
+todo.form.new = New Todo
+# {0} -> the id of the related todo, substituted via MessageFormat.
+todo.form.edit = Edit Todo #{0}
+todo.form.save = Save
+todo.form.cancel = Cancel
+
+# --- Flash info messages ---
+todo.created = Todo created.
+todo.updated = Todo updated.
+todo.deleted = Todo deleted.
+todo.notFound = Todo with id {0} not found.
+
+# --- Validation error messages ---
+# nonEmptyText produces the "error.required" key for an empty field.
+error.required = This field cannot be empty.
+
+# --- List page ---
+todo.list.title = Todo List
+todo.list.addNew = + Add New Todo
+todo.list.empty = No todos yet. You can add one from above.
+todo.list.col.status = Status
+todo.list.col.actions = Actions
+todo.status.done = Completed
+todo.status.pending = Pending
+todo.action.edit = Edit
+todo.action.delete = Delete
+todo.action.deleteConfirm = Delete this?

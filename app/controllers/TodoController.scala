@@ -45,7 +45,7 @@ class TodoController @Inject()(
 
   /** CREATE (form): yeni todo olusturma formunu gosterir. */
   def createForm(): Action[AnyContent] = Action { implicit request =>
-    Ok(views.html.todos.form(todoForm, routes.TodoController.create(), "Yeni Todo"))
+    Ok(views.html.todos.form(todoForm, routes.TodoController.create(), request.messages("todo.form.new")))
   }
 
   /** CREATE (kaydet): formu dogrular ve yeni todo'yu olusturur. */
@@ -53,11 +53,11 @@ class TodoController @Inject()(
     todoForm.bindFromRequest().fold(
       // Dogrulama hatasi: formu hatalariyla birlikte tekrar goster.
       formWithErrors =>
-        BadRequest(views.html.todos.form(formWithErrors, routes.TodoController.create(), "Yeni Todo")),
+        BadRequest(views.html.todos.form(formWithErrors, routes.TodoController.create(), request.messages("todo.form.new"))),
       // Basarili: kaydet ve listeye yonlendir.
       data => {
         repository.create(data.title, data.completed)
-        Redirect(routes.TodoController.list()).flashing("success" -> "Todo olusturuldu.")
+        Redirect(routes.TodoController.list()).flashing("success" -> request.messages("todo.created"))
       }
     )
   }
@@ -68,9 +68,9 @@ class TodoController @Inject()(
       case Some(todo) =>
         // Mevcut degerlerle formu onceden doldur.
         val filledForm = todoForm.fill(TodoFormData(todo.title, todo.completed))
-        Ok(views.html.todos.form(filledForm, routes.TodoController.update(id), s"Todo Duzenle #$id"))
+        Ok(views.html.todos.form(filledForm, routes.TodoController.update(id), request.messages("todo.form.edit", id)))
       case None =>
-        NotFound(s"$id id'li todo bulunamadi.")
+        NotFound(request.messages("todo.notFound", id))
     }
   }
 
@@ -78,13 +78,13 @@ class TodoController @Inject()(
   def update(id: Long): Action[AnyContent] = Action { implicit request =>
     todoForm.bindFromRequest().fold(
       formWithErrors =>
-        BadRequest(views.html.todos.form(formWithErrors, routes.TodoController.update(id), s"Todo Duzenle #$id")),
+        BadRequest(views.html.todos.form(formWithErrors, routes.TodoController.update(id), request.messages("todo.form.edit", id))),
       data =>
         repository.update(id, data.title, data.completed) match {
           case Some(_) =>
-            Redirect(routes.TodoController.list()).flashing("success" -> "Todo guncellendi.")
+            Redirect(routes.TodoController.list()).flashing("success" -> request.messages("todo.updated"))
           case None =>
-            NotFound(s"$id id'li todo bulunamadi.")
+            NotFound(request.messages("todo.notFound", id))
         }
     )
   }
@@ -92,9 +92,9 @@ class TodoController @Inject()(
   /** DELETE: todo'yu siler. */
   def delete(id: Long): Action[AnyContent] = Action { implicit request =>
     if (repository.delete(id)) {
-      Redirect(routes.TodoController.list()).flashing("success" -> "Todo silindi.")
+      Redirect(routes.TodoController.list()).flashing("success" -> request.messages("todo.deleted"))
     } else {
-      NotFound(s"$id id'li todo bulunamadi.")
+      NotFound(request.messages("todo.notFound", id))
     }
   }
 }

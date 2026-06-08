@@ -3,31 +3,33 @@
  *
  * Parametreler:
  *   - todos: gosterilecek todo'lar.
- *   - request (implicit): flash mesajlarina (orn. "Todo silindi") erismek icin.
+ *   - request (implicit): flash mesajlarina erismek ve metinleri (messages) cevirmek icin.
+ *     Ceviri yapabilmek icin tip RequestHeader degil MessagesRequestHeader olmali;
+ *     boylece request.messages("anahtar") kullanilabilir.
  *@
-@(todos: Seq[models.Todo])(implicit request: RequestHeader)
+@(todos: Seq[models.Todo])(implicit request: MessagesRequestHeader)
 
-@main("Todo Listesi") {
+@main(request.messages("todo.list.title")) {
 
-  <h1>Todo Listesi</h1>
+  <h1>@request.messages("todo.list.title")</h1>
 
   @* Bir onceki istekten gelen basari mesaji (flash scope). *@
   @request.flash.get("success").map { message =>
     <p class="flash-success">@message</p>
   }
 
-  <p><a href="@routes.TodoController.createForm()">+ Yeni Todo Ekle</a></p>
+  <p><a href="@routes.TodoController.createForm()">@request.messages("todo.list.addNew")</a></p>
 
   @if(todos.isEmpty) {
-    <p>Henuz hic todo yok. Yukaridan yeni bir tane ekleyebilirsin.</p>
+    <p>@request.messages("todo.list.empty")</p>
   } else {
     <table>
       <thead>
         <tr>
           <th>#</th>
-          <th>Baslik</th>
-          <th>Durum</th>
-          <th>Islemler</th>
+          <th>@request.messages("todo.title")</th>
+          <th>@request.messages("todo.list.col.status")</th>
+          <th>@request.messages("todo.list.col.actions")</th>
         </tr>
       </thead>
       <tbody>
@@ -37,17 +39,21 @@
             <td>@todo.title</td>
             <td>
               @if(todo.completed) {
-                <span class="done">Tamamlandi</span>
+                <span class="done">@request.messages("todo.status.done")</span>
               } else {
-                <span class="pending">Bekliyor</span>
+                <span class="pending">@request.messages("todo.status.pending")</span>
               }
             </td>
             <td>
-              <a href="@routes.TodoController.editForm(todo.id)">Duzenle</a>
+              <a href="@routes.TodoController.editForm(todo.id)">@request.messages("todo.action.edit")</a>
               @* Silme islemi veri degistirdigi icin GET degil POST ile yapilir. *@
               @helper.form(action = routes.TodoController.delete(todo.id), Symbol("style") -> "display:inline") {
                 @helper.CSRF.formField
-                <button type="submit" onclick="return confirm('Silinsin mi?')">Sil</button>
+                @* Onay metnini once bir degiskene aliyoruz: aksi halde onclick="...@messages("...")..."
+                   icindeki ic ice cift tirnaklar Twirl'i bozuyor. *@
+                @defining(request.messages("todo.action.deleteConfirm")) { confirmText =>
+                  <button type="submit" onclick="return confirm('@confirmText')">@request.messages("todo.action.delete")</button>
+                }
               }
             </td>
           </tr>

@@ -19,19 +19,21 @@
     @* CSRF korumasi: Play'in CSRF filtresi POST isteklerinde gizli bir token bekler. *@
     @helper.CSRF.formField
 
+    @* Etiketler artik koda gomulu degil; aktif dile gore "messages" dosyasindan gelir.
+       request implicit bir MessagesProvider oldugu icin request.messages("anahtar") cevirir. *@
     @helper.inputText(
       todoForm("title"),
-      Symbol("_label") -> "Baslik"
+      Symbol("_label") -> request.messages("todo.title")
     )
 
     @helper.checkbox(
       todoForm("completed"),
-      Symbol("_label") -> "Tamamlandi mi?"
+      Symbol("_label") -> request.messages("todo.completed")
     )
 
     <div>
-      <button type="submit">Kaydet</button>
-      <a href="@routes.TodoController.list()">Iptal</a>
+      <button type="submit">@request.messages("todo.form.save")</button>
+      <a href="@routes.TodoController.list()">@request.messages("todo.form.cancel")</a>
     </div>
   }
 }

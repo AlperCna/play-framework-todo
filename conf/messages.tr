@@ -1,0 +1,43 @@
+# =========================================================================
+# Turkce ceviriler  (varsayilan / hakim dil)
+# application.conf icindeki play.i18n.langs listesinde ILK sirada oldugu icin
+# uygulamanin varsayilan dilidir. Bir anahtar burada bulunamazsa Play once
+# eksiz "conf/messages" dosyasina, sonra kendi gomulu varsayilanlarina bakar.
+# =========================================================================
+
+# --- Todo alan etiketleri (form helper'larinin _label degerleri) ---
+todo.title = Baslik
+todo.completed = Tamamlandi mi?
+
+# --- Form / sayfa metinleri ---
+todo.form.new = Yeni Todo
+# {0} -> ilgili todo'nun id'si. MessageFormat ile yerine konur.
+todo.form.edit = Todo Duzenle #{0}
+todo.form.save = Kaydet
+todo.form.cancel = Iptal
+
+# --- Akis (flash) bilgi mesajlari ---
+todo.created = Todo olusturuldu.
+todo.updated = Todo guncellendi.
+todo.deleted = Todo silindi.
+# NOT: Mesajda hem {0} argumani hem de kesme isareti var. MessageFormat'ta
+# kesme isareti ozel bir karakterdir; metinde gostermek icin ciftlenir ('').
+todo.notFound = {0} id''li todo bulunamadi.
+
+# --- Dogrulama (validasyon) hata mesajlari ---
+# nonEmptyText, alan bos oldugunda "error.required" anahtarini uretir.
+# Bu anahtari ezerek Play'in gomulu varsayilani ("This field is required")
+# yerine kendi Turkce metnimizi gosteriyoruz.
+error.required = Bu alan bos birakilamaz.
+
+# --- Liste sayfasi ---
+todo.list.title = Todo Listesi
+todo.list.addNew = + Yeni Todo Ekle
+todo.list.empty = Henuz hic todo yok. Yukaridan yeni bir tane ekleyebilirsin.
+todo.list.col.status = Durum
+todo.list.col.actions = Islemler
+todo.status.done = Tamamlandi
+todo.status.pending = Bekliyor
+todo.action.edit = Duzenle
+todo.action.delete = Sil
+todo.action.deleteConfirm = Silinsin mi?
