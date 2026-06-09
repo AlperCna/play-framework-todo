@@ -16,6 +16,17 @@ POST    /tasks/:id                  controllers.TaskItemController.update(id: Lo
 POST    /tasks/:id/complete         controllers.TaskItemController.complete(id: Long)
 POST    /tasks/:id/reopen           controllers.TaskItemController.reopen(id: Long)
 POST    /tasks/:id/delete           controllers.TaskItemController.delete(id: Long)
+# Gorev <-> Kategori atama (gorev edit sayfasindan)
+POST    /tasks/:id/categories                       controllers.TaskItemController.assignToCategory(id: Long)
+POST    /tasks/:id/categories/:categoryId/remove    controllers.TaskItemController.removeFromCategory(id: Long, categoryId: Long)
+
+# Kategori (Category) CRUD
+GET     /categories                 controllers.CategoryController.list()
+GET     /categories/new             controllers.CategoryController.createForm()
+POST    /categories                 controllers.CategoryController.create()
+GET     /categories/:id/edit        controllers.CategoryController.editForm(id: Long)
+POST    /categories/:id             controllers.CategoryController.update(id: Long)
+POST    /categories/:id/delete      controllers.CategoryController.delete(id: Long)
 
 # ForTry
 GET    /fortry/try1                      controllers.ForTryController.try1()

@@ -3,6 +3,7 @@ package services
 import java.time.LocalDate
 import javax.inject.{Inject, Singleton}
 
+import domain.category.Category
 import domain.common.{DomainError, Priority}
 import domain.task.{TaskItem, TaskItemCategory}
 import repositories.{CategoryRepository, TaskItemCategoryRepository, TaskItemRepository}
@@ -81,6 +82,16 @@ class TaskItemServiceImpl @Inject() (
       existing = linkRepo.listByTask(taskId)
       maybeLink <- task.assignToCategory(category, existing, clock.now, AuditUser)
     } yield maybeLink.map(linkRepo.add)
+
+  override def removeFromCategory(taskId: Long, categoryId: Long): Either[DomainError, Unit] =
+    for {
+      task <- found(taskId)
+      existing = linkRepo.listByTask(taskId)
+      _ = task.removeFromCategory(categoryId, existing, clock.now, AuditUser).foreach(linkRepo.update)
+    } yield ()
+
+  override def categoriesOf(taskId: Long): Seq[Category] =
+    linkRepo.listByTask(taskId).flatMap(link => categoryRepo.get(link.categoryId))
 
   // --- Yardimcilar: tekrar eden "bulunamadi" akisini sadelestirir ---
   private def found(id: Long): Either[DomainError, TaskItem] =

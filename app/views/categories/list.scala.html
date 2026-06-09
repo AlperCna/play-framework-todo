@@ -1,0 +1,56 @@
+@*
+ * Kategori listesi sayfasi (READ).
+ *
+ * Parametreler:
+ *   - categories: gosterilecek kategoriler.
+ *   - request (implicit): flash mesajlari ve ceviri (messages) icin.
+ *@
+@(categories: Seq[domain.category.Category])(implicit request: MessagesRequestHeader)
+
+@main(request.messages("category.list.title")) {
+
+  <h1>@request.messages("category.list.title")</h1>
+
+  @request.flash.get("success").map { message =>
+    <p class="flash-success">@message</p>
+  }
+  @request.flash.get("error").map { message =>
+    <p class="flash-error">@message</p>
+  }
+
+  <p><a href="@routes.CategoryController.createForm()">@request.messages("category.list.addNew")</a></p>
+
+  @if(categories.isEmpty) {
+    <p>@request.messages("category.list.empty")</p>
+  } else {
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>@request.messages("category.name")</th>
+          <th>@request.messages("category.list.col.description")</th>
+          <th>@request.messages("category.list.col.actions")</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for(category <- categories) {
+          <tr>
+            <td>@category.id</td>
+            <td>@category.name</td>
+            <td>@category.description</td>
+            <td>
+              <a href="@routes.CategoryController.editForm(category.id)">@request.messages("category.action.edit")</a>
+              @* Silme veri degistirir: GET degil POST. *@
+              @helper.form(action = routes.CategoryController.delete(category.id), Symbol("style") -> "display:inline") {
+                @helper.CSRF.formField
+                @defining(request.messages("category.action.deleteConfirm")) { confirmText =>
+                  <button type="submit" onclick="return confirm('@confirmText')">@request.messages("category.action.delete")</button>
+                }
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+}

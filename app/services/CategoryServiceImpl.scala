@@ -22,6 +22,14 @@ class CategoryServiceImpl @Inject() (categoryRepo: CategoryRepository, clock: Cl
   override def create(name: String, description: String, userId: Long): Either[DomainError, Category] =
     Category.create(name, description, userId, clock.now, AuditUser).map(categoryRepo.add)
 
+  override def update(id: Long, name: String, description: String): Either[DomainError, Category] =
+    for {
+      category <- found(id)
+      renamed <- category.rename(name)
+      described <- renamed.setDescription(description)
+      saved <- persist(described.markUpdated(clock.now, AuditUser))
+    } yield saved
+
   override def rename(id: Long, name: String): Either[DomainError, Category] =
     for {
       category <- found(id)

@@ -1,10 +1,10 @@
 @*
- * This template is called from the `index` template. This template
- * handles the rendering of the page header and body tags. It takes
- * two arguments, a `String` for the title of the page and an `Html`
- * object to insert into the body of the page.
+ * Tum sayfalarin ortak yerlesimi (layout). Baslik (`title`) ve govde (`content`)
+ * alir. Ust kisimda ortak gezinme (nav) menusu render eder; bu yuzden artik
+ * i18n icin ortulu (implicit) bir `MessagesRequestHeader` ister. Bu sablonu
+ * cagiran her sayfanin kapsaminda boyle bir request bulunmalidir.
  *@
-@(title: String)(content: Html)
+@(title: String)(content: Html)(implicit request: MessagesRequestHeader)
 
 <!DOCTYPE html>
 <html lang="en">
@@ -16,6 +16,12 @@
 
     </head>
     <body>
+        @* Ortak gezinme menusu (her sayfada gorunur). *@
+        <nav>
+          <a href="@routes.TaskItemController.list()">@request.messages("nav.tasks")</a> |
+          <a href="@routes.CategoryController.list()">@request.messages("nav.categories")</a>
+        </nav>
+
         @* And here's where we render the `Html` object containing
          * the page content. *@
         @content

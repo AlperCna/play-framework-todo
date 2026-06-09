@@ -2,6 +2,7 @@ package services
 
 import java.time.LocalDate
 
+import domain.category.Category
 import domain.common.{DomainError, Priority}
 import domain.task.{TaskItem, TaskItemCategory}
 
@@ -43,7 +44,16 @@ trait TaskItemService {
 
   /**
    * Gorevi bir kategoriye atar. Yeni iliski olustuysa `Some`, idempotent (zaten
-   * atanmis) ise `None` doner. (Bu fazda UI yok; servis API'si hazirdir.)
+   * atanmis) ise `None` doner. Silinmis kategoride `Left(CategoryDeleted)`.
    */
   def assignToCategory(taskId: Long, categoryId: Long): Either[DomainError, Option[TaskItemCategory]]
+
+  /**
+   * Gorevi bir kategoriden cikarir (ilgili aktif iliskiyi soft-delete eder).
+   * Iliski yoksa sessizce gecer (idempotent).
+   */
+  def removeFromCategory(taskId: Long, categoryId: Long): Either[DomainError, Unit]
+
+  /** Gorevin atanmis (aktif, silinmemis) kategorileri. */
+  def categoriesOf(taskId: Long): Seq[Category]
 }

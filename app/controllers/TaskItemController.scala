@@ -2,12 +2,14 @@ package controllers
 
 import javax.inject._
 
+import play.api.data.Form
+import play.api.data.Forms.{longNumber, single}
 import play.api.mvc._
 
 import domain.common.DomainError
 import forms.TaskItemFormData
 import repositories.UserRepository
-import services.TaskItemService
+import services.{CategoryService, TaskItemService}
 
 /**
  * Gorevler (TaskItem) uzerinde CRUD + tamamla/yeniden-ac islemlerini yoneten
@@ -26,6 +28,7 @@ import services.TaskItemService
 @Singleton
 class TaskItemController @Inject() (
     service: TaskItemService,
+    categoryService: CategoryService,
     userRepo: UserRepository,
     cc: MessagesControllerComponents
 ) extends MessagesAbstractController(cc) {
@@ -40,6 +43,9 @@ class TaskItemController @Inject() (
    */
   private def defaultUserId: Long =
     userRepo.list().headOption.map(_.id).getOrElse(1L)
+
+  /** Kategori atama icin tek alanli kucuk form (dropdown'dan gelen categoryId). */
+  private val assignForm: Form[Long] = Form(single("categoryId" -> longNumber))
 
   /** READ (liste). */
   def list(): Action[AnyContent] = Action { implicit request =>
@@ -78,14 +84,19 @@ class TaskItemController @Inject() (
     )
   }
 
-  /** UPDATE (form). */
+  /**
+   * UPDATE (form). Edit modunda ayrica gorevin atanmis kategorilerini ve
+   * eklenebilecek (henuz atanmamis) kategorileri de view'a gecirir.
+   */
   def editForm(id: Long): Action[AnyContent] = Action { implicit request =>
     service.get(id) match {
       case Some(task) =>
         val filled = TaskItemFormData.form.fill(
           TaskItemFormData(task.title, task.description, task.priority, task.dueDate)
         )
-        Ok(views.html.tasks.form(filled, routes.TaskItemController.update(id), request.messages("task.form.edit", id)))
+        val assigned = service.categoriesOf(id)
+        val available = categoryService.list().filterNot(c => assigned.exists(_.id == c.id))
+        Ok(views.html.tasks.form(filled, routes.TaskItemController.update(id), request.messages("task.form.edit", id), Some(id), assigned, available))
       case None =>
         NotFound(request.messages("task.notFound", id))
     }
@@ -122,6 +133,34 @@ class TaskItemController @Inject() (
   /** Gorevi (soft) sil. */
   def delete(id: Long): Action[AnyContent] = Action { implicit request =>
     redirectAfterAction(service.delete(id), id, "task.deleted")
+  }
+
+  /**
+   * Gorevi bir kategoriye atar (gorev edit sayfasindaki dropdown'dan).
+   * Her durumda edit sayfasina geri doner (PRG); silinmis kategori vb. domain
+   * hatasi flash "error" olur.
+   */
+  def assignToCategory(id: Long): Action[AnyContent] = Action { implicit request =>
+    val back = Redirect(routes.TaskItemController.editForm(id))
+    assignForm.bindFromRequest().fold(
+      _ => back.flashing("error" -> request.messages("task.category.invalid")),
+      categoryId =>
+        service.assignToCategory(id, categoryId) match {
+          case Right(_) => back.flashing("success" -> request.messages("task.category.assigned"))
+          case Left(DomainError.NotFound("TaskItem", _)) => NotFound(request.messages("task.notFound", id))
+          case Left(err) => back.flashing("error" -> request.messages(err.code))
+        }
+    )
+  }
+
+  /** Gorevi bir kategoriden cikarir; edit sayfasina geri doner. */
+  def removeFromCategory(id: Long, categoryId: Long): Action[AnyContent] = Action { implicit request =>
+    val back = Redirect(routes.TaskItemController.editForm(id))
+    service.removeFromCategory(id, categoryId) match {
+      case Right(_) => back.flashing("success" -> request.messages("task.category.removed"))
+      case Left(DomainError.NotFound("TaskItem", _)) => NotFound(request.messages("task.notFound", id))
+      case Left(err) => back.flashing("error" -> request.messages(err.code))
+    }
   }
 
   /**

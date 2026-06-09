@@ -67,3 +67,42 @@ task.action.delete = Delete
 task.action.deleteConfirm = Delete this?
 task.action.complete = Complete
 task.action.reopen = Reopen
+
+# --- Navigation (nav) menu ---
+nav.tasks = Tasks
+nav.categories = Categories
+
+# --- Task edit page: category assignment section ---
+task.category.heading = Categories
+task.category.none = No categories assigned to this task yet.
+task.category.add = Add
+task.category.remove = Remove
+task.category.assigned = Task assigned to category.
+task.category.removed = Task removed from category.
+task.category.invalid = Invalid category selection.
+
+# --- Category field labels ---
+category.name = Name
+category.description = Description
+
+# --- Category form / page texts ---
+category.form.new = New Category
+category.form.edit = Edit Category #{0}
+category.form.save = Save
+category.form.cancel = Cancel
+
+# --- Category flash messages ---
+category.created = Category created.
+category.updated = Category updated.
+category.deleted = Category deleted.
+category.notFound = Category with id {0} not found.
+
+# --- Category list page ---
+category.list.title = Category List
+category.list.addNew = + Add New Category
+category.list.empty = No categories yet. You can add one from above.
+category.list.col.description = Description
+category.list.col.actions = Actions
+category.action.edit = Edit
+category.action.delete = Delete
+category.action.deleteConfirm = Delete this?

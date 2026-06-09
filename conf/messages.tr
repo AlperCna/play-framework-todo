@@ -70,3 +70,42 @@ task.action.delete = Sil
 task.action.deleteConfirm = Silinsin mi?
 task.action.complete = Tamamla
 task.action.reopen = Yeniden Ac
+
+# --- Gezinme (nav) menusu ---
+nav.tasks = Gorevler
+nav.categories = Kategoriler
+
+# --- Gorev edit sayfasi: kategori atama bolumu ---
+task.category.heading = Kategoriler
+task.category.none = Bu goreve henuz kategori atanmamis.
+task.category.add = Ekle
+task.category.remove = Cikar
+task.category.assigned = Gorev kategoriye atandi.
+task.category.removed = Gorev kategoriden cikarildi.
+task.category.invalid = Gecersiz kategori secimi.
+
+# --- Kategori alan etiketleri ---
+category.name = Ad
+category.description = Aciklama
+
+# --- Kategori form / sayfa metinleri ---
+category.form.new = Yeni Kategori
+category.form.edit = Kategori Duzenle #{0}
+category.form.save = Kaydet
+category.form.cancel = Iptal
+
+# --- Kategori akis (flash) mesajlari ---
+category.created = Kategori olusturuldu.
+category.updated = Kategori guncellendi.
+category.deleted = Kategori silindi.
+category.notFound = {0} id''li kategori bulunamadi.
+
+# --- Kategori liste sayfasi ---
+category.list.title = Kategori Listesi
+category.list.addNew = + Yeni Kategori Ekle
+category.list.empty = Henuz hic kategori yok. Yukaridan yeni bir tane ekleyebilirsin.
+category.list.col.description = Aciklama
+category.list.col.actions = Islemler
+category.action.edit = Duzenle
+category.action.delete = Sil
+category.action.deleteConfirm = Silinsin mi?

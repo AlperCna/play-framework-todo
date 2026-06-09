@@ -22,21 +22,24 @@ class TaskItemServiceSpec extends AnyWordSpec with Matchers {
   private val now = Instant.parse("2026-06-08T10:00:00Z")
   private val today = LocalDate.of(2026, 6, 8)
 
+  /** Ayni in-memory DB'yi paylasan TaskItem + Category servisleri ve task repo'su. */
   private def newService(clock: FixedClock) = {
     val db = TestDatabase.empty()
     val taskRepo = new InMemoryTaskItemRepository(db)
+    val catRepo = new InMemoryCategoryRepository(db)
     val service = new TaskItemServiceImpl(
       taskRepo,
-      new InMemoryCategoryRepository(db),
+      catRepo,
       new InMemoryTaskItemCategoryRepository(db),
       clock
     )
-    (service, taskRepo)
+    val categoryService = new CategoryServiceImpl(catRepo, clock)
+    (service, categoryService, taskRepo)
   }
 
   "TaskItemService.create" should {
     "gorevi repo'ya kaydetmeli ve audit createdBy='system' olmali" in {
-      val (service, taskRepo) = newService(FixedClock(now, today))
+      val (service, _, taskRepo) = newService(FixedClock(now, today))
       val created = service.create("Gorev", None, Priority.Low, None, userId = 1L)
       created.map(_.id) shouldBe Right(1L)
       created.map(_.audit.createdBy) shouldBe Right("system")
@@ -46,7 +49,7 @@ class TaskItemServiceSpec extends AnyWordSpec with Matchers {
 
   "TaskItemService.complete" should {
     "son tarihi gecmis gorevde Left dondurmeli ve repo'yu degistirmemeli" in {
-      val (service, taskRepo) = newService(FixedClock(now, today))
+      val (service, _, taskRepo) = newService(FixedClock(now, today))
       val task = service
         .create("Gorev", None, Priority.Low, Some(today.minusDays(1)), userId = 1L)
         .getOrElse(fail())
@@ -58,7 +61,7 @@ class TaskItemServiceSpec extends AnyWordSpec with Matchers {
 
   "TaskItemService.delete" should {
     "soft-delete sonrasi list() gorevi gostermemeli" in {
-      val (service, taskRepo) = newService(FixedClock(now, today))
+      val (service, _, taskRepo) = newService(FixedClock(now, today))
       val task = service.create("Gorev", None, Priority.Low, None, userId = 1L).getOrElse(fail())
 
       service.delete(task.id).isRight shouldBe true
@@ -68,9 +71,50 @@ class TaskItemServiceSpec extends AnyWordSpec with Matchers {
 
   "TaskItemService.update" should {
     "olmayan id'de NotFound dondurmeli" in {
-      val (service, _) = newService(FixedClock(now, today))
+      val (service, _, _) = newService(FixedClock(now, today))
       service.update(999L, "x", None, Priority.Low, None) shouldBe
         Left(DomainError.NotFound("TaskItem", 999L))
+    }
+  }
+
+  "TaskItemService kategori atama" should {
+
+    "assignToCategory yeni link olusturmali ve categoriesOf'ta gorunmeli" in {
+      val (service, categoryService, _) = newService(FixedClock(now, today))
+      val task = service.create("Gorev", None, Priority.Low, None, 1L).getOrElse(fail())
+      val cat = categoryService.create("Is", "aciklama", 1L).getOrElse(fail())
+
+      service.assignToCategory(task.id, cat.id).map(_.isDefined) shouldBe Right(true)
+      service.categoriesOf(task.id).map(_.id) should contain(cat.id)
+    }
+
+    "ayni kategoriye ikinci atama idempotent olmali (Right(None))" in {
+      val (service, categoryService, _) = newService(FixedClock(now, today))
+      val task = service.create("Gorev", None, Priority.Low, None, 1L).getOrElse(fail())
+      val cat = categoryService.create("Is", "aciklama", 1L).getOrElse(fail())
+
+      service.assignToCategory(task.id, cat.id)
+      service.assignToCategory(task.id, cat.id) shouldBe Right(None)
+      service.categoriesOf(task.id) should have size 1
+    }
+
+    "silinmis kategoriye atama basarisiz olmali (kategori artik getirilemez)" in {
+      val (service, categoryService, _) = newService(FixedClock(now, today))
+      val task = service.create("Gorev", None, Priority.Low, None, 1L).getOrElse(fail())
+      val cat = categoryService.create("Is", "aciklama", 1L).getOrElse(fail())
+      categoryService.delete(cat.id)
+
+      service.assignToCategory(task.id, cat.id) shouldBe Left(DomainError.NotFound("Category", cat.id))
+    }
+
+    "removeFromCategory sonrasi categoriesOf ilgili kategoriyi gostermemeli" in {
+      val (service, categoryService, _) = newService(FixedClock(now, today))
+      val task = service.create("Gorev", None, Priority.Low, None, 1L).getOrElse(fail())
+      val cat = categoryService.create("Is", "aciklama", 1L).getOrElse(fail())
+      service.assignToCategory(task.id, cat.id)
+
+      service.removeFromCategory(task.id, cat.id).isRight shouldBe true
+      service.categoriesOf(task.id).map(_.id) should not contain cat.id
     }
   }
 }
