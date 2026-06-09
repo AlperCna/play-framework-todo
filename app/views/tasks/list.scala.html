@@ -1,0 +1,86 @@
+@*
+ * Gorev (TaskItem) listesi sayfasi (READ).
+ *
+ * Parametreler:
+ *   - tasks: gosterilecek gorevler.
+ *   - request (implicit): flash mesajlari ve ceviri (messages) icin. Tip
+ *     MessagesRequestHeader olmali ki request.messages("anahtar") kullanilabilsin.
+ *@
+@(tasks: Seq[domain.task.TaskItem])(implicit request: MessagesRequestHeader)
+
+@main(request.messages("task.list.title")) {
+
+  <h1>@request.messages("task.list.title")</h1>
+
+  @* Bir onceki istekten gelen basari mesaji (flash scope). *@
+  @request.flash.get("success").map { message =>
+    <p class="flash-success">@message</p>
+  }
+
+  @* Domain kurali ihlalleri (orn. gecmis tarihli gorevi tamamlamaya calismak). *@
+  @request.flash.get("error").map { message =>
+    <p class="flash-error">@message</p>
+  }
+
+  <p><a href="@routes.TaskItemController.createForm()">@request.messages("task.list.addNew")</a></p>
+
+  @if(tasks.isEmpty) {
+    <p>@request.messages("task.list.empty")</p>
+  } else {
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>@request.messages("task.title")</th>
+          <th>@request.messages("task.list.col.priority")</th>
+          <th>@request.messages("task.list.col.dueDate")</th>
+          <th>@request.messages("task.list.col.status")</th>
+          <th>@request.messages("task.list.col.actions")</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for(task <- tasks) {
+          <tr>
+            <td>@task.id</td>
+            <td>@task.title</td>
+            <td>@request.messages("task.priority." + task.priority.value)</td>
+            <td>@task.dueDate.map(_.toString).getOrElse("-")</td>
+            <td>
+              @if(task.isCompleted) {
+                <span class="done">@request.messages("task.status.done")</span>
+              } else {
+                <span class="pending">@request.messages("task.status.pending")</span>
+              }
+            </td>
+            <td>
+              <a href="@routes.TaskItemController.editForm(task.id)">@request.messages("task.action.edit")</a>
+
+              @* Tamamla / Yeniden ac: veri degistirir, bu yuzden POST. *@
+              @if(task.isCompleted) {
+                @helper.form(action = routes.TaskItemController.reopen(task.id), Symbol("style") -> "display:inline") {
+                  @helper.CSRF.formField
+                  <button type="submit">@request.messages("task.action.reopen")</button>
+                }
+              } else {
+                @helper.form(action = routes.TaskItemController.complete(task.id), Symbol("style") -> "display:inline") {
+                  @helper.CSRF.formField
+                  <button type="submit">@request.messages("task.action.complete")</button>
+                }
+              }
+
+              @* Silme islemi veri degistirdigi icin GET degil POST ile yapilir. *@
+              @helper.form(action = routes.TaskItemController.delete(task.id), Symbol("style") -> "display:inline") {
+                @helper.CSRF.formField
+                @* Onay metnini once bir degiskene aliyoruz: aksi halde onclick icindeki
+                   ic ice cift tirnaklar Twirl'i bozuyor. *@
+                @defining(request.messages("task.action.deleteConfirm")) { confirmText =>
+                  <button type="submit" onclick="return confirm('@confirmText')">@request.messages("task.action.delete")</button>
+                }
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+}

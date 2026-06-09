@@ -1,0 +1,60 @@
+@*
+ * Hem olusturma (CREATE) hem duzenleme (UPDATE) icin kullanilan ortak gorev formu.
+ *
+ * Parametreler:
+ *   - taskForm: gosterilecek/doldurulacak form (hata varsa hatalari da icerir).
+ *   - postUrl:  formun gonderilecegi adres (create ya da update).
+ *   - heading:  sayfa basligi.
+ *   - request (implicit): form helper'lari mesaj/dogrulama icin ister.
+ *@
+@(taskForm: Form[models.TaskItemFormData], postUrl: Call, heading: String)(implicit request: MessagesRequestHeader)
+
+@main(heading) {
+
+  <h1>@heading</h1>
+
+  @* Domain kurali ihlalleri (orn. "High oncelik dueDate ister") global hata olarak gelir. *@
+  @if(taskForm.hasGlobalErrors) {
+    <ul class="form-errors">
+      @for(err <- taskForm.globalErrors) {
+        <li class="flash-error">@err.message</li>
+      }
+    </ul>
+  }
+
+  @helper.form(action = postUrl) {
+
+    @helper.CSRF.formField
+
+    @helper.inputText(
+      taskForm("title"),
+      Symbol("_label") -> request.messages("task.title")
+    )
+
+    @helper.textarea(
+      taskForm("description"),
+      Symbol("_label") -> request.messages("task.description")
+    )
+
+    @* Oncelik: 0/1/2 degerli bir acilir liste (form formatter'i Priority'ye cevirir). *@
+    @helper.select(
+      taskForm("priority"),
+      options = Seq(
+        "0" -> request.messages("task.priority.0"),
+        "1" -> request.messages("task.priority.1"),
+        "2" -> request.messages("task.priority.2")
+      ),
+      Symbol("_label") -> request.messages("task.priority")
+    )
+
+    @helper.inputDate(
+      taskForm("dueDate"),
+      Symbol("_label") -> request.messages("task.dueDate")
+    )
+
+    <div>
+      <button type="submit">@request.messages("task.form.save")</button>
+      <a href="@routes.TaskItemController.list()">@request.messages("task.form.cancel")</a>
+    </div>
+  }
+}

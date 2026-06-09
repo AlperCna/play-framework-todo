@@ -5,39 +5,68 @@
 # eksiz "conf/messages" dosyasina, sonra kendi gomulu varsayilanlarina bakar.
 # =========================================================================
 
-# --- Todo alan etiketleri (form helper'larinin _label degerleri) ---
-todo.title = Baslik
-todo.completed = Tamamlandi mi?
+# --- Gorev alan etiketleri (form helper'larinin _label degerleri) ---
+task.title = Baslik
+task.description = Aciklama
+task.priority = Oncelik
+task.dueDate = Son tarih
+
+# --- Oncelik degerleri (0/1/2) ---
+task.priority.0 = Dusuk
+task.priority.1 = Orta
+task.priority.2 = Yuksek
 
 # --- Form / sayfa metinleri ---
-todo.form.new = Yeni Todo
-# {0} -> ilgili todo'nun id'si. MessageFormat ile yerine konur.
-todo.form.edit = Todo Duzenle #{0}
-todo.form.save = Kaydet
-todo.form.cancel = Iptal
+task.form.new = Yeni Gorev
+# {0} -> ilgili gorevin id'si. MessageFormat ile yerine konur.
+task.form.edit = Gorev Duzenle #{0}
+task.form.save = Kaydet
+task.form.cancel = Iptal
 
 # --- Akis (flash) bilgi mesajlari ---
-todo.created = Todo olusturuldu.
-todo.updated = Todo guncellendi.
-todo.deleted = Todo silindi.
+task.created = Gorev olusturuldu.
+task.updated = Gorev guncellendi.
+task.deleted = Gorev silindi.
+task.completed = Gorev tamamlandi.
+task.reopened = Gorev yeniden acildi.
 # NOT: Mesajda hem {0} argumani hem de kesme isareti var. MessageFormat'ta
 # kesme isareti ozel bir karakterdir; metinde gostermek icin ciftlenir ('').
-todo.notFound = {0} id''li todo bulunamadi.
+task.notFound = {0} id''li gorev bulunamadi.
 
 # --- Dogrulama (validasyon) hata mesajlari ---
 # nonEmptyText, alan bos oldugunda "error.required" anahtarini uretir.
-# Bu anahtari ezerek Play'in gomulu varsayilani ("This field is required")
-# yerine kendi Turkce metnimizi gosteriyoruz.
 error.required = Bu alan bos birakilamaz.
+# Oncelik acilir listesinden gecersiz bir deger gelirse (form seviyesi).
+error.invalidPriority = Gecersiz oncelik degeri.
+
+# --- Domain (is kurali) hata mesajlari: DomainError.code -> mesaj ---
+error.domain.emptyTitle = Baslik bos olamaz.
+error.domain.emptyEmail = E-posta bos olamaz.
+error.domain.emptyPassword = Parola bos olamaz.
+error.domain.emptyCategoryName = Kategori adi bos olamaz.
+error.domain.emptyCategoryDescription = Kategori aciklamasi bos olamaz.
+error.domain.invalidUserId = Kullanici id'si sifirdan buyuk olmali.
+error.domain.invalidTaskItemId = Gorev id'si sifirdan buyuk olmali.
+error.domain.invalidCategoryId = Kategori id'si sifirdan buyuk olmali.
+error.domain.highPriorityRequiresDueDate = Yuksek oncelikli gorevler icin son tarih zorunludur.
+error.domain.taskPastDueCannotComplete = Son tarihi gecmis bir gorev tamamlanamaz.
+error.domain.cannotClearDueDateForHighPriority = Oncelik Yuksek iken son tarih bos birakilamaz.
+error.domain.categoryDeleted = Silinmis bir kategoriye gorev atanamaz.
+error.domain.invalidPriorityValue = Gecersiz oncelik degeri.
+error.domain.notFound = Istenen kayit bulunamadi.
 
 # --- Liste sayfasi ---
-todo.list.title = Todo Listesi
-todo.list.addNew = + Yeni Todo Ekle
-todo.list.empty = Henuz hic todo yok. Yukaridan yeni bir tane ekleyebilirsin.
-todo.list.col.status = Durum
-todo.list.col.actions = Islemler
-todo.status.done = Tamamlandi
-todo.status.pending = Bekliyor
-todo.action.edit = Duzenle
-todo.action.delete = Sil
-todo.action.deleteConfirm = Silinsin mi?
+task.list.title = Gorev Listesi
+task.list.addNew = + Yeni Gorev Ekle
+task.list.empty = Henuz hic gorev yok. Yukaridan yeni bir tane ekleyebilirsin.
+task.list.col.priority = Oncelik
+task.list.col.dueDate = Son tarih
+task.list.col.status = Durum
+task.list.col.actions = Islemler
+task.status.done = Tamamlandi
+task.status.pending = Bekliyor
+task.action.edit = Duzenle
+task.action.delete = Sil
+task.action.deleteConfirm = Silinsin mi?
+task.action.complete = Tamamla
+task.action.reopen = Yeniden Ac

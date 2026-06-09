@@ -6,14 +6,16 @@
 # An example controller showing a sample home page
 GET     /                           controllers.HomeController.index()
 
-# Todo CRUD
+# Gorev (TaskItem) CRUD
 # HTML formlari sadece GET ve POST destekledigi icin guncelleme/silme de POST kullanir.
-GET     /todos                      controllers.TodoController.list()
-GET     /todos/new                  controllers.TodoController.createForm()
-POST    /todos                      controllers.TodoController.create()
-GET     /todos/:id/edit             controllers.TodoController.editForm(id: Long)
-POST    /todos/:id                  controllers.TodoController.update(id: Long)
-POST    /todos/:id/delete           controllers.TodoController.delete(id: Long)
+GET     /tasks                      controllers.TaskItemController.list()
+GET     /tasks/new                  controllers.TaskItemController.createForm()
+POST    /tasks                      controllers.TaskItemController.create()
+GET     /tasks/:id/edit             controllers.TaskItemController.editForm(id: Long)
+POST    /tasks/:id                  controllers.TaskItemController.update(id: Long)
+POST    /tasks/:id/complete         controllers.TaskItemController.complete(id: Long)
+POST    /tasks/:id/reopen           controllers.TaskItemController.reopen(id: Long)
+POST    /tasks/:id/delete           controllers.TaskItemController.delete(id: Long)
 
 # ForTry
 GET    /fortry/try1                      controllers.ForTryController.try1()

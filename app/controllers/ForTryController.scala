@@ -1,7 +1,6 @@
 package controllers
 
 import play.api.mvc.{MessagesAbstractController, MessagesControllerComponents}
-import repositories.TodoRepository
 
 import javax.inject.{Inject, Singleton}
 

@@ -4,35 +4,66 @@
 # or the client's Accept-Language header prefers English).
 # =========================================================================
 
-# --- Todo field labels (the _label values of form helpers) ---
-todo.title = Title
-todo.completed = Completed?
+# --- Task field labels (the _label values of form helpers) ---
+task.title = Title
+task.description = Description
+task.priority = Priority
+task.dueDate = Due date
+
+# --- Priority values (0/1/2) ---
+task.priority.0 = Low
+task.priority.1 = Medium
+task.priority.2 = High
 
 # --- Form / page texts ---
-todo.form.new = New Todo
-# {0} -> the id of the related todo, substituted via MessageFormat.
-todo.form.edit = Edit Todo #{0}
-todo.form.save = Save
-todo.form.cancel = Cancel
+task.form.new = New Task
+# {0} -> the id of the related task, substituted via MessageFormat.
+task.form.edit = Edit Task #{0}
+task.form.save = Save
+task.form.cancel = Cancel
 
 # --- Flash info messages ---
-todo.created = Todo created.
-todo.updated = Todo updated.
-todo.deleted = Todo deleted.
-todo.notFound = Todo with id {0} not found.
+task.created = Task created.
+task.updated = Task updated.
+task.deleted = Task deleted.
+task.completed = Task completed.
+task.reopened = Task reopened.
+task.notFound = Task with id {0} not found.
 
 # --- Validation error messages ---
 # nonEmptyText produces the "error.required" key for an empty field.
 error.required = This field cannot be empty.
+# Produced when the priority dropdown sends an invalid value (form level).
+error.invalidPriority = Invalid priority value.
+
+# --- Domain (business rule) error messages: DomainError.code -> message ---
+error.domain.emptyTitle = Title cannot be empty.
+error.domain.emptyEmail = Email cannot be empty.
+error.domain.emptyPassword = Password cannot be empty.
+error.domain.emptyCategoryName = Category name cannot be empty.
+error.domain.emptyCategoryDescription = Category description cannot be empty.
+error.domain.invalidUserId = User id must be greater than zero.
+error.domain.invalidTaskItemId = Task id must be greater than zero.
+error.domain.invalidCategoryId = Category id must be greater than zero.
+error.domain.highPriorityRequiresDueDate = High priority tasks require a due date.
+error.domain.taskPastDueCannotComplete = A task past its due date cannot be completed.
+error.domain.cannotClearDueDateForHighPriority = Due date cannot be cleared while priority is High.
+error.domain.categoryDeleted = A task cannot be assigned to a deleted category.
+error.domain.invalidPriorityValue = Invalid priority value.
+error.domain.notFound = The requested record was not found.
 
 # --- List page ---
-todo.list.title = Todo List
-todo.list.addNew = + Add New Todo
-todo.list.empty = No todos yet. You can add one from above.
-todo.list.col.status = Status
-todo.list.col.actions = Actions
-todo.status.done = Completed
-todo.status.pending = Pending
-todo.action.edit = Edit
-todo.action.delete = Delete
-todo.action.deleteConfirm = Delete this?
+task.list.title = Task List
+task.list.addNew = + Add New Task
+task.list.empty = No tasks yet. You can add one from above.
+task.list.col.priority = Priority
+task.list.col.dueDate = Due date
+task.list.col.status = Status
+task.list.col.actions = Actions
+task.status.done = Completed
+task.status.pending = Pending
+task.action.edit = Edit
+task.action.delete = Delete
+task.action.deleteConfirm = Delete this?
+task.action.complete = Complete
+task.action.reopen = Reopen
