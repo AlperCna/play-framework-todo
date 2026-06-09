@@ -20,6 +20,16 @@ class UserServiceImpl @Inject() (userRepo: UserRepository, clock: Clock) extends
   override def create(email: String, password: String): Either[DomainError, User] =
     User.create(email, password, clock.now, AuditUser).map(userRepo.add)
 
+  override def register(email: String, password: String): Either[DomainError, User] =
+    if (userRepo.findByEmail(email.trim).isDefined) Left(DomainError.EmailAlreadyTaken)
+    else User.create(email, password, clock.now, AuditUser).map(userRepo.add)
+
+  override def login(email: String, password: String): Either[DomainError, User] =
+    userRepo.findByEmail(email.trim) match {
+      case Some(user) if user.passwordMatches(password) => Right(user)
+      case _ => Left(DomainError.InvalidCredentials)
+    }
+
   override def changeEmail(id: Long, email: String): Either[DomainError, User] =
     for {
       user <- found(id)

@@ -73,6 +73,16 @@ object DomainError {
     val message = "A task cannot be assigned to a deleted category."
   }
 
+  // --- Kimlik dogrulama (auth) hatalari ---
+  case object EmailAlreadyTaken extends DomainError {
+    val code = "error.domain.emailAlreadyTaken"
+    val message = "This email is already registered."
+  }
+  case object InvalidCredentials extends DomainError {
+    val code = "error.domain.invalidCredentials"
+    val message = "Invalid email or password."
+  }
+
   /** Form'dan gelen sayinin gecerli bir Priority'ye karsilik gelmemesi. */
   final case class InvalidPriorityValue(raw: Int) extends DomainError {
     val code = "error.domain.invalidPriorityValue"

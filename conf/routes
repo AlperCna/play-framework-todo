@@ -6,6 +6,13 @@
 # An example controller showing a sample home page
 GET     /                           controllers.HomeController.index()
 
+# Kimlik dogrulama (auth) — PUBLIC
+GET     /login                      controllers.AuthController.loginForm()
+POST    /login                      controllers.AuthController.login()
+GET     /register                   controllers.AuthController.registerForm()
+POST    /register                   controllers.AuthController.register()
+POST    /logout                     controllers.AuthController.logout()
+
 # Gorev (TaskItem) CRUD
 # HTML formlari sadece GET ve POST destekledigi icin guncelleme/silme de POST kullanir.
 GET     /tasks                      controllers.TaskItemController.list()

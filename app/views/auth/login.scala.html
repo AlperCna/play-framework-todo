@@ -1,0 +1,43 @@
+@*
+ * Giris (login) sayfasi. Public — login gerektirmez.
+ *@
+@(loginForm: Form[forms.LoginFormData])(implicit request: MessagesRequestHeader)
+
+@main(request.messages("auth.login.title")) {
+
+  <h1>@request.messages("auth.login.title")</h1>
+
+  @* Cikis sonrasi vb. bilgi mesaji. *@
+  @request.flash.get("success").map { message =>
+    <p class="flash-success">@message</p>
+  }
+
+  @* Hatali kimlik bilgisi global hata olarak gelir. *@
+  @if(loginForm.hasGlobalErrors) {
+    <ul class="form-errors">
+      @for(err <- loginForm.globalErrors) {
+        <li class="flash-error">@err.message</li>
+      }
+    </ul>
+  }
+
+  @helper.form(action = routes.AuthController.login()) {
+    @helper.CSRF.formField
+
+    @helper.inputText(
+      loginForm("email"),
+      Symbol("_label") -> request.messages("auth.email")
+    )
+
+    @helper.inputPassword(
+      loginForm("password"),
+      Symbol("_label") -> request.messages("auth.password")
+    )
+
+    <div>
+      <button type="submit">@request.messages("auth.login.submit")</button>
+    </div>
+  }
+
+  <p><a href="@routes.AuthController.registerForm()">@request.messages("auth.register.title")</a></p>
+}

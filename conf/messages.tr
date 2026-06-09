@@ -74,6 +74,24 @@ task.action.reopen = Yeniden Ac
 # --- Gezinme (nav) menusu ---
 nav.tasks = Gorevler
 nav.categories = Kategoriler
+nav.login = Giris
+nav.register = Kayit
+nav.logout = Cikis
+
+# --- Kimlik dogrulama (auth) ---
+auth.email = E-posta
+auth.password = Parola
+auth.login.title = Giris Yap
+auth.login.submit = Giris Yap
+auth.register.title = Kayit Ol
+auth.register.submit = Kayit Ol
+auth.loggedIn = Giris yapildi.
+auth.registered = Hesabin olusturuldu, hos geldin.
+auth.loggedOut = Cikis yapildi.
+
+# --- Auth domain hatalari ---
+error.domain.emailAlreadyTaken = Bu e-posta zaten kayitli.
+error.domain.invalidCredentials = E-posta ya da parola hatali.
 
 # --- Gorev edit sayfasi: kategori atama bolumu ---
 task.category.heading = Kategoriler

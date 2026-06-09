@@ -18,6 +18,9 @@ trait TaskItemService {
 
   def list(): Seq[TaskItem]
 
+  /** Bir kullanicinin silinmemis gorevleri (CurrentUser'a gore listeleme). */
+  def listByUser(userId: Long): Seq[TaskItem]
+
   def get(id: Long): Option[TaskItem]
 
   def create(

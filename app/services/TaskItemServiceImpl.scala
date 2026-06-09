@@ -27,6 +27,8 @@ class TaskItemServiceImpl @Inject() (
 
   override def list(): Seq[TaskItem] = taskRepo.list()
 
+  override def listByUser(userId: Long): Seq[TaskItem] = taskRepo.listByUser(userId)
+
   override def get(id: Long): Option[TaskItem] = taskRepo.get(id)
 
   override def create(

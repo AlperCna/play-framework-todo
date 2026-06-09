@@ -71,6 +71,24 @@ task.action.reopen = Reopen
 # --- Navigation (nav) menu ---
 nav.tasks = Tasks
 nav.categories = Categories
+nav.login = Login
+nav.register = Register
+nav.logout = Logout
+
+# --- Authentication (auth) ---
+auth.email = Email
+auth.password = Password
+auth.login.title = Log In
+auth.login.submit = Log In
+auth.register.title = Sign Up
+auth.register.submit = Sign Up
+auth.loggedIn = Logged in.
+auth.registered = Your account has been created, welcome.
+auth.loggedOut = Logged out.
+
+# --- Auth domain errors ---
+error.domain.emailAlreadyTaken = This email is already registered.
+error.domain.invalidCredentials = Invalid email or password.
 
 # --- Task edit page: category assignment section ---
 task.category.heading = Categories

@@ -1,0 +1,38 @@
+@*
+ * Kayit (register) sayfasi. Public — login gerektirmez.
+ *@
+@(registerForm: Form[forms.RegisterFormData])(implicit request: MessagesRequestHeader)
+
+@main(request.messages("auth.register.title")) {
+
+  <h1>@request.messages("auth.register.title")</h1>
+
+  @* Email zaten kayitli vb. global hata olarak gelir. *@
+  @if(registerForm.hasGlobalErrors) {
+    <ul class="form-errors">
+      @for(err <- registerForm.globalErrors) {
+        <li class="flash-error">@err.message</li>
+      }
+    </ul>
+  }
+
+  @helper.form(action = routes.AuthController.register()) {
+    @helper.CSRF.formField
+
+    @helper.inputText(
+      registerForm("email"),
+      Symbol("_label") -> request.messages("auth.email")
+    )
+
+    @helper.inputPassword(
+      registerForm("password"),
+      Symbol("_label") -> request.messages("auth.password")
+    )
+
+    <div>
+      <button type="submit">@request.messages("auth.register.submit")</button>
+    </div>
+  }
+
+  <p><a href="@routes.AuthController.loginForm()">@request.messages("auth.login.title")</a></p>
+}

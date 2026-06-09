@@ -16,10 +16,21 @@
 
     </head>
     <body>
-        @* Ortak gezinme menusu (her sayfada gorunur). *@
+        @* Ortak gezinme menusu. Session'a gore degisir: giris yapilmissa
+           gorev/kategori linkleri + kullanici + cikis; degilse giris/kayit. *@
         <nav>
-          <a href="@routes.TaskItemController.list()">@request.messages("nav.tasks")</a> |
-          <a href="@routes.CategoryController.list()">@request.messages("nav.categories")</a>
+          @request.session.get("userEmail").map { email =>
+            <a href="@routes.TaskItemController.list()">@request.messages("nav.tasks")</a> |
+            <a href="@routes.CategoryController.list()">@request.messages("nav.categories")</a> |
+            <span>@email</span>
+            @helper.form(action = routes.AuthController.logout(), Symbol("style") -> "display:inline") {
+              @helper.CSRF.formField
+              <button type="submit">@request.messages("nav.logout")</button>
+            }
+          }.getOrElse {
+            <a href="@routes.AuthController.loginForm()">@request.messages("nav.login")</a> |
+            <a href="@routes.AuthController.registerForm()">@request.messages("nav.register")</a>
+          }
         </nav>
 
         @* And here's where we render the `Html` object containing
