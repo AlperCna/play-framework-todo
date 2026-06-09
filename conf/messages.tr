@@ -71,6 +71,14 @@ task.action.deleteConfirm = Silinsin mi?
 task.action.complete = Tamamla
 task.action.reopen = Yeniden Ac
 
+# --- Uygulama adi (marka) ---
+app.name = Gorev Yoneticisi
+
+# --- Ana sayfa (hero) ---
+home.hero.title = Gorevlerini tek yerden yonet
+home.hero.subtitle = Gorevlerini ve kategorilerini olustur, onceliklendir ve takip et.
+home.hero.cta = Gorevlere git
+
 # --- Gezinme (nav) menusu ---
 nav.tasks = Gorevler
 nav.categories = Kategoriler

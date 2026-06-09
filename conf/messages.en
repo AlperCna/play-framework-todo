@@ -68,6 +68,14 @@ task.action.deleteConfirm = Delete this?
 task.action.complete = Complete
 task.action.reopen = Reopen
 
+# --- Application name (brand) ---
+app.name = Task Manager
+
+# --- Home page (hero) ---
+home.hero.title = Manage your tasks in one place
+home.hero.subtitle = Create, prioritize and track your tasks and categories.
+home.hero.cta = Go to tasks
+
 # --- Navigation (nav) menu ---
 nav.tasks = Tasks
 nav.categories = Categories

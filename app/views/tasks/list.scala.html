@@ -74,7 +74,7 @@
                 @* Onay metnini once bir degiskene aliyoruz: aksi halde onclick icindeki
                    ic ice cift tirnaklar Twirl'i bozuyor. *@
                 @defining(request.messages("task.action.deleteConfirm")) { confirmText =>
-                  <button type="submit" onclick="return confirm('@confirmText')">@request.messages("task.action.delete")</button>
+                  <button type="submit" class="danger" onclick="return confirm('@confirmText')">@request.messages("task.action.delete")</button>
                 }
               }
             </td>

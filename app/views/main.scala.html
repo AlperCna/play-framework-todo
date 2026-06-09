@@ -16,26 +16,32 @@
 
     </head>
     <body>
-        @* Ortak gezinme menusu. Session'a gore degisir: giris yapilmissa
-           gorev/kategori linkleri + kullanici + cikis; degilse giris/kayit. *@
-        <nav>
-          @request.session.get("userEmail").map { email =>
-            <a href="@routes.TaskItemController.list()">@request.messages("nav.tasks")</a> |
-            <a href="@routes.CategoryController.list()">@request.messages("nav.categories")</a> |
-            <span>@email</span>
-            @helper.form(action = routes.AuthController.logout(), Symbol("style") -> "display:inline") {
-              @helper.CSRF.formField
-              <button type="submit">@request.messages("nav.logout")</button>
-            }
-          }.getOrElse {
-            <a href="@routes.AuthController.loginForm()">@request.messages("nav.login")</a> |
-            <a href="@routes.AuthController.registerForm()">@request.messages("nav.register")</a>
-          }
-        </nav>
+        @* Ortak ust bar. Session'a gore degisir: giris yapilmissa gorev/kategori
+           linkleri + kullanici + cikis; degilse giris/kayit. *@
+        <header class="topbar">
+          <div class="nav-inner">
+            <a class="brand" href="@routes.HomeController.index()">@request.messages("app.name")</a>
+            <nav class="nav-links">
+              @request.session.get("userEmail").map { email =>
+                <a href="@routes.TaskItemController.list()">@request.messages("nav.tasks")</a>
+                <a href="@routes.CategoryController.list()">@request.messages("nav.categories")</a>
+                <span class="nav-user">@email</span>
+                @helper.form(action = routes.AuthController.logout()) {
+                  @helper.CSRF.formField
+                  <button type="submit" class="ghost">@request.messages("nav.logout")</button>
+                }
+              }.getOrElse {
+                <a href="@routes.AuthController.loginForm()">@request.messages("nav.login")</a>
+                <a href="@routes.AuthController.registerForm()">@request.messages("nav.register")</a>
+              }
+            </nav>
+          </div>
+        </header>
 
-        @* And here's where we render the `Html` object containing
-         * the page content. *@
-        @content
+        @* Sayfa govdesi (ortalanmis konteyner icinde). *@
+        <main class="container">
+          @content
+        </main>
 
       <script src="@routes.Assets.versioned("javascripts/main.js")" type="text/javascript"></script>
     </body>

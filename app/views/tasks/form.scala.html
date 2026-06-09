@@ -27,7 +27,7 @@
     </ul>
   }
 
-  @helper.form(action = postUrl) {
+  @helper.form(action = postUrl, Symbol("class") -> "card-form") {
 
     @helper.CSRF.formField
 
@@ -79,7 +79,7 @@
               @cat.name
               @helper.form(action = routes.TaskItemController.removeFromCategory(tid, cat.id), Symbol("style") -> "display:inline") {
                 @helper.CSRF.formField
-                <button type="submit">@request.messages("task.category.remove")</button>
+                <button type="submit" class="ghost">@request.messages("task.category.remove")</button>
               }
             </li>
           }

@@ -44,7 +44,7 @@
               @helper.form(action = routes.CategoryController.delete(category.id), Symbol("style") -> "display:inline") {
                 @helper.CSRF.formField
                 @defining(request.messages("category.action.deleteConfirm")) { confirmText =>
-                  <button type="submit" onclick="return confirm('@confirmText')">@request.messages("category.action.delete")</button>
+                  <button type="submit" class="danger" onclick="return confirm('@confirmText')">@request.messages("category.action.delete")</button>
                 }
               }
             </td>

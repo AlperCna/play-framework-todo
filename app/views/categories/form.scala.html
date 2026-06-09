@@ -21,7 +21,7 @@
     </ul>
   }
 
-  @helper.form(action = postUrl) {
+  @helper.form(action = postUrl, Symbol("class") -> "card-form") {
 
     @helper.CSRF.formField
 

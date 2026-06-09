@@ -16,7 +16,7 @@
     </ul>
   }
 
-  @helper.form(action = routes.AuthController.register()) {
+  @helper.form(action = routes.AuthController.register(), Symbol("class") -> "card-form") {
     @helper.CSRF.formField
 
     @helper.inputText(

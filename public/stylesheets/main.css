@@ -1,40 +1,285 @@
-body {
-  font-family: system-ui, "Segoe UI", Arial, sans-serif;
-  max-width: 720px;
-  margin: 2rem auto;
-  padding: 0 1rem;
-  color: #222;
+/* =========================================================================
+   Modern, aydinlik & sade tema. Elle yazilmis (bagimsiz, offline).
+   Tum renkler/olculer CSS degiskenlerinde toplandi; tek yerden tema degisir.
+   ========================================================================= */
+
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --text: #1f2430;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --primary-soft: rgba(79, 70, 229, 0.12);
+
+  --danger: #dc2626;
+  --danger-hover: #b91c1c;
+
+  --success-bg: #ecfdf5;
+  --success-text: #065f46;
+  --success-border: #a7f3d0;
+
+  --error-bg: #fef2f2;
+  --error-text: #991b1b;
+  --error-border: #fecaca;
+
+  --radius: 10px;
+  --radius-sm: 7px;
+  --shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 4px 12px rgba(16, 24, 40, 0.06);
+  --container: 880px;
 }
 
-h1 { margin-bottom: 1rem; }
+* { box-sizing: border-box; }
 
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+.container {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}
+
+/* --- Ust bar (nav) --- */
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1.25rem;
+}
+.brand {
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--text);
+  text-decoration: none;
+  letter-spacing: -0.01em;
+}
+.brand::before { content: "✓ "; color: var(--primary); }
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+}
+.nav-links a {
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+.nav-links a:hover { color: var(--primary); }
+.nav-user { color: var(--muted); font-size: 0.9rem; }
+.nav-inner form { margin: 0; }
+
+/* --- Ana icerik --- */
+main.container { padding-top: 2rem; padding-bottom: 3rem; }
+
+h1 { font-size: 1.6rem; font-weight: 700; margin: 0 0 1.25rem; letter-spacing: -0.02em; }
+h2 { font-size: 1.15rem; font-weight: 600; margin: 1.75rem 0 0.75rem; }
+
+a { color: var(--primary); }
+a:hover { color: var(--primary-hover); }
+
+/* --- Tablolar --- */
 table {
   width: 100%;
-  border-collapse: collapse;
-  margin-top: 1rem;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  margin-top: 0.5rem;
 }
-
-th, td {
+thead th {
   text-align: left;
-  padding: 0.5rem 0.75rem;
-  border-bottom: 1px solid #ddd;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  background: #fafbfc;
+  padding: 0.7rem 0.9rem;
+  border-bottom: 1px solid var(--border);
 }
-
-.flash-success {
-  background: #e6f4ea;
-  border: 1px solid #b7dfc1;
-  color: #1e7e34;
-  padding: 0.5rem 0.75rem;
-  border-radius: 4px;
+tbody td {
+  padding: 0.75rem 0.9rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
 }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: #fafbff; }
 
-.done { color: #1e7e34; font-weight: 600; }
-.pending { color: #b26a00; }
+/* Tablo icindeki aksiyonlar (duzenle/tamamla/sil...) */
+tbody td form { display: inline; margin: 0; }
+tbody td a,
+tbody td button {
+  margin-right: 0.4rem;
+}
+tbody td a:last-child,
+tbody td button:last-child { margin-right: 0; }
 
-button {
+/* --- Butonlar --- */
+button,
+.btn {
   cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #fff;
+  background: var(--primary);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.9rem;
+  transition: background-color 0.15s ease;
+}
+button:hover { background: var(--primary-hover); }
+
+/* Tablodaki butonlar daha kucuk */
+tbody td button { padding: 0.35rem 0.7rem; font-size: 0.83rem; }
+
+/* Tehlikeli (sil/cikar) butonlar */
+button.danger { background: var(--danger); }
+button.danger:hover { background: var(--danger-hover); }
+
+/* Ikincil / hayalet buton (nav cikis, vb.) */
+button.ghost {
+  background: transparent;
+  color: var(--muted);
+  border-color: var(--border);
+  padding: 0.4rem 0.75rem;
+  font-size: 0.9rem;
+}
+button.ghost:hover { background: var(--bg); color: var(--text); }
+
+/* --- Kart (ana form sarmalayicisi) --- */
+.card-form {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.5rem;
+  max-width: 480px;
 }
 
-.form-group, dl { margin-bottom: 1rem; }
+/* --- Form alanlari (Play helper'lari <dl><dt><dd> uretir) --- */
+form dl { margin: 0 0 1.1rem; }
+form dt { margin-bottom: 0.35rem; }
+form dt label { font-weight: 600; font-size: 0.88rem; color: #374151; }
+form dd { margin: 0; }
+form dd.error { color: var(--danger); font-size: 0.83rem; margin-top: 0.3rem; }
+form dd.info { color: var(--muted); font-size: 0.83rem; margin-top: 0.3rem; }
 
-label { display: block; font-weight: 600; margin-bottom: 0.25rem; }
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="date"],
+textarea,
+select {
+  width: 100%;
+  max-width: 420px;
+  padding: 0.55rem 0.7rem;
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+input[type="date"], select { max-width: 240px; }
+textarea { min-height: 90px; resize: vertical; }
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+/* Form alt aksiyon satiri (Kaydet / Iptal) */
+form > div:last-child { display: flex; align-items: center; gap: 1rem; margin-top: 0.5rem; }
+form > div:last-child a { font-weight: 500; text-decoration: none; }
+
+/* "+ Yeni ... Ekle" gibi ust linkler */
+main.container > p > a { font-weight: 600; text-decoration: none; }
+
+/* --- Flash / hata mesajlari --- */
+.flash-success,
+.flash-error {
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  margin: 0 0 1.25rem;
+  font-size: 0.92rem;
+}
+.flash-success {
+  background: var(--success-bg);
+  color: var(--success-text);
+  border: 1px solid var(--success-border);
+}
+.flash-error {
+  background: var(--error-bg);
+  color: var(--error-text);
+  border: 1px solid var(--error-border);
+}
+.form-errors { list-style: none; padding: 0; margin: 0 0 1.25rem; }
+.form-errors .flash-error { margin-bottom: 0.5rem; }
+
+/* --- Durum rozetleri --- */
+.done,
+.pending {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.done { background: var(--success-bg); color: var(--success-text); }
+.pending { background: #fffbeb; color: #92400e; }
+
+/* --- Gorev edit: kategori bolumu --- */
+.task-categories {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  max-width: 480px;
+}
+.task-categories ul { list-style: none; padding: 0; margin: 0 0 1rem; }
+.task-categories li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.5rem;
+}
+.task-categories form { display: inline-flex; gap: 0.5rem; align-items: center; }
+
+/* --- Basit hero (ana sayfa) --- */
+.hero {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 2.5rem 2rem;
+  text-align: center;
+}
+.hero p { color: var(--muted); margin: 0.5rem 0 1.5rem; }
+.hero .btn { display: inline-block; text-decoration: none; }

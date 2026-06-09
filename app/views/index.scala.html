@@ -1,6 +1,13 @@
 @()(implicit request: MessagesRequestHeader)
 
-@main("Welcome to Play") {
-  <h1>Welcome to Play!</h1>
-  <p><a href="@routes.TaskItemController.list()">Gorev uygulamasina git</a></p>
+@main(request.messages("app.name")) {
+  <div class="hero">
+    <h1>@request.messages("home.hero.title")</h1>
+    <p>@request.messages("home.hero.subtitle")</p>
+    @request.session.get("userEmail").map { _ =>
+      <a class="btn" href="@routes.TaskItemController.list()">@request.messages("home.hero.cta")</a>
+    }.getOrElse {
+      <a class="btn" href="@routes.AuthController.loginForm()">@request.messages("nav.login")</a>
+    }
+  </div>
 }
