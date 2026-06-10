@@ -31,33 +31,14 @@ final case class TaskItem(
     audit: AuditInfo
 ) extends AuditableEntity {
 
-  /** `SetTitle`: bos olamaz. */
-  def setTitle(newTitle: String): Either[DomainError, TaskItem] =
-    if (TaskItem.isBlank(newTitle)) Left(DomainError.EmptyTitle)
-    else Right(copy(title = newTitle.trim))
-
-  /** `SetDescription`: serbest (None olabilir), trim'lenir; bos string None'a duser. */
-  def setDescription(newDescription: Option[String]): TaskItem =
-    copy(description = TaskItem.normalizeDescription(newDescription))
-
-  /** `SetPriority`: `High` seciliyorsa mevcut `dueDate` None olamaz. */
-  def setPriority(newPriority: Priority): Either[DomainError, TaskItem] =
-    if (newPriority == Priority.High && dueDate.isEmpty) Left(DomainError.HighPriorityRequiresDueDate)
-    else Right(copy(priority = newPriority))
-
-  /** `SetDueDate`: mevcut oncelik `High` iken `dueDate` None yapilamaz. */
-  def setDueDate(newDueDate: Option[LocalDate]): Either[DomainError, TaskItem] =
-    if (priority == Priority.High && newDueDate.isEmpty) Left(DomainError.CannotClearDueDateForHighPriority)
-    else Right(copy(dueDate = newDueDate))
-
   /**
    * Tum duzenlenebilir alanlari TEK SEFERDE degistirir (form-tabanli guncelleme).
    *
-   * Neden tekil setter'lari zincirlemiyoruz? Oncelik ve dueDate ayni anda
-   * degisirse sira bagimliligi olusur (orn. Low->High'a gecerken yeni dueDate'i
-   * de veriyorsak, eski state uzerinden bakan setPriority yanlislikla reddeder).
-   * Bunun yerine NIHAI durumu dogrularız: title bos olamaz, `High ⇒ dueDate`.
-   * Kimlik, sahiplik (userId), tamamlanma durumu ve audit korunur.
+   * Alanlari tek tek degistirmek yerine NIHAI durumu dogrularız; boylece sira
+   * bagimliligi olusmaz (orn. Low->High'a gecerken yeni dueDate'i de veriyorsak,
+   * ara/eski state uzerinden bakan bir kontrol yanlislikla reddetmez).
+   * Kural: title bos olamaz, `High ⇒ dueDate`. Kimlik, sahiplik (userId),
+   * tamamlanma durumu ve audit korunur.
    */
   def edit(
       newTitle: String,
@@ -67,9 +48,7 @@ final case class TaskItem(
   ): Either[DomainError, TaskItem] =
     for {
       _ <- if (TaskItem.isBlank(newTitle)) Left(DomainError.EmptyTitle) else Right(())
-      _ <- if (newPriority == Priority.High && newDueDate.isEmpty)
-             Left(DomainError.HighPriorityRequiresDueDate)
-           else Right(())
+      _ <- TaskItem.requireDueDateForHigh(newPriority, newDueDate)
     } yield copy(
       title = newTitle.trim,
       description = TaskItem.normalizeDescription(newDescription),
@@ -158,8 +137,7 @@ object TaskItem {
     for {
       _ <- if (isBlank(title)) Left(DomainError.EmptyTitle) else Right(())
       _ <- if (userId > 0) Right(()) else Left(DomainError.InvalidUserId)
-      _ <- if (priority == Priority.High && dueDate.isEmpty) Left(DomainError.HighPriorityRequiresDueDate)
-           else Right(())
+      _ <- requireDueDateForHigh(priority, dueDate)
     } yield TaskItem(
       id = 0L,
       title = title.trim,
@@ -177,4 +155,16 @@ object TaskItem {
   /** Trim'ler; bos/whitespace string'i None'a indirger. */
   private def normalizeDescription(d: Option[String]): Option[String] =
     d.map(_.trim).filter(_.nonEmpty)
+
+  /**
+   * Capraz alan invariant'i (TEK KAYNAK): `High ⇒ dueDate zorunlu`.
+   * Hem `create` hem `edit` ayni kurali buradan dogrular; kural degisirse
+   * yalnizca burayi guncellemek yeter.
+   */
+  private def requireDueDateForHigh(
+      priority: Priority,
+      dueDate: Option[LocalDate]
+  ): Either[DomainError, Unit] =
+    if (priority == Priority.High && dueDate.isEmpty) Left(DomainError.HighPriorityRequiresDueDate)
+    else Right(())
 }

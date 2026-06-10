@@ -95,16 +95,23 @@ class TaskItemSpec extends AnyWordSpec with Matchers {
     }
   }
 
-  "TaskItem oncelik/son tarih capraz kurali" should {
+  "TaskItem.edit oncelik/son tarih capraz kurali" should {
 
-    "setPriority(High) mevcut dueDate yokken hata dondurmeli" in {
-      validTask().setPriority(Priority.High) shouldBe
+    "High oncelige gecerken dueDate verilmezse HighPriorityRequiresDueDate dondurmeli" in {
+      validTask().edit("Gorev", None, Priority.High, None) shouldBe
         Left(DomainError.HighPriorityRequiresDueDate)
     }
 
-    "setDueDate(None) oncelik High iken hata dondurmeli" in {
+    "High'a gecisle dueDate ayni anda verildiginde basarili olmali (nihai durum dogrulamasi)" in {
+      val due = Some(today.plusDays(1))
+      val edited = validTask(priority = Priority.Low).edit("Gorev", None, Priority.High, due)
+      edited.map(t => (t.priority, t.dueDate)) shouldBe Right((Priority.High, due))
+    }
+
+    "High gorevde dueDate temizlenmek istenirse hata dondurmeli" in {
       val highTask = validTask(priority = Priority.High, dueDate = Some(today.plusDays(1)))
-      highTask.setDueDate(None) shouldBe Left(DomainError.CannotClearDueDateForHighPriority)
+      highTask.edit("Gorev", None, Priority.High, None) shouldBe
+        Left(DomainError.HighPriorityRequiresDueDate)
     }
   }
 

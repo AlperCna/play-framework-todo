@@ -64,10 +64,6 @@ object DomainError {
     val code = "error.domain.taskPastDueCannotComplete"
     val message = "A task past its due date cannot be completed."
   }
-  case object CannotClearDueDateForHighPriority extends DomainError {
-    val code = "error.domain.cannotClearDueDateForHighPriority"
-    val message = "Due date cannot be cleared while priority is High."
-  }
   case object CategoryDeleted extends DomainError {
     val code = "error.domain.categoryDeleted"
     val message = "A task cannot be assigned to a deleted category."

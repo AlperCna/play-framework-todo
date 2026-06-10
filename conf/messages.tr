@@ -50,7 +50,6 @@ error.domain.invalidTaskItemId = Gorev id'si sifirdan buyuk olmali.
 error.domain.invalidCategoryId = Kategori id'si sifirdan buyuk olmali.
 error.domain.highPriorityRequiresDueDate = Yuksek oncelikli gorevler icin son tarih zorunludur.
 error.domain.taskPastDueCannotComplete = Son tarihi gecmis bir gorev tamamlanamaz.
-error.domain.cannotClearDueDateForHighPriority = Oncelik Yuksek iken son tarih bos birakilamaz.
 error.domain.categoryDeleted = Silinmis bir kategoriye gorev atanamaz.
 error.domain.invalidPriorityValue = Gecersiz oncelik degeri.
 error.domain.notFound = Istenen kayit bulunamadi.

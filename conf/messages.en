@@ -47,7 +47,6 @@ error.domain.invalidTaskItemId = Task id must be greater than zero.
 error.domain.invalidCategoryId = Category id must be greater than zero.
 error.domain.highPriorityRequiresDueDate = High priority tasks require a due date.
 error.domain.taskPastDueCannotComplete = A task past its due date cannot be completed.
-error.domain.cannotClearDueDateForHighPriority = Due date cannot be cleared while priority is High.
 error.domain.categoryDeleted = A task cannot be assigned to a deleted category.
 error.domain.invalidPriorityValue = Invalid priority value.
 error.domain.notFound = The requested record was not found.
