@@ -13,6 +13,11 @@ import domain.common.{AuditInfo, AuditableEntity, DomainError, Priority}
  *     gun seviyesinde yapilir; saat onemsizdir.
  *   - `completedAt` ise kesin bir an oldugundan `Instant`'tir.
  *
+ * ONCELIK/SON TARIH: `priority` ve `dueDate` ayri alanlar DEGILDIR; ikisi
+ *   `urgency: Urgency` ADT'sinde birlesir. Boylece `High ⇒ dueDate` kurali
+ *   DOGRULAMAYLA degil TIPLE garanti edilir (bkz. Urgency). Disariya `priority`/
+ *   `dueDate` erisimcileri `urgency`'den turetilerek sunulur (okuma API'si ayni).
+ *
  * SAFLIK: Hicbir metot `now`/`today` uretmez; bunlar disaridan (servisten) gelir.
  *
  * Kategorilerle iliski (TaskItemCategory) entity icinde TASINMAZ; immutability ve
@@ -23,13 +28,18 @@ final case class TaskItem(
     id: Long,
     title: String,
     description: Option[String],
-    priority: Priority,
-    dueDate: Option[LocalDate],
+    urgency: Urgency,
     completedAt: Option[Instant],
     isCompleted: Boolean,
     userId: Option[Long],
     audit: AuditInfo
 ) extends AuditableEntity {
+
+  /** Oncelik, `urgency`'den turetilir (okuma API'si degismez). */
+  def priority: Priority = urgency.priority
+
+  /** Son tarih, `urgency`'den turetilir; `High` ise her zaman `Some`. */
+  def dueDate: Option[LocalDate] = urgency.dueDate
 
   /**
    * Tum duzenlenebilir alanlari TEK SEFERDE degistirir (form-tabanli guncelleme).
@@ -47,13 +57,12 @@ final case class TaskItem(
       newDueDate: Option[LocalDate]
   ): Either[DomainError, TaskItem] =
     for {
-      _ <- if (TaskItem.isBlank(newTitle)) Left(DomainError.EmptyTitle) else Right(())
-      _ <- TaskItem.requireDueDateForHigh(newPriority, newDueDate)
+      _       <- if (TaskItem.isBlank(newTitle)) Left(DomainError.EmptyTitle) else Right(())
+      urgency <- Urgency.from(newPriority, newDueDate)
     } yield copy(
       title = newTitle.trim,
       description = TaskItem.normalizeDescription(newDescription),
-      priority = newPriority,
-      dueDate = newDueDate
+      urgency = urgency
     )
 
   /**
@@ -135,15 +144,14 @@ object TaskItem {
       by: String
   ): Either[DomainError, TaskItem] =
     for {
-      _ <- if (isBlank(title)) Left(DomainError.EmptyTitle) else Right(())
-      _ <- if (userId > 0) Right(()) else Left(DomainError.InvalidUserId)
-      _ <- requireDueDateForHigh(priority, dueDate)
+      _       <- if (isBlank(title)) Left(DomainError.EmptyTitle) else Right(())
+      _       <- if (userId > 0) Right(()) else Left(DomainError.InvalidUserId)
+      urgency <- Urgency.from(priority, dueDate)
     } yield TaskItem(
       id = 0L,
       title = title.trim,
       description = normalizeDescription(description),
-      priority = priority,
-      dueDate = dueDate,
+      urgency = urgency,
       completedAt = None,
       isCompleted = false,
       userId = Some(userId),
@@ -155,16 +163,4 @@ object TaskItem {
   /** Trim'ler; bos/whitespace string'i None'a indirger. */
   private def normalizeDescription(d: Option[String]): Option[String] =
     d.map(_.trim).filter(_.nonEmpty)
-
-  /**
-   * Capraz alan invariant'i (TEK KAYNAK): `High ⇒ dueDate zorunlu`.
-   * Hem `create` hem `edit` ayni kurali buradan dogrular; kural degisirse
-   * yalnizca burayi guncellemek yeter.
-   */
-  private def requireDueDateForHigh(
-      priority: Priority,
-      dueDate: Option[LocalDate]
-  ): Either[DomainError, Unit] =
-    if (priority == Priority.High && dueDate.isEmpty) Left(DomainError.HighPriorityRequiresDueDate)
-    else Right(())
 }
