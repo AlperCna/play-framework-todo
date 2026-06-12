@@ -9,7 +9,7 @@ import play.api.i18n.MessagesApi
 import play.api.mvc._
 
 import controllers.routes
-import repositories.UserRepository
+import repositories.interfaces.UserRepository
 
 /**
  * "Giris zorunlu" + "current user hazir" islerini tek yerde toplayan ozel
@@ -35,14 +35,17 @@ class AuthenticatedAction @Inject() (
   override def invokeBlock[A](
       request: Request[A],
       block: AuthenticatedRequest[A] => Future[Result]
-  ): Future[Result] =
-    request.session
-      .get("userId")
-      .flatMap(s => Try(s.toLong).toOption)
-      .flatMap(userRepo.get) match {
-      case Some(user) =>
-        block(new AuthenticatedRequest(user, request, messagesApi))
+  ): Future[Result] = {
+    val loginRedirect = Results.Redirect(routes.AuthController.loginForm()).withNewSession
+    request.session.get("userId").flatMap(s => Try(s.toLong).toOption) match {
+      case Some(userId) =>
+        // userRepo.get artik Future doner; kullanici varsa action'a gec, yoksa /login.
+        userRepo.get(userId).flatMap {
+          case Some(user) => block(new AuthenticatedRequest(user, request, messagesApi))
+          case None       => Future.successful(loginRedirect)
+        }
       case None =>
-        Future.successful(Results.Redirect(routes.AuthController.loginForm()).withNewSession)
+        Future.successful(loginRedirect)
     }
+  }
 }

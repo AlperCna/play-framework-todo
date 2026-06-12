@@ -1,4 +1,6 @@
-package repositories
+package repositories.interfaces
+
+import scala.concurrent.Future
 
 import domain.task.TaskItem
 
@@ -9,23 +11,23 @@ import domain.task.TaskItem
  * smart constructor ile uretir) persist eder. Sorgular varsayilan olarak
  * soft-delete edilmemis kayitlari doner (R9).
  *
- * Metotlar senkron; ogrenmeyi sade tutmak icin. Gercek bir DB'de muhtemelen
- * `Future[...]` donerlerdi.
+ * Gercek (Slick) DB'ye gectigimiz icin metotlar artik `Future` doner; bellek-ici
+ * implementasyon da bu imzaya `Future.successful` ile uyar.
  */
 trait TaskItemRepository {
 
   /** Silinmemis tum gorevler. */
-  def list(): Seq[TaskItem]
+  def list(): Future[Seq[TaskItem]]
 
   /** id ile getirir (silinmemis); yoksa None. */
-  def get(id: Long): Option[TaskItem]
+  def get(id: Long): Future[Option[TaskItem]]
 
   /** Yeni gorev ekler; atanmis id ile kaydedilmis hali doner. */
-  def add(task: TaskItem): TaskItem
+  def add(task: TaskItem): Future[TaskItem]
 
   /** Var olan gorevi (tum entity'yi) gunceller; kayit yoksa None. */
-  def update(task: TaskItem): Option[TaskItem]
+  def update(task: TaskItem): Future[Option[TaskItem]]
 
   /** Bir kullanicinin silinmemis gorevleri. */
-  def listByUser(userId: Long): Seq[TaskItem]
+  def listByUser(userId: Long): Future[Seq[TaskItem]]
 }

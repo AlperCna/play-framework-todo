@@ -3,17 +3,19 @@ package services
 import java.time.LocalDate
 import javax.inject.{Inject, Singleton}
 
+import scala.concurrent.{ExecutionContext, Future}
+
 import domain.category.Category
 import domain.common.{DomainError, Priority}
 import domain.task.{TaskItem, TaskItemCategory}
-import repositories.{CategoryRepository, TaskItemCategoryRepository, TaskItemRepository}
+import repositories.interfaces.{CategoryRepository, TaskItemCategoryRepository, TaskItemRepository}
 
 /**
  * [[TaskItemService]]'in implementasyonu.
  *
  * Cok-repolu islerin (orn. `assignToCategory`) koordine edildigi yer burasi.
- * Audit "by" suanlik sabit bir placeholder; gercek auth gelince bir
- * `CurrentUserProvider` portuna donusur.
+ * Repo'lar `Future` doner; domain saf `Either` uretir. Ikisi [[ServiceResult]]
+ * (mini-EitherT) ile for-comprehension icinde zincirlenir.
  */
 @Singleton
 class TaskItemServiceImpl @Inject() (
@@ -21,15 +23,16 @@ class TaskItemServiceImpl @Inject() (
     categoryRepo: CategoryRepository,
     linkRepo: TaskItemCategoryRepository,
     clock: Clock
-) extends TaskItemService {
+)(implicit ec: ExecutionContext)
+    extends TaskItemService {
 
   private val AuditUser = "system"
 
-  override def list(): Seq[TaskItem] = taskRepo.list()
+  override def list(): Future[Seq[TaskItem]] = taskRepo.list()
 
-  override def listByUser(userId: Long): Seq[TaskItem] = taskRepo.listByUser(userId)
+  override def listByUser(userId: Long): Future[Seq[TaskItem]] = taskRepo.listByUser(userId)
 
-  override def get(id: Long): Option[TaskItem] = taskRepo.get(id)
+  override def get(id: Long): Future[Option[TaskItem]] = taskRepo.get(id)
 
   override def create(
       title: String,
@@ -37,10 +40,11 @@ class TaskItemServiceImpl @Inject() (
       priority: Priority,
       dueDate: Option[LocalDate],
       userId: Long
-  ): Either[DomainError, TaskItem] =
-    TaskItem
-      .create(title, description, priority, dueDate, userId, clock.now, AuditUser)
-      .map(taskRepo.add)
+  ): Future[Either[DomainError, TaskItem]] =
+    ServiceResult
+      .fromEither(TaskItem.create(title, description, priority, dueDate, userId, clock.now, AuditUser))
+      .flatMap(task => ServiceResult.fromFuture(taskRepo.add(task)))
+      .value
 
   override def update(
       id: Long,
@@ -48,57 +52,71 @@ class TaskItemServiceImpl @Inject() (
       description: Option[String],
       priority: Priority,
       dueDate: Option[LocalDate]
-  ): Either[DomainError, TaskItem] =
-    for {
+  ): Future[Either[DomainError, TaskItem]] =
+    (for {
       existing <- found(id)
-      edited <- existing.edit(title, description, priority, dueDate)
-      saved <- persist(edited.markUpdated(clock.now, AuditUser))
-    } yield saved
+      edited   <- ServiceResult.fromEither(existing.edit(title, description, priority, dueDate))
+      saved    <- persist(edited.markUpdated(clock.now, AuditUser))
+    } yield saved).value
 
-  override def complete(id: Long): Either[DomainError, TaskItem] =
-    for {
-      task <- found(id)
-      completed <- task.complete(clock.today, clock.now)
-      saved <- persist(completed)
-    } yield saved
+  override def complete(id: Long): Future[Either[DomainError, TaskItem]] =
+    (for {
+      task      <- found(id)
+      completed <- ServiceResult.fromEither(task.complete(clock.today, clock.now))
+      saved     <- persist(completed)
+    } yield saved).value
 
-  override def reopen(id: Long): Either[DomainError, TaskItem] =
-    for {
-      task <- found(id)
+  override def reopen(id: Long): Future[Either[DomainError, TaskItem]] =
+    (for {
+      task  <- found(id)
       saved <- persist(task.reopen())
-    } yield saved
+    } yield saved).value
 
-  override def delete(id: Long): Either[DomainError, TaskItem] =
-    for {
-      task <- found(id)
+  override def delete(id: Long): Future[Either[DomainError, TaskItem]] =
+    (for {
+      task  <- found(id)
       saved <- persist(task.softDeleteWithUser(AuditUser, clock.now))
-    } yield saved
+    } yield saved).value
 
   override def assignToCategory(
       taskId: Long,
       categoryId: Long
-  ): Either[DomainError, Option[TaskItemCategory]] =
-    for {
-      task <- found(taskId)
-      category <- categoryRepo.get(categoryId).toRight(DomainError.NotFound("Category", categoryId))
-      existing = linkRepo.listByTask(taskId)
-      maybeLink <- task.assignToCategory(category, existing, clock.now, AuditUser)
-    } yield maybeLink.map(linkRepo.add)
+  ): Future[Either[DomainError, Option[TaskItemCategory]]] =
+    (for {
+      task     <- found(taskId)
+      category <- ServiceResult.fromOptionF(
+                    categoryRepo.get(categoryId),
+                    DomainError.NotFound("Category", categoryId)
+                  )
+      existing  <- ServiceResult.fromFuture(linkRepo.listByTask(taskId))
+      maybeLink <- ServiceResult.fromEither(task.assignToCategory(category, existing, clock.now, AuditUser))
+      result <- maybeLink match {
+                  case Some(link) =>
+                    ServiceResult.fromFuture(linkRepo.add(link)).map(saved => Some(saved): Option[TaskItemCategory])
+                  case None =>
+                    ServiceResult.pure(Option.empty[TaskItemCategory])
+                }
+    } yield result).value
 
-  override def removeFromCategory(taskId: Long, categoryId: Long): Either[DomainError, Unit] =
-    for {
-      task <- found(taskId)
-      existing = linkRepo.listByTask(taskId)
-      _ = task.removeFromCategory(categoryId, existing, clock.now, AuditUser).foreach(linkRepo.update)
-    } yield ()
+  override def removeFromCategory(taskId: Long, categoryId: Long): Future[Either[DomainError, Unit]] =
+    (for {
+      task     <- found(taskId)
+      existing <- ServiceResult.fromFuture(linkRepo.listByTask(taskId))
+      _ <- task.removeFromCategory(categoryId, existing, clock.now, AuditUser) match {
+             case Some(deleted) => ServiceResult.fromFuture(linkRepo.update(deleted)).map(_ => ())
+             case None          => ServiceResult.pure(())
+           }
+    } yield ()).value
 
-  override def categoriesOf(taskId: Long): Seq[Category] =
-    linkRepo.listByTask(taskId).flatMap(link => categoryRepo.get(link.categoryId))
+  override def categoriesOf(taskId: Long): Future[Seq[Category]] =
+    linkRepo.listByTask(taskId).flatMap { links =>
+      Future.sequence(links.map(link => categoryRepo.get(link.categoryId))).map(_.flatten)
+    }
 
   // --- Yardimcilar: tekrar eden "bulunamadi" akisini sadelestirir ---
-  private def found(id: Long): Either[DomainError, TaskItem] =
-    taskRepo.get(id).toRight(DomainError.NotFound("TaskItem", id))
+  private def found(id: Long): ServiceResult[TaskItem] =
+    ServiceResult.fromOptionF(taskRepo.get(id), DomainError.NotFound("TaskItem", id))
 
-  private def persist(task: TaskItem): Either[DomainError, TaskItem] =
-    taskRepo.update(task).toRight(DomainError.NotFound("TaskItem", task.id))
+  private def persist(task: TaskItem): ServiceResult[TaskItem] =
+    ServiceResult.fromOptionF(taskRepo.update(task), DomainError.NotFound("TaskItem", task.id))
 }

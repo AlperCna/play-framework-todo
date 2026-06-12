@@ -2,15 +2,18 @@ package services
 
 import java.time.{Instant, LocalDate}
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 import domain.common.DomainError
-import repositories.InMemoryCategoryRepository
+import repositories.inmemory.InMemoryCategoryRepository
 import support.{FixedClock, TestDatabase}
 
 /** CategoryService: orkestrasyon + audit + soft-delete uctan uca (sabit saatle). */
-class CategoryServiceSpec extends AnyWordSpec with Matchers {
+class CategoryServiceSpec extends AnyWordSpec with Matchers with ScalaFutures {
 
   private val now = Instant.parse("2026-06-08T10:00:00Z")
   private val today = LocalDate.of(2026, 6, 8)
@@ -24,36 +27,36 @@ class CategoryServiceSpec extends AnyWordSpec with Matchers {
   "CategoryService.create" should {
     "kategoriyi kaydetmeli ve audit createdBy='system' olmali" in {
       val (service, repo) = newService()
-      val created = service.create("Is", "Ise dair", userId = 1L)
+      val created = service.create("Is", "Ise dair", userId = 1L).futureValue
       created.map(_.audit.createdBy) shouldBe Right("system")
-      repo.list() should have size 1
+      repo.list().futureValue should have size 1
     }
     "bos aciklamayi reddetmeli (domain)" in {
       val (service, _) = newService()
-      service.create("Is", "  ", 1L) shouldBe Left(DomainError.EmptyCategoryDescription)
+      service.create("Is", "  ", 1L).futureValue shouldBe Left(DomainError.EmptyCategoryDescription)
     }
   }
 
   "CategoryService.update" should {
     "ad ve aciklamayi birlikte degistirmeli" in {
       val (service, _) = newService()
-      val c = service.create("Eski", "eski aciklama", 1L).getOrElse(fail())
-      val updated = service.update(c.id, "Yeni", "yeni aciklama").getOrElse(fail())
+      val c = service.create("Eski", "eski aciklama", 1L).futureValue.getOrElse(fail())
+      val updated = service.update(c.id, "Yeni", "yeni aciklama").futureValue.getOrElse(fail())
       updated.name shouldBe "Yeni"
       updated.description shouldBe "yeni aciklama"
     }
     "olmayan id'de NotFound dondurmeli" in {
       val (service, _) = newService()
-      service.update(999L, "x", "y") shouldBe Left(DomainError.NotFound("Category", 999L))
+      service.update(999L, "x", "y").futureValue shouldBe Left(DomainError.NotFound("Category", 999L))
     }
   }
 
   "CategoryService.delete" should {
     "soft-delete sonrasi list() gostermemeli" in {
       val (service, _) = newService()
-      val c = service.create("Is", "aciklama", 1L).getOrElse(fail())
-      service.delete(c.id).isRight shouldBe true
-      service.list().map(_.id) should not contain c.id
+      val c = service.create("Is", "aciklama", 1L).futureValue.getOrElse(fail())
+      service.delete(c.id).futureValue.isRight shouldBe true
+      service.list().futureValue.map(_.id) should not contain c.id
     }
   }
 }

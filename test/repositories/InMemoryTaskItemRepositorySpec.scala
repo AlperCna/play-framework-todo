@@ -1,19 +1,22 @@
 package repositories
 
-import java.time.{Instant, LocalDate}
+import java.time.Instant
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 import domain.common.Priority
 import domain.task.TaskItem
+import repositories.inmemory.InMemoryTaskItemRepository
 import support.TestDatabase
 
 /** Bellek-ici TaskItem repository: id atama ve soft-delete filtreleme (R9). */
-class InMemoryTaskItemRepositorySpec extends AnyWordSpec with Matchers {
+class InMemoryTaskItemRepositorySpec extends AnyWordSpec with Matchers with ScalaFutures {
 
   private val now = Instant.parse("2026-06-08T10:00:00Z")
-  private val today = LocalDate.of(2026, 6, 8)
 
   private def newTask(title: String): TaskItem =
     TaskItem.create(title, None, Priority.Low, None, 1L, now, "system").getOrElse(fail())
@@ -22,21 +25,21 @@ class InMemoryTaskItemRepositorySpec extends AnyWordSpec with Matchers {
 
     "add ile artan id atamali" in {
       val repo = new InMemoryTaskItemRepository(TestDatabase.empty())
-      repo.add(newTask("a")).id shouldBe 1L
-      repo.add(newTask("b")).id shouldBe 2L
+      repo.add(newTask("a")).futureValue.id shouldBe 1L
+      repo.add(newTask("b")).futureValue.id shouldBe 2L
     }
 
     "list() soft-delete edilmis kayitlari elemeli, ama gercekte saklamali" in {
       val db = TestDatabase.empty()
       val repo = new InMemoryTaskItemRepository(db)
 
-      val saved = repo.add(newTask("silinecek"))
-      repo.list().map(_.id) should contain(saved.id)
+      val saved = repo.add(newTask("silinecek")).futureValue
+      repo.list().futureValue.map(_.id) should contain(saved.id)
 
       // Soft-delete: userId kopar + audit.deleted, sonra persist
-      repo.update(saved.softDeleteWithUser("system", now))
+      repo.update(saved.softDeleteWithUser("system", now)).futureValue
 
-      repo.list().map(_.id) should not contain saved.id
+      repo.list().futureValue.map(_.id) should not contain saved.id
       db.tasks.findById(saved.id, includeDeleted = true).map(_.isDeleted) shouldBe Some(true)
     }
   }

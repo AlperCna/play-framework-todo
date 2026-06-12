@@ -1,4 +1,6 @@
-package repositories
+package repositories.interfaces
+
+import scala.concurrent.Future
 
 import domain.user.User
 
@@ -6,17 +8,17 @@ import domain.user.User
 trait UserRepository {
 
   /** Silinmemis tum kullanicilar. */
-  def list(): Seq[User]
+  def list(): Future[Seq[User]]
 
   /** id ile getirir (silinmemis); yoksa None. */
-  def get(id: Long): Option[User]
+  def get(id: Long): Future[Option[User]]
 
-  /** Email ile getirir (silinmemis); yoksa None. (Ilerde login icin.) */
-  def findByEmail(email: String): Option[User]
+  /** Email ile getirir (silinmemis); yoksa None. */
+  def findByEmail(email: String): Future[Option[User]]
 
   /** Yeni kullanici ekler; atanmis id ile doner. */
-  def add(user: User): User
+  def add(user: User): Future[User]
 
   /** Var olan kullaniciyi gunceller; yoksa None. */
-  def update(user: User): Option[User]
+  def update(user: User): Future[Option[User]]
 }

@@ -1,4 +1,4 @@
-package persistence
+package persistence.inmemory
 
 import java.util.concurrent.atomic.AtomicLong
 
@@ -19,7 +19,7 @@ import domain.common.AuditableEntity
  *               aliriz.
  * @tparam A Saklanan entity tipi (kimlik + audit tasidigi icin `AuditableEntity`).
  */
-final class Table[A <: AuditableEntity](withId: (A, Long) => A) {
+final class InMemoryTable[A <: AuditableEntity](withId: (A, Long) => A) {
 
   private val store = TrieMap.empty[Long, A]
   private val idSequence = new AtomicLong(0L)

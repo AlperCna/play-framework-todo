@@ -2,6 +2,8 @@ package controllers
 
 import javax.inject._
 
+import scala.concurrent.{ExecutionContext, Future}
+
 import play.api.mvc._
 
 import actions.{AuthenticatedAction, AuthenticatedRequest}
@@ -13,7 +15,7 @@ import services.CategoryService
 /**
  * Kategoriler uzerinde CRUD islemlerini yoneten controller.
  *
- * [[TaskItemController]] ile ayni desen: `authAction` ile giris zorunlu +
+ * [[TaskItemController]] ile ayni desen: `authAction.async` ile giris zorunlu +
  * `request.user` (CurrentUser). Her kullanici yalniz KENDI kategorilerini
  * gorur/degistirir; baskasinin kategorisine erisim 404.
  */
@@ -22,11 +24,12 @@ class CategoryController @Inject() (
     service: CategoryService,
     authAction: AuthenticatedAction,
     cc: MessagesControllerComponents
-) extends MessagesAbstractController(cc) {
+)(implicit ec: ExecutionContext)
+    extends MessagesAbstractController(cc) {
 
   /** READ (liste) — yalniz current user'in kategorileri. */
-  def list(): Action[AnyContent] = authAction { implicit request =>
-    Ok(views.html.categories.list(service.listByUser(request.user.id)))
+  def list(): Action[AnyContent] = authAction.async { implicit request =>
+    service.listByUser(request.user.id).map(categories => Ok(views.html.categories.list(categories)))
   }
 
   /** CREATE (form). */
@@ -35,13 +38,13 @@ class CategoryController @Inject() (
   }
 
   /** CREATE (kaydet) — sahip current user. */
-  def create(): Action[AnyContent] = authAction { implicit request =>
+  def create(): Action[AnyContent] = authAction.async { implicit request =>
     val heading = request.messages("category.form.new")
     val postUrl = routes.CategoryController.create()
     CategoryFormData.form.bindFromRequest().fold(
-      formWithErrors => BadRequest(views.html.categories.form(formWithErrors, postUrl, heading)),
+      formWithErrors => Future.successful(BadRequest(views.html.categories.form(formWithErrors, postUrl, heading))),
       data =>
-        service.create(data.name, data.description, request.user.id) match {
+        service.create(data.name, data.description, request.user.id).map {
           case Right(_) =>
             Redirect(routes.CategoryController.list()).flashing("success" -> request.messages("category.created"))
           case Left(err) =>
@@ -51,22 +54,24 @@ class CategoryController @Inject() (
   }
 
   /** UPDATE (form). */
-  def editForm(id: Long): Action[AnyContent] = authAction { implicit request =>
+  def editForm(id: Long): Action[AnyContent] = authAction.async { implicit request =>
     withOwnedCategory(id) { category =>
       val filled = CategoryFormData.form.fill(CategoryFormData(category.name, category.description))
-      Ok(views.html.categories.form(filled, routes.CategoryController.update(id), request.messages("category.form.edit", id)))
+      Future.successful(
+        Ok(views.html.categories.form(filled, routes.CategoryController.update(id), request.messages("category.form.edit", id)))
+      )
     }
   }
 
   /** UPDATE (kaydet). */
-  def update(id: Long): Action[AnyContent] = authAction { implicit request =>
+  def update(id: Long): Action[AnyContent] = authAction.async { implicit request =>
     withOwnedCategory(id) { _ =>
       val heading = request.messages("category.form.edit", id)
       val postUrl = routes.CategoryController.update(id)
       CategoryFormData.form.bindFromRequest().fold(
-        formWithErrors => BadRequest(views.html.categories.form(formWithErrors, postUrl, heading)),
+        formWithErrors => Future.successful(BadRequest(views.html.categories.form(formWithErrors, postUrl, heading))),
         data =>
-          service.update(id, data.name, data.description) match {
+          service.update(id, data.name, data.description).map {
             case Right(_) =>
               Redirect(routes.CategoryController.list()).flashing("success" -> request.messages("category.updated"))
             case Left(DomainError.NotFound(_, _)) =>
@@ -79,9 +84,9 @@ class CategoryController @Inject() (
   }
 
   /** DELETE (soft). */
-  def delete(id: Long): Action[AnyContent] = authAction { implicit request =>
+  def delete(id: Long): Action[AnyContent] = authAction.async { implicit request =>
     withOwnedCategory(id) { _ =>
-      service.delete(id) match {
+      service.delete(id).map {
         case Right(_) =>
           Redirect(routes.CategoryController.list()).flashing("success" -> request.messages("category.deleted"))
         case Left(_) =>
@@ -91,9 +96,11 @@ class CategoryController @Inject() (
   }
 
   /** Sahiplik guard'i: kategori yalnizca current user'a aitse `f`'e verir; aksi halde 404. */
-  private def withOwnedCategory(id: Long)(f: Category => Result)(implicit request: AuthenticatedRequest[AnyContent]): Result =
-    service.get(id).filter(_.userId == request.user.id) match {
-      case Some(category) => f(category)
-      case None => NotFound(request.messages("category.notFound", id))
+  private def withOwnedCategory(id: Long)(f: Category => Future[Result])(
+      implicit request: AuthenticatedRequest[AnyContent]
+  ): Future[Result] =
+    service.get(id).flatMap {
+      case Some(category) if category.userId == request.user.id => f(category)
+      case _                                                    => Future.successful(NotFound(request.messages("category.notFound", id)))
     }
 }
