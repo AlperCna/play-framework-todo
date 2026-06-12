@@ -6,6 +6,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 import play.api.data.Form
 import play.api.data.Forms.{longNumber, single}
+import play.api.libs.json.Json
 import play.api.mvc._
 
 import actions.{AuthenticatedAction, AuthenticatedRequest}
@@ -143,6 +144,50 @@ class TaskItemController @Inject() (
       }
     }
   }
+
+  // --- AJAX (JSON) uclari: liste sayfasinda sayfa yenilenmeden tamamla/yeniden-ac ---
+
+  /** `complete` ile ayni is; ama HTML redirect yerine JSON doner (fetch icin). */
+  def completeJson(id: Long): Action[AnyContent] = authAction.async { implicit request =>
+    withOwnedTaskJson(id) {
+      service.complete(id).map(toggleJson(_, "task.completed"))
+    }
+  }
+
+  /** `reopen` ile ayni is; ama HTML redirect yerine JSON doner (fetch icin). */
+  def reopenJson(id: Long): Action[AnyContent] = authAction.async { implicit request =>
+    withOwnedTaskJson(id) {
+      service.reopen(id).map(toggleJson(_, "task.reopened"))
+    }
+  }
+
+  /**
+   * Domain sonucunu JSON'a cevirir:
+   *   - basari -> 200 + { id, isCompleted, message }
+   *   - is kurali ihlali (orn. gecmis tarihli gorevi tamamlama) -> 400 + { error }
+   */
+  private def toggleJson(result: Either[DomainError, TaskItem], successKey: String)(
+      implicit request: AuthenticatedRequest[AnyContent]
+  ): Result =
+    result match {
+      case Right(task) =>
+        Ok(Json.obj(
+          "id"          -> task.id,
+          "isCompleted" -> task.isCompleted,
+          "message"     -> request.messages(successKey)
+        ))
+      case Left(err) =>
+        BadRequest(Json.obj("error" -> request.messages(err.code)))
+    }
+
+  /** [[withOwnedTask]]'in JSON karsiligi: gorev yok ya da baskasina aitse 404 + { error } (JSON). */
+  private def withOwnedTaskJson(id: Long)(block: => Future[Result])(
+      implicit request: AuthenticatedRequest[AnyContent]
+  ): Future[Result] =
+    service.get(id).flatMap {
+      case Some(task) if task.userId.contains(request.user.id) => block
+      case _ => Future.successful(NotFound(Json.obj("error" -> request.messages("task.notFound", id))))
+    }
 
   /**
    * Sahiplik guard'i: id'li gorevi yalnizca current user'a aitse `f`'e verir;

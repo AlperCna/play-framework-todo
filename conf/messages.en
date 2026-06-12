@@ -66,6 +66,8 @@ task.action.delete = Delete
 task.action.deleteConfirm = Delete this?
 task.action.complete = Complete
 task.action.reopen = Reopen
+# Shown by the AJAX toggle when the request fails unexpectedly (network etc.).
+task.ajax.error = Something went wrong. Please try again.
 
 # --- Application name (brand) ---
 app.name = Task Manager

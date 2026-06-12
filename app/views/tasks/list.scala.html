@@ -22,6 +22,9 @@
     <p class="flash-error">@message</p>
   }
 
+  @* AJAX islemlerinin (sayfa yenilenmeden) sonucu burada gosterilir; JS doldurur. *@
+  <p id="ajax-flash" data-generic-error="@request.messages("task.ajax.error")" hidden></p>
+
   <p><a href="@routes.TaskItemController.createForm()">@request.messages("task.list.addNew")</a></p>
 
   @if(tasks.isEmpty) {
@@ -46,26 +49,37 @@
             <td>@request.messages("task.priority." + task.priority.value)</td>
             <td>@task.dueDate.map(_.toString).getOrElse("-")</td>
             <td>
-              @if(task.isCompleted) {
-                <span class="done">@request.messages("task.status.done")</span>
-              } else {
-                <span class="pending">@request.messages("task.status.pending")</span>
-              }
+              @* Durum rozeti. AJAX toggle'da JS bu span'in metnini/sinifini gunceller;
+                 dil-bagimli etiketleri data-attr'larda tasiriz ki JS i18n'e uysun. *@
+              <span class="task-status @if(task.isCompleted){done}else{pending}"
+                    data-task-id="@task.id"
+                    data-label-done="@request.messages("task.status.done")"
+                    data-label-pending="@request.messages("task.status.pending")">
+                @if(task.isCompleted) { @request.messages("task.status.done") } else { @request.messages("task.status.pending") }
+              </span>
             </td>
             <td>
               <a href="@routes.TaskItemController.editForm(task.id)">@request.messages("task.action.edit")</a>
 
-              @* Tamamla / Yeniden ac: veri degistirir, bu yuzden POST. *@
-              @if(task.isCompleted) {
-                @helper.form(action = routes.TaskItemController.reopen(task.id), Symbol("style") -> "display:inline") {
-                  @helper.CSRF.formField
-                  <button type="submit">@request.messages("task.action.reopen")</button>
-                }
-              } else {
-                @helper.form(action = routes.TaskItemController.complete(task.id), Symbol("style") -> "display:inline") {
-                  @helper.CSRF.formField
-                  <button type="submit">@request.messages("task.action.complete")</button>
-                }
+              @* Tamamla / Yeniden ac. JS varsa AJAX'la (sayfa yenilenmeden), JS yoksa
+                 normal form POST'u ile calisir (progressive enhancement). Fallback form
+                 action'i mevcut duruma gore complete/reopen HTML ucuna gider. *@
+              @helper.form(
+                action = if(task.isCompleted) routes.TaskItemController.reopen(task.id) else routes.TaskItemController.complete(task.id),
+                Symbol("class") -> "js-toggle-form",
+                Symbol("style") -> "display:inline"
+              ) {
+                @helper.CSRF.formField
+                <button type="submit"
+                        class="js-toggle-btn"
+                        data-task-id="@task.id"
+                        data-completed="@task.isCompleted"
+                        data-complete-url="@routes.TaskItemController.completeJson(task.id)"
+                        data-reopen-url="@routes.TaskItemController.reopenJson(task.id)"
+                        data-label-complete="@request.messages("task.action.complete")"
+                        data-label-reopen="@request.messages("task.action.reopen")">
+                  @if(task.isCompleted) { @request.messages("task.action.reopen") } else { @request.messages("task.action.complete") }
+                </button>
               }
 
               @* Silme islemi veri degistirdigi icin GET degil POST ile yapilir. *@

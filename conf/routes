@@ -23,6 +23,9 @@ POST    /tasks/:id                  controllers.TaskItemController.update(id: Lo
 POST    /tasks/:id/complete         controllers.TaskItemController.complete(id: Long)
 POST    /tasks/:id/reopen           controllers.TaskItemController.reopen(id: Long)
 POST    /tasks/:id/delete           controllers.TaskItemController.delete(id: Long)
+# AJAX (JSON) — listede sayfa yenilenmeden tamamla/yeniden-ac
+POST    /tasks/:id/complete.json    controllers.TaskItemController.completeJson(id: Long)
+POST    /tasks/:id/reopen.json      controllers.TaskItemController.reopenJson(id: Long)
 # Gorev <-> Kategori atama (gorev edit sayfasindan)
 POST    /tasks/:id/categories                       controllers.TaskItemController.assignToCategory(id: Long)
 POST    /tasks/:id/categories/:categoryId/remove    controllers.TaskItemController.removeFromCategory(id: Long, categoryId: Long)
