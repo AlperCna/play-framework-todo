@@ -4,48 +4,36 @@ import javax.inject._
 
 import scala.concurrent.{ExecutionContext, Future}
 
+import org.pac4j.core.config.Config
+import org.pac4j.http.client.indirect.FormClient
 import play.api.mvc._
 
-import domain.user.User
-import forms.{LoginFormData, RegisterFormData}
+import forms.RegisterFormData
 import services.UserService
 
 /**
- * Kimlik dogrulama: kayit (register), giris (login), cikis (logout).
+ * Kimlik dogrulama ucu — PUBLIC.
  *
- * Bu uclar PUBLIC'tir (login gerektirmez) — bu yuzden `AuthenticatedAction`
- * degil, sade `Action` kullanir. `userService` artik `Future` dondugu icin
- * login/register `Action.async` ile yazilir.
+ * Giris ve cikis artik pac4j'ye devredildi:
+ *   - giris: `/login` formu pac4j FormClient'in callback URL'ine POST eder; kimlik
+ *     dogrulama `CallbackController` + [[security.DbUsernamePasswordAuthenticator]]
+ *     tarafindan yapilir (bkz. routes `/callback`).
+ *   - cikis: pac4j `LogoutController` (`GET /logout`).
+ *
+ * Bu controller'da yalnizca login FORMUNU gostermek ve KAYIT (register) akisi kalir.
  */
 @Singleton
 class AuthController @Inject() (
     userService: UserService,
+    config: Config,
     cc: MessagesControllerComponents
 )(implicit ec: ExecutionContext)
     extends MessagesAbstractController(cc) {
 
-  /** Basarili giris/kayit sonrasi kullaniciyi session'a yazip /tasks'a yonlendirir. */
-  private def signIn(user: User, flashKey: String)(implicit request: MessagesRequest[AnyContent]): Result =
-    Redirect(routes.TaskItemController.list())
-      .withSession("userId" -> user.id.toString, "userEmail" -> user.email)
-      .flashing("success" -> request.messages(flashKey))
-
-  /** GIRIS formu. */
+  /** GIRIS formu: pac4j FormClient'in callback URL'ine POST eder; `?error` varsa gosterilir. */
   def loginForm(): Action[AnyContent] = Action { implicit request =>
-    Ok(views.html.auth.login(LoginFormData.form))
-  }
-
-  /** GIRIS (kaydet). */
-  def login(): Action[AnyContent] = Action.async { implicit request =>
-    LoginFormData.form.bindFromRequest().fold(
-      formWithErrors => Future.successful(BadRequest(views.html.auth.login(formWithErrors))),
-      data =>
-        userService.login(data.email, data.password).map {
-          case Right(user) => signIn(user, "auth.loggedIn")
-          case Left(err) =>
-            BadRequest(views.html.auth.login(LoginFormData.form.fill(data).withGlobalError(request.messages(err.code))))
-        }
-    )
+    val formClient = config.getClients.findClient("FormClient").get.asInstanceOf[FormClient]
+    Ok(views.html.auth.login(formClient.getCallbackUrl, request.getQueryString("error")))
   }
 
   /** KAYIT formu. */
@@ -53,23 +41,20 @@ class AuthController @Inject() (
     Ok(views.html.auth.register(RegisterFormData.form))
   }
 
-  /** KAYIT (kaydet) — basariliysa otomatik giris. */
+  /**
+   * KAYIT (kaydet): kullaniciyi DB'de olusturur, sonra `/login`'e yonlendirir
+   * (giris pac4j uzerinden yapilir).
+   */
   def register(): Action[AnyContent] = Action.async { implicit request =>
     RegisterFormData.form.bindFromRequest().fold(
       formWithErrors => Future.successful(BadRequest(views.html.auth.register(formWithErrors))),
       data =>
         userService.register(data.email, data.password).map {
-          case Right(user) => signIn(user, "auth.registered")
+          case Right(_) =>
+            Redirect(routes.AuthController.loginForm()).flashing("success" -> request.messages("auth.registered"))
           case Left(err) =>
             BadRequest(views.html.auth.register(RegisterFormData.form.fill(data).withGlobalError(request.messages(err.code))))
         }
     )
-  }
-
-  /** CIKIS — session temizlenir. */
-  def logout(): Action[AnyContent] = Action { implicit request =>
-    Redirect(routes.AuthController.loginForm())
-      .withNewSession
-      .flashing("success" -> request.messages("auth.loggedOut"))
   }
 }

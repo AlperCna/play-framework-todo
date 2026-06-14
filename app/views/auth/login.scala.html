@@ -1,43 +1,47 @@
 @*
  * Giris (login) sayfasi. Public — login gerektirmez.
+ *
+ * Form, pac4j FormClient'in CALLBACK URL'ine POST eder (Play form action'i degil).
+ * Alan adlari pac4j varsayilanlaridir: `username` (email) + `password`.
+ * Kimlik dogrulama CallbackController + DbUsernamePasswordAuthenticator'da yapilir.
+ *
+ * @param callbackUrl pac4j FormClient.getCallbackUrl (formun POST hedefi)
+ * @param error       pac4j basarisiz girişte ?error ile geri yonlendirir
  *@
-@(loginForm: Form[forms.LoginFormData])(implicit request: MessagesRequestHeader)
+@(callbackUrl: String, error: Option[String])(implicit request: MessagesRequestHeader)
 
 @main(request.messages("auth.login.title")) {
 
   <h1>@request.messages("auth.login.title")</h1>
 
-  @* Cikis sonrasi vb. bilgi mesaji. *@
+  @* Kayit/cikis sonrasi bilgi mesaji. *@
   @request.flash.get("success").map { message =>
     <p class="flash-success">@message</p>
   }
 
-  @* Hatali kimlik bilgisi global hata olarak gelir. *@
-  @if(loginForm.hasGlobalErrors) {
-    <ul class="form-errors">
-      @for(err <- loginForm.globalErrors) {
-        <li class="flash-error">@err.message</li>
-      }
-    </ul>
+  @* pac4j kimlik dogrulama hatasi ?error ile gelir. *@
+  @error.map { _ =>
+    <p class="flash-error">@request.messages("error.domain.invalidCredentials")</p>
   }
 
-  @helper.form(action = routes.AuthController.login(), Symbol("class") -> "card-form") {
+  <form action="@callbackUrl" method="POST" class="card-form">
+    @* Play CSRF korumasi: callback POST'unun gecmesi icin token. *@
     @helper.CSRF.formField
 
-    @helper.inputText(
-      loginForm("email"),
-      Symbol("_label") -> request.messages("auth.email")
-    )
+    <div>
+      <label for="username">@request.messages("auth.email")</label>
+      <input type="text" id="username" name="username" required>
+    </div>
 
-    @helper.inputPassword(
-      loginForm("password"),
-      Symbol("_label") -> request.messages("auth.password")
-    )
+    <div>
+      <label for="password">@request.messages("auth.password")</label>
+      <input type="password" id="password" name="password" required>
+    </div>
 
     <div>
       <button type="submit">@request.messages("auth.login.submit")</button>
     </div>
-  }
+  </form>
 
   <p><a href="@routes.AuthController.registerForm()">@request.messages("auth.register.title")</a></p>
 }

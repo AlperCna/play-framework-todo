@@ -24,17 +24,21 @@
           <div class="nav-inner">
             <a class="brand" href="@routes.HomeController.index()">@request.messages("app.name")</a>
             <nav class="nav-links">
-              @request.session.get("userEmail").map { email =>
-                <a href="@routes.TaskItemController.list()">@request.messages("nav.tasks")</a>
-                <a href="@routes.CategoryController.list()">@request.messages("nav.categories")</a>
-                <span class="nav-user">@email</span>
-                @helper.form(action = routes.AuthController.logout()) {
-                  @helper.CSRF.formField
-                  <button type="submit" class="ghost">@request.messages("nav.logout")</button>
+              @* Giris durumu: korunan sayfalar (tasks/categories) AuthenticatedRequest
+                 tasir (kullanici pac4j profilinden gelir). Public sayfalarda (login/
+                 register/home) bu tip gelmez -> login/register gosterilir.
+                 Not: Logout artik pac4j LogoutController (GET /logout) -> basit link. *@
+              @request match {
+                case ar: actions.AuthenticatedRequest[_] => {
+                  <a href="@routes.TaskItemController.list()">@request.messages("nav.tasks")</a>
+                  <a href="@routes.CategoryController.list()">@request.messages("nav.categories")</a>
+                  <span class="nav-user">@ar.user.email</span>
+                  <a href="/logout" class="ghost">@request.messages("nav.logout")</a>
                 }
-              }.getOrElse {
-                <a href="@routes.AuthController.loginForm()">@request.messages("nav.login")</a>
-                <a href="@routes.AuthController.registerForm()">@request.messages("nav.register")</a>
+                case _ => {
+                  <a href="@routes.AuthController.loginForm()">@request.messages("nav.login")</a>
+                  <a href="@routes.AuthController.registerForm()">@request.messages("nav.register")</a>
+                }
               }
             </nav>
           </div>

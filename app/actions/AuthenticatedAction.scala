@@ -3,8 +3,9 @@ package actions
 import javax.inject.{Inject, Singleton}
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
 
+import org.pac4j.core.config.Config
+import org.pac4j.play.context.PlayFrameworkParameters
 import play.api.i18n.MessagesApi
 import play.api.mvc._
 
@@ -16,16 +17,19 @@ import repositories.interfaces.UserRepository
  * ActionBuilder. .NET'teki `[Authorize]` + `CurrentUser` ikilisinin Play
  * karsiligi.
  *
- * Her istekte session'daki `userId`'yi okur, kullaniciyi yukler ve action'a
- * [[AuthenticatedRequest]] olarak verir. Giris yoksa (ya da kullanici artik
- * yoksa) session'i temizleyip `/login`'e yonlendirir.
+ * Kimlik dogrulama artik pac4j tarafindan yapilir (FormClient + callback). Bu
+ * builder her istekte pac4j PROFILINI okur:
+ *   - profil varsa: id'sinden `User`'i yukler ve action'a [[AuthenticatedRequest]]
+ *     olarak verir.
+ *   - profil yoksa (ya da kullanici artik yoksa): `/login`'e yonlendirir.
  *
- * Concrete `@Singleton` sinif oldugundan Guice dogrudan enjekte eder; ayrica
- * binding gerekmez. Controller'lar `Action` yerine bu builder'i kullanir:
- *   `def list() = authAction { implicit request => ... request.user ... }`
+ * Boylece controller'lar ve view'lar DEGISMEDEN calismaya devam eder; sadece
+ * "current user nereden geliyor" sorusunun cevabi session yerine pac4j profili
+ * oldu.
  */
 @Singleton
 class AuthenticatedAction @Inject() (
+    config: Config,
     userRepo: UserRepository,
     messagesApi: MessagesApi,
     val parser: BodyParsers.Default
@@ -36,16 +40,22 @@ class AuthenticatedAction @Inject() (
       request: Request[A],
       block: AuthenticatedRequest[A] => Future[Result]
   ): Future[Result] = {
-    val loginRedirect = Results.Redirect(routes.AuthController.loginForm()).withNewSession
-    request.session.get("userId").flatMap(s => Try(s.toLong).toOption) match {
-      case Some(userId) =>
-        // userRepo.get artik Future doner; kullanici varsa action'a gec, yoksa /login.
-        userRepo.get(userId).flatMap {
-          case Some(user) => block(new AuthenticatedRequest(user, request, messagesApi))
-          case None       => Future.successful(loginRedirect)
-        }
-      case None =>
-        Future.successful(loginRedirect)
+    val toLogin = Results.Redirect(routes.AuthController.loginForm())
+
+    // pac4j profilini, istekten bir web-context + session store kurarak oku.
+    val parameters = new PlayFrameworkParameters(request)
+    val webContext = config.getWebContextFactory.newContext(parameters)
+    val sessionStore = config.getSessionStoreFactory.newSessionStore(parameters)
+    val profileManager = config.getProfileManagerFactory.apply(webContext, sessionStore)
+    val maybeProfile = profileManager.getProfile
+
+    if (maybeProfile.isPresent) {
+      userRepo.get(maybeProfile.get.getId.toLong).flatMap {
+        case Some(user) => block(new AuthenticatedRequest(user, request, messagesApi))
+        case None       => Future.successful(toLogin) // profil var ama kullanici DB'de yok
+      }
+    } else {
+      Future.successful(toLogin)
     }
   }
 }

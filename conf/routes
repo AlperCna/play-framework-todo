@@ -8,10 +8,13 @@ GET     /                           controllers.HomeController.index()
 
 # Kimlik dogrulama (auth) — PUBLIC
 GET     /login                      controllers.AuthController.loginForm()
-POST    /login                      controllers.AuthController.login()
 GET     /register                   controllers.AuthController.registerForm()
 POST    /register                   controllers.AuthController.register()
-POST    /logout                     controllers.AuthController.logout()
+# pac4j: login formu callback'e POST eder; kimlik dogrulama burada islenir.
+GET     /callback                   @org.pac4j.play.CallbackController.callback(request: Request)
+POST    /callback                   @org.pac4j.play.CallbackController.callback(request: Request)
+# pac4j logout (profil/oturum temizlenir, defaultUrl=/login'e yonlenir).
+GET     /logout                     @org.pac4j.play.LogoutController.logout(request: Request)
 
 # Gorev (TaskItem) CRUD
 # HTML formlari sadece GET ve POST destekledigi icin guncelleme/silme de POST kullanir.
