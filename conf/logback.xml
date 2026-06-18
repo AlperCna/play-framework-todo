@@ -34,6 +34,11 @@
   <logger name="play" level="INFO" />
   <logger name="application" level="DEBUG" />
 
+  <!-- Kendi paketlerimiz: root WARN oldugu icin INFO mesajlari yoksa bastirilir.
+       Erisim-logu filtresi (filters.AccessLogFilter) ve actor'ler (actors.*) gorunsun. -->
+  <logger name="filters" level="INFO" />
+  <logger name="actors" level="INFO" />
+
   <root level="WARN">
     <appender-ref ref="ASYNCFILE" />
     <appender-ref ref="ASYNCSTDOUT" />
