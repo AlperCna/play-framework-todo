@@ -78,6 +78,17 @@ class TaskItemServiceImpl @Inject() (
       saved <- persist(task.softDeleteWithUser(AuditUser, clock.now))
     } yield saved).value
 
+  override def purgeCompleted(): Future[Int] =
+    taskRepo.list().flatMap { tasks =>
+      // list() zaten silinmemisleri doner; tamamlanmislari sec ve soft-delete et.
+      // Zaten yuklenmis entity'leri kullaniriz (id ile yeniden cekmeye gerek yok);
+      // softDeleteWithUser total bir fonksiyon oldugu icin dogrulama gerekmez.
+      val completed = tasks.filter(_.isCompleted)
+      Future
+        .traverse(completed)(task => taskRepo.update(task.softDeleteWithUser(AuditUser, clock.now)))
+        .map(_.count(_.isDefined))
+    }
+
   override def assignToCategory(
       taskId: Long,
       categoryId: Long

@@ -51,6 +51,14 @@ trait TaskItemService {
   def delete(id: Long): Future[Either[DomainError, TaskItem]]
 
   /**
+   * Bakim islemi: tamamlanmis (ve henuz silinmemis) TUM gorevleri soft-delete eder;
+   * silinen adedi doner. "NE YAPILACAK" mantigi burada toplanir; "NE ZAMAN" ise
+   * zamanlanmis [[actors.CompletedTaskCleaner]] actor'unun isidir. Boylece is kurali
+   * test edilebilir servis katmaninda kalir, actor ince bir zamanlayici olur.
+   */
+  def purgeCompleted(): Future[Int]
+
+  /**
    * Gorevi bir kategoriye atar. Yeni iliski olustuysa `Some`, idempotent (zaten
    * atanmis) ise `None` doner. Silinmis kategoride `Left(CategoryDeleted)`.
    */

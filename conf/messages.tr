@@ -69,6 +69,10 @@ task.action.delete = Sil
 task.action.deleteConfirm = Silinsin mi?
 task.action.complete = Tamamla
 task.action.reopen = Yeniden Ac
+# Tamamlanmislari toplu temizleme (gorev listesindeki buton -> CompletedTaskCleaner actor'u)
+task.cleanup.button = Tamamlananlari Temizle
+task.cleanup.confirm = Tum tamamlanmis gorevler silinsin mi?
+task.cleanup.triggered = Temizlik tetiklendi (tamamlananlar birazdan kaldirilir).
 # AJAX toggle beklenmedik sekilde (ag hatasi vb.) basarisiz olunca gosterilir.
 task.ajax.error = Bir hata olustu. Lutfen tekrar deneyin.
 

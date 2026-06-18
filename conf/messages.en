@@ -66,6 +66,10 @@ task.action.delete = Delete
 task.action.deleteConfirm = Delete this?
 task.action.complete = Complete
 task.action.reopen = Reopen
+# Bulk cleanup of completed tasks (button on the task list -> CompletedTaskCleaner actor)
+task.cleanup.button = Clean Up Completed
+task.cleanup.confirm = Delete all completed tasks?
+task.cleanup.triggered = Cleanup triggered (completed tasks removed shortly).
 # Shown by the AJAX toggle when the request fails unexpectedly (network etc.).
 task.ajax.error = Something went wrong. Please try again.
 

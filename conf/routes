@@ -41,6 +41,9 @@ GET     /categories/:id/edit        controllers.CategoryController.editForm(id: 
 POST    /categories/:id             controllers.CategoryController.update(id: Long)
 POST    /categories/:id/delete      controllers.CategoryController.delete(id: Long)
 
+# Bakim — tamamlanmis gorevleri elle temizle (tasks sayfasindaki buton; actor'e RunNow yollar)
+POST    /cleanup                    controllers.CleanupController.runCleanup()
+
 # ForTry
 GET    /fortry/try1                      controllers.ForTryController.try1()
 GET    /fortry/try2                      controllers.ForTryController.try2()

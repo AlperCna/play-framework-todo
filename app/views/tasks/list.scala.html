@@ -27,6 +27,20 @@
 
   <p><a href="@routes.TaskItemController.createForm()">@request.messages("task.list.addNew")</a></p>
 
+  @* Tamamlanmis gorevleri toplu (soft) temizle: CompletedTaskCleaner actor'unu POST ile
+     tetikler. Yalnizca tamamlanmis gorev varsa gosterilir. Silme actor'de async oldugu
+     icin liste hemen yenilense de sonuclar bir an sonra dusebilir. *@
+  @if(tasks.exists(_.isCompleted)) {
+    <p>
+      @helper.form(action = routes.CleanupController.runCleanup(), Symbol("style") -> "display:inline") {
+        @helper.CSRF.formField
+        @defining(request.messages("task.cleanup.confirm")) { confirmText =>
+          <button type="submit" class="danger" onclick="return confirm('@confirmText')">@request.messages("task.cleanup.button")</button>
+        }
+      }
+    </p>
+  }
+
   @if(tasks.isEmpty) {
     <p>@request.messages("task.list.empty")</p>
   } else {

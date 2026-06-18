@@ -77,6 +77,28 @@ class TaskItemServiceSpec extends AnyWordSpec with Matchers with ScalaFutures {
     }
   }
 
+  "TaskItemService.purgeCompleted" should {
+    "yalnizca tamamlanmis gorevleri soft-delete etmeli ve silinen adedi dondurmeli" in {
+      val (service, _, taskRepo) = newService(FixedClock(now, today))
+      val bitti1 = service.create("Bitti-1", None, Priority.Low, None, 1L).futureValue.getOrElse(fail())
+      val acik   = service.create("Acik", None, Priority.Low, None, 1L).futureValue.getOrElse(fail())
+      val bitti2 = service.create("Bitti-2", None, Priority.Low, None, 1L).futureValue.getOrElse(fail())
+      service.complete(bitti1.id).futureValue
+      service.complete(bitti2.id).futureValue
+
+      service.purgeCompleted().futureValue shouldBe 2
+      taskRepo.list().futureValue.map(_.id) should contain only acik.id
+    }
+
+    "tamamlanmis gorev yoksa 0 dondurmeli ve hicbir seyi degistirmemeli" in {
+      val (service, _, taskRepo) = newService(FixedClock(now, today))
+      service.create("Acik", None, Priority.Low, None, 1L).futureValue
+
+      service.purgeCompleted().futureValue shouldBe 0
+      taskRepo.list().futureValue should have size 1
+    }
+  }
+
   "TaskItemService.update" should {
     "olmayan id'de NotFound dondurmeli" in {
       val (service, _, _) = newService(FixedClock(now, today))
