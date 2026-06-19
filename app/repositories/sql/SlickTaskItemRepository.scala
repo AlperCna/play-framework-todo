@@ -8,14 +8,16 @@ import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 
 import domain.task.TaskItem
-import persistence.db.{Mappers, Tables}
+import persistence.db.mappers.TaskMappers._
+import persistence.db.{RowMapper, TaskRow, Tables}
 import repositories.interfaces.TaskItemRepository
 
 /**
  * [[TaskItemRepository]]'nin Slick (SQL Server) implementasyonu.
  *
- * Domain'in `urgency` ADT'si [[Mappers]] tarafindan `priority_value` + `due_date`
- * kolonlarina duzlestirilir; okurken `Mappers.toTask` ile yeniden kurulur.
+ * Domain'in `urgency` ADT'si [[RowMapper]] instance'i (`TaskMappers`) tarafindan
+ * `priority_value` + `due_date` kolonlarina duzlestirilir; okurken `toDomain` ile
+ * yeniden kurulur.
  */
 @Singleton
 class SlickTaskItemRepository @Inject() (protected val dbConfigProvider: DatabaseConfigProvider)(
@@ -26,23 +28,25 @@ class SlickTaskItemRepository @Inject() (protected val dbConfigProvider: Databas
 
   import profile.api._
 
+  private val mapper = RowMapper[TaskItem, TaskRow]
+
   override def list(): Future[Seq[TaskItem]] =
-    db.run(tasks.filter(!_.isDeleted).sortBy(_.id).result).map(_.map(Mappers.toTask))
+    db.run(tasks.filter(!_.isDeleted).sortBy(_.id).result).map(_.map(mapper.toDomain))
 
   override def get(id: Long): Future[Option[TaskItem]] =
-    db.run(tasks.filter(t => t.id === id && !t.isDeleted).result.headOption).map(_.map(Mappers.toTask))
+    db.run(tasks.filter(t => t.id === id && !t.isDeleted).result.headOption).map(_.map(mapper.toDomain))
 
   override def listByUser(userId: Long): Future[Seq[TaskItem]] =
     db.run(tasks.filter(t => t.userId === userId && !t.isDeleted).sortBy(_.id).result)
-      .map(_.map(Mappers.toTask))
+      .map(_.map(mapper.toDomain))
 
   override def add(task: TaskItem): Future[TaskItem] = {
-    val row = Mappers.toRow(task)
+    val row = mapper.toRow(task)
     db.run((tasks returning tasks.map(_.id)) += row).map(newId => task.copy(id = newId))
   }
 
   override def update(task: TaskItem): Future[Option[TaskItem]] = {
-    val row = Mappers.toRow(task)
+    val row = mapper.toRow(task)
     db.run(
       tasks
         .filter(_.id === task.id)

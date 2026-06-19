@@ -8,7 +8,8 @@ import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 
 import domain.category.Category
-import persistence.db.{Mappers, Tables}
+import persistence.db.mappers.CategoryMappers._
+import persistence.db.{CategoryRow, RowMapper, Tables}
 import repositories.interfaces.CategoryRepository
 
 /** [[CategoryRepository]]'nin Slick (SQL Server) implementasyonu. */
@@ -21,24 +22,26 @@ class SlickCategoryRepository @Inject() (protected val dbConfigProvider: Databas
 
   import profile.api._
 
+  private val mapper = RowMapper[Category, CategoryRow]
+
   override def list(): Future[Seq[Category]] =
-    db.run(categories.filter(!_.isDeleted).sortBy(_.id).result).map(_.map(Mappers.toCategory))
+    db.run(categories.filter(!_.isDeleted).sortBy(_.id).result).map(_.map(mapper.toDomain))
 
   override def get(id: Long): Future[Option[Category]] =
     db.run(categories.filter(c => c.id === id && !c.isDeleted).result.headOption)
-      .map(_.map(Mappers.toCategory))
+      .map(_.map(mapper.toDomain))
 
   override def listByUser(userId: Long): Future[Seq[Category]] =
     db.run(categories.filter(c => c.userId === userId && !c.isDeleted).sortBy(_.id).result)
-      .map(_.map(Mappers.toCategory))
+      .map(_.map(mapper.toDomain))
 
   override def add(category: Category): Future[Category] = {
-    val row = Mappers.toRow(category)
+    val row = mapper.toRow(category)
     db.run((categories returning categories.map(_.id)) += row).map(newId => category.copy(id = newId))
   }
 
   override def update(category: Category): Future[Option[Category]] = {
-    val row = Mappers.toRow(category)
+    val row = mapper.toRow(category)
     db.run(
       categories
         .filter(_.id === category.id)

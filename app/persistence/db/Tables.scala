@@ -14,7 +14,8 @@ import slick.jdbc.JdbcProfile
  *      (domain'de `Instant`/`LocalDate`). Boylece Slick'in yerlesik, string'e
  *      cevirmeyen kolon destegini kullaniriz; ozel implicit column type
  *      gerekmez (ozel tipler tuple Shape turetmesini bozuyordu).
- * Domain'e/tan donusum [[Mappers]]'da yapilir.
+ * Domain'e/tan donusum `persistence.db.mappers` altindaki [[RowMapper]]
+ * instance'larinda yapilir.
  */
 trait Tables {
 
