@@ -22,8 +22,18 @@ trait Tables {
   protected val profile: JdbcProfile
   import profile.api._
 
+  /**
+   * Tum tablolarin paylastigi ortak kolonlar: kimlik (`id`) ve soft-delete
+   * bayragi (`isDeleted`). Generic CRUD yapi taslari (`SlickCrudSupport`) bu iki
+   * kolon uzerinden tablodan-bagimsiz, tip-guvenli sorgu yazabilir.
+   */
+  abstract class BaseTable[R](tag: Tag, name: String) extends Table[R](tag, name) {
+    def id: Rep[Long]
+    def isDeleted: Rep[Boolean]
+  }
+
   // ----------------------------- USERS -----------------------------
-  class Users(tag: Tag) extends Table[UserRow](tag, "users") {
+  class Users(tag: Tag) extends BaseTable[UserRow](tag, "users") {
     def id        = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def email     = column[String]("email")
     def password  = column[String]("password")
@@ -42,7 +52,7 @@ trait Tables {
   lazy val users = TableQuery[Users]
 
   // --------------------------- CATEGORIES ---------------------------
-  class Categories(tag: Tag) extends Table[CategoryRow](tag, "categories") {
+  class Categories(tag: Tag) extends BaseTable[CategoryRow](tag, "categories") {
     def id          = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def name        = column[String]("name")
     def description = column[String]("description")
@@ -62,7 +72,7 @@ trait Tables {
   lazy val categories = TableQuery[Categories]
 
   // ------------------------------ TASKS -----------------------------
-  class Tasks(tag: Tag) extends Table[TaskRow](tag, "tasks") {
+  class Tasks(tag: Tag) extends BaseTable[TaskRow](tag, "tasks") {
     def id            = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def title         = column[String]("title")
     def description   = column[Option[String]]("description")
@@ -88,7 +98,7 @@ trait Tables {
   lazy val tasks = TableQuery[Tasks]
 
   // ----------------------- TASK_ITEM_CATEGORIES ---------------------
-  class TaskItemCategories(tag: Tag) extends Table[TaskItemCategoryRow](tag, "task_item_categories") {
+  class TaskItemCategories(tag: Tag) extends BaseTable[TaskItemCategoryRow](tag, "task_item_categories") {
     def id         = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def taskItemId = column[Long]("task_item_id")
     def categoryId = column[Long]("category_id")

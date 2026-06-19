@@ -4,43 +4,37 @@ import javax.inject.{Inject, Singleton}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
-import slick.jdbc.JdbcProfile
+import play.api.db.slick.DatabaseConfigProvider
 
 import domain.task.TaskItemCategory
-import persistence.db.mappers.TaskMappers._ // RowMapper apply metoduna atanacak implicit concrete mapper instance'lari icin gerekli
-import persistence.db.{RowMapper, TaskItemCategoryRow, Tables}
+import persistence.db.mappers.TaskMappers._ // RowMapper[TaskItemCategory, TaskItemCategoryRow] implicit instance'i icin gerekli
+import persistence.db.{RowMapper, TaskItemCategoryRow}
 import repositories.interfaces.TaskItemCategoryRepository
 
-/** [[TaskItemCategoryRepository]]'nin Slick (SQL Server) implementasyonu. */
+/**
+ * [[TaskItemCategoryRepository]]'nin Slick (SQL Server) implementasyonu.
+ *
+ * Join entity ozel sekilli oldugundan port `CrudRepository`'yi GENISLETMEZ; yine de
+ * ortak yapi taslarini ([[SlickCrudSupport]]) kullanir.
+ */
 @Singleton
 class SlickTaskItemCategoryRepository @Inject() (protected val dbConfigProvider: DatabaseConfigProvider)(
     implicit ec: ExecutionContext
 ) extends TaskItemCategoryRepository
-    with HasDatabaseConfigProvider[JdbcProfile]
-    with Tables {
+    with SlickCrudSupport {
 
   import profile.api._
 
   private val mapper = RowMapper[TaskItemCategory, TaskItemCategoryRow]
 
   override def listByTask(taskItemId: Long): Future[Seq[TaskItemCategory]] =
-    db.run(taskItemCategories.filter(l => l.taskItemId === taskItemId && !l.isDeleted).sortBy(_.id).result)
-      .map(_.map(mapper.toDomain))
+    listActive(taskItemCategories.filter(_.taskItemId === taskItemId))
 
   override def findActiveLink(taskItemId: Long, categoryId: Long): Future[Option[TaskItemCategory]] =
-    db.run(
-      taskItemCategories
-        .filter(l => l.taskItemId === taskItemId && l.categoryId === categoryId && !l.isDeleted)
-        .result
-        .headOption
-    ).map(_.map(mapper.toDomain))
+    findOneActive(taskItemCategories.filter(l => l.taskItemId === taskItemId && l.categoryId === categoryId))
 
-  override def add(link: TaskItemCategory): Future[TaskItemCategory] = {
-    val row = mapper.toRow(link)
-    db.run((taskItemCategories returning taskItemCategories.map(_.id)) += row)
-      .map(newId => link.copy(id = newId))
-  }
+  override def add(link: TaskItemCategory): Future[TaskItemCategory] =
+    insertReturningId(taskItemCategories, mapper.toRow(link)).map(newId => link.copy(id = newId))
 
   override def update(link: TaskItemCategory): Future[Option[TaskItemCategory]] = {
     val row = mapper.toRow(link)
