@@ -1,11 +1,11 @@
 package support
 
-import domain.category.Category
-import domain.task.{TaskItem, TaskItemCategory}
-import domain.user.User
-import persistence.inmemory.{Database, InMemoryTable}
+import todo.category.domain.Category
+import todo.shared.infrastructure.Database
+import todo.shared.infrastructure.InMemoryTable
+import todo.task.domain.{TaskItem, TaskItemCategory}
+import todo.user.domain.User
 
-/** Testler icin BOS (seed'siz) bir in-memory Database; her test izole baslar. */
 object TestDatabase {
 
   def empty(): Database = new Database {

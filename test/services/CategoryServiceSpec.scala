@@ -8,11 +8,11 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-import domain.common.DomainError
-import repositories.inmemory.InMemoryCategoryRepository
+import todo.category.application.CategoryServiceImpl
+import todo.category.infrastructure.InMemoryCategoryRepository
+import todo.shared.domain.DomainError
 import support.{FixedClock, TestDatabase}
 
-/** CategoryService: orkestrasyon + audit + soft-delete uctan uca (sabit saatle). */
 class CategoryServiceSpec extends AnyWordSpec with Matchers with ScalaFutures {
 
   private val now = Instant.parse("2026-06-08T10:00:00Z")

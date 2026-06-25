@@ -1,0 +1,36 @@
+@(callbackUrl: String, error: Option[String])(implicit request: MessagesRequestHeader)
+
+@import todo.shared.web.views.html.main
+
+@main(request.messages("auth.login.title")) {
+
+  <h1>@request.messages("auth.login.title")</h1>
+
+  @request.flash.get("success").map { message =>
+    <p class="flash-success">@message</p>
+  }
+
+  @error.map { _ =>
+    <p class="flash-error">@request.messages("error.domain.invalidCredentials")</p>
+  }
+
+  <form action="@callbackUrl" method="POST" class="card-form">
+    @helper.CSRF.formField
+
+    <div>
+      <label for="username">@request.messages("auth.email")</label>
+      <input type="text" id="username" name="username" required>
+    </div>
+
+    <div>
+      <label for="password">@request.messages("auth.password")</label>
+      <input type="password" id="password" name="password" required>
+    </div>
+
+    <div>
+      <button type="submit">@request.messages("auth.login.submit")</button>
+    </div>
+  </form>
+
+  <p><a href="@todo.user.web.routes.AuthController.registerForm()">@request.messages("auth.register.title")</a></p>
+}

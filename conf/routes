@@ -3,52 +3,52 @@
 # https://www.playframework.com/documentation/latest/ScalaRouting
 # ~~~~
 
-# An example controller showing a sample home page
-GET     /                           controllers.HomeController.index()
+# Ana sayfa
+GET     /                           todo.shared.web.HomeController.index()
+GET     /todo                       todo.shared.web.HomeController.index()
+
+# --- TODO modulu ---
 
 # Kimlik dogrulama (auth) — PUBLIC
-GET     /login                      controllers.AuthController.loginForm()
-GET     /register                   controllers.AuthController.registerForm()
-POST    /register                   controllers.AuthController.register()
+GET     /todo/login                 todo.user.web.AuthController.loginForm()
+GET     /todo/register              todo.user.web.AuthController.registerForm()
+POST    /todo/register              todo.user.web.AuthController.register()
 # pac4j: login formu callback'e POST eder; kimlik dogrulama burada islenir.
-GET     /callback                   @org.pac4j.play.CallbackController.callback(request: Request)
-POST    /callback                   @org.pac4j.play.CallbackController.callback(request: Request)
-# pac4j logout (profil/oturum temizlenir, defaultUrl=/login'e yonlenir).
-GET     /logout                     @org.pac4j.play.LogoutController.logout(request: Request)
+GET     /todo/callback              @org.pac4j.play.CallbackController.callback(request: Request)
+POST    /todo/callback              @org.pac4j.play.CallbackController.callback(request: Request)
+# pac4j logout (profil/oturum temizlenir, defaultUrl=/todo/login'e yonlenir).
+GET     /todo/logout                @org.pac4j.play.LogoutController.logout(request: Request)
 
 # Gorev (TaskItem) CRUD
-# HTML formlari sadece GET ve POST destekledigi icin guncelleme/silme de POST kullanir.
-# `size` varsayilani = sayfa basina kayit (pagination.PageSize.Default ile AYNI tutulmali).
-GET     /tasks                      controllers.TaskItemController.list(page: Int ?= 1, size: Int ?= 5)
-GET     /tasks/new                  controllers.TaskItemController.createForm()
-POST    /tasks                      controllers.TaskItemController.create()
-GET     /tasks/:id/edit             controllers.TaskItemController.editForm(id: Long)
-POST    /tasks/:id                  controllers.TaskItemController.update(id: Long)
-POST    /tasks/:id/complete         controllers.TaskItemController.complete(id: Long)
-POST    /tasks/:id/reopen           controllers.TaskItemController.reopen(id: Long)
-POST    /tasks/:id/delete           controllers.TaskItemController.delete(id: Long)
-# AJAX (JSON) — listede sayfa yenilenmeden tamamla/yeniden-ac
-POST    /tasks/:id/complete.json    controllers.TaskItemController.completeJson(id: Long)
-POST    /tasks/:id/reopen.json      controllers.TaskItemController.reopenJson(id: Long)
-# Gorev <-> Kategori atama (gorev edit sayfasindan)
-POST    /tasks/:id/categories                       controllers.TaskItemController.assignToCategory(id: Long)
-POST    /tasks/:id/categories/:categoryId/remove    controllers.TaskItemController.removeFromCategory(id: Long, categoryId: Long)
+GET     /todo/tasks                 todo.task.web.TaskItemController.list(page: Int ?= 1, size: Int ?= 5)
+GET     /todo/tasks/new             todo.task.web.TaskItemController.createForm()
+POST    /todo/tasks                 todo.task.web.TaskItemController.create()
+GET     /todo/tasks/:id/edit        todo.task.web.TaskItemController.editForm(id: Long)
+POST    /todo/tasks/:id             todo.task.web.TaskItemController.update(id: Long)
+POST    /todo/tasks/:id/complete    todo.task.web.TaskItemController.complete(id: Long)
+POST    /todo/tasks/:id/reopen      todo.task.web.TaskItemController.reopen(id: Long)
+POST    /todo/tasks/:id/delete      todo.task.web.TaskItemController.delete(id: Long)
+# AJAX (JSON)
+POST    /todo/tasks/:id/complete.json    todo.task.web.TaskItemController.completeJson(id: Long)
+POST    /todo/tasks/:id/reopen.json      todo.task.web.TaskItemController.reopenJson(id: Long)
+# Gorev <-> Kategori atama
+POST    /todo/tasks/:id/categories                    todo.task.web.TaskItemController.assignToCategory(id: Long)
+POST    /todo/tasks/:id/categories/:categoryId/remove todo.task.web.TaskItemController.removeFromCategory(id: Long, categoryId: Long)
 
 # Kategori (Category) CRUD
-# `size` varsayilani = sayfa basina kayit (pagination.PageSize.Default ile AYNI tutulmali).
-GET     /categories                 controllers.CategoryController.list(page: Int ?= 1, size: Int ?= 5)
-GET     /categories/new             controllers.CategoryController.createForm()
-POST    /categories                 controllers.CategoryController.create()
-GET     /categories/:id/edit        controllers.CategoryController.editForm(id: Long)
-POST    /categories/:id             controllers.CategoryController.update(id: Long)
-POST    /categories/:id/delete      controllers.CategoryController.delete(id: Long)
+GET     /todo/categories            todo.category.web.CategoryController.list(page: Int ?= 1, size: Int ?= 5)
+GET     /todo/categories/new        todo.category.web.CategoryController.createForm()
+POST    /todo/categories            todo.category.web.CategoryController.create()
+GET     /todo/categories/:id/edit   todo.category.web.CategoryController.editForm(id: Long)
+POST    /todo/categories/:id        todo.category.web.CategoryController.update(id: Long)
+POST    /todo/categories/:id/delete todo.category.web.CategoryController.delete(id: Long)
 
-# Bakim — tamamlanmis gorevleri elle temizle (tasks sayfasindaki buton; actor'e RunNow yollar)
-POST    /cleanup                    controllers.CleanupController.runCleanup()
+# Bakim — tamamlanmis gorevleri elle temizle
+POST    /todo/cleanup               todo.shared.web.CleanupController.runCleanup()
 
 # ForTry
-GET    /fortry/try1                      controllers.ForTryController.try1()
-GET    /fortry/try2                      controllers.ForTryController.try2()
+GET     /todo/fortry/try1           todo.shared.web.ForTryController.try1()
+GET     /todo/fortry/try2           todo.shared.web.ForTryController.try2()
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

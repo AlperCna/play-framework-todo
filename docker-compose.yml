@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: ghcr.io/pgmq/pg18-pgmq:v1.10.0
+    container_name: mona-drp-postgres
+    restart: unless-stopped
+    ports:
+      - "${DB_PORT:-55432}:5432"
+    environment:
+      POSTGRES_DB: ${DB_NAME:-mona_drp}
+      POSTGRES_USER: ${DB_USER:-mona}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-mona_drp_secret}
+    volumes:
+      - mona_drp_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-mona} -d ${DB_NAME:-mona_drp}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  mona_drp_data:

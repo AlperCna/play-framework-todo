@@ -1,0 +1,53 @@
+@(page: todo.shared.application.Page[todo.category.domain.Category])(implicit request: MessagesRequestHeader)
+
+@import todo.shared.web.views.html.main
+@import todo.shared.web.views.html.paginationView
+
+@main(request.messages("category.list.title")) {
+
+  <h1>@request.messages("category.list.title")</h1>
+
+  @request.flash.get("success").map { message =>
+    <p class="flash-success">@message</p>
+  }
+  @request.flash.get("error").map { message =>
+    <p class="flash-error">@message</p>
+  }
+
+  <p><a href="@todo.category.web.routes.CategoryController.createForm()">@request.messages("category.list.addNew")</a></p>
+
+  @if(page.isEmpty) {
+    <p>@request.messages("category.list.empty")</p>
+  } else {
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>@request.messages("category.name")</th>
+          <th>@request.messages("category.list.col.description")</th>
+          <th>@request.messages("category.list.col.actions")</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for(category <- page.items) {
+          <tr>
+            <td>@category.id</td>
+            <td>@category.name</td>
+            <td>@category.description</td>
+            <td>
+              <a href="@todo.category.web.routes.CategoryController.editForm(category.id)">@request.messages("category.action.edit")</a>
+              @helper.form(action = todo.category.web.routes.CategoryController.delete(category.id), Symbol("style") -> "display:inline") {
+                @helper.CSRF.formField
+                @defining(request.messages("category.action.deleteConfirm")) { confirmText =>
+                  <button type="submit" class="danger" onclick="return confirm('@confirmText')">@request.messages("category.action.delete")</button>
+                }
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    @paginationView(page)(n => todo.category.web.routes.CategoryController.list(n, page.pageSize))
+  }
+}

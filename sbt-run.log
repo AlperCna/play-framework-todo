@@ -1,0 +1,47 @@
+[info] welcome to sbt 1.12.11 (Eclipse Adoptium Java 17.0.18)
+[info] loading global plugins from C:\Users\Alper\.sbt\1.0\plugins
+[info] loading settings for project play-framework-todo-build from plugins.sbt...
+[info] loading project definition from C:\Users\Alper\play-framework-todo\project
+[info] loading settings for project root from build.sbt...
+[info]   __              __
+[info]   \ \     ____   / /____ _ __  __
+[info]    \ \   / __ \ / // __ `// / / /
+[info]    / /  / /_/ // // /_/ // /_/ /
+[info]   /_/  / .___//_/ \__,_/ \__, /
+[info]       /_/               /____/
+[info] 
+[info] Version 2.9.11 running Java 17.0.18
+[info] 
+[info] Play is run entirely by the community. Please consider contributing and/or donating:
+[info] https://www.playframework.com/sponsors
+[info] 
+
+--- (Running the application, auto-reloading is enabled) ---
+
+[34mINFO [0;39m p.c.s.AkkaHttpServer - Listening for HTTP on /[0:0:0:0:0:0:0:0]:9000
+
+(Server started, use Enter to stop and go back to the console...)
+
+[info] compiling 177 Scala sources and 6 Java sources to C:\Users\Alper\play-framework-todo\target\scala-2.13\classes ...
+[info] done compiling
+[34mINFO [0;39m p.a.h.HttpErrorHandlerExceptions - Registering exception handler: guice-provision-exception-handler
+2026-06-25 20:05:06 [31mWARN [0;39m [36mo.p.c.client.direct.AnonymousClient[0;39m [35m[0;39m Be careful when using the 'AnonymousClient': an 'AnonymousProfile' is returned and the access is granted for the request.
+2026-06-25 20:05:06 [34mINFO [0;39m [36mplay.api.http.EnabledFilters[0;39m [35m[0;39m Enabled Filters (see <https://www.playframework.com/documentation/latest/Filters>):
+
+    play.filters.csrf.CSRFFilter
+    play.filters.headers.SecurityHeadersFilter
+    play.filters.hosts.AllowedHostsFilter
+    filters.AccessLogFilter
+
+2026-06-25 20:05:06 [34mINFO [0;39m [36mplay.api.Play[0;39m [35m[0;39m Application started (Dev) (no global state)
+2026-06-25 20:05:06 [34mINFO [0;39m [36mfilters.AccessLogFilter[0;39m [35m[0;39m GET / -> 200 (156ms)
+2026-06-25 20:05:07 [34mINFO [0;39m [36mfilters.AccessLogFilter[0;39m [35m[0;39m GET /todo/login -> 200 (17ms)
+2026-06-25 20:05:07 [34mINFO [0;39m [36mfilters.AccessLogFilter[0;39m [35m[0;39m GET /todo/register -> 200 (52ms)
+2026-06-25 20:05:07 [34mINFO [0;39m [36mfilters.AccessLogFilter[0;39m [35m[0;39m GET /todo/tasks -> 303 (21ms)
+2026-06-25 20:05:07 [34mINFO [0;39m [36mfilters.AccessLogFilter[0;39m [35m[0;39m GET /todo/categories -> 303 (1ms)
+2026-06-25 20:05:07 [34mINFO [0;39m [36mfilters.AccessLogFilter[0;39m [35m[0;39m GET /assets/stylesheets/main.css -> 200 (83ms)
+2026-06-25 20:05:19 [34mINFO [0;39m [36mfilters.AccessLogFilter[0;39m [35m[0;39m GET / -> 200 (4ms)
+2026-06-25 20:05:19 [34mINFO [0;39m [36mfilters.AccessLogFilter[0;39m [35m[0;39m GET /todo/login -> 200 (5ms)
+2026-06-25 20:05:19 [34mINFO [0;39m [36mfilters.AccessLogFilter[0;39m [35m[0;39m GET /todo/tasks -> 303 (1ms)
+2026-06-25 20:05:19 [34mINFO [0;39m [36mfilters.AccessLogFilter[0;39m [35m[0;39m GET /assets/stylesheets/main.css -> 200 (6ms)
+[414.435s][warning][os,thread] Failed to start thread "Unknown thread" - _beginthreadex failed (EACCES) for attributes: stacksize: 4096k, flags: CREATE_SUSPENDED STACK_SIZE_PARAM_IS_A.

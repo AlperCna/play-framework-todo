@@ -8,27 +8,19 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-import domain.common.{DomainError, Priority}
-import repositories.inmemory.{
-  InMemoryCategoryRepository,
-  InMemoryTaskItemCategoryRepository,
-  InMemoryTaskItemRepository
-}
+import todo.category.application.CategoryServiceImpl
+import todo.category.infrastructure.InMemoryCategoryRepository
+import todo.shared.domain.DomainError
+import todo.shared.domain.Priority
+import todo.task.application.TaskItemServiceImpl
+import todo.task.infrastructure.{InMemoryTaskItemCategoryRepository, InMemoryTaskItemRepository}
 import support.{FixedClock, TestDatabase}
 
-/**
- * TaskItemService: orkestrasyonun ve yan etki sinirinin (Clock, audit "system")
- * uctan uca dogru calistigini, sabit saatle deterministik biçimde dogrular.
- *
- * Servisler artik `Future` dondugu icin sonuclar `futureValue` ile beklenir
- * (bellek-ici repo `Future.successful` dondurdugu icin aninda tamamlanir).
- */
 class TaskItemServiceSpec extends AnyWordSpec with Matchers with ScalaFutures {
 
   private val now = Instant.parse("2026-06-08T10:00:00Z")
   private val today = LocalDate.of(2026, 6, 8)
 
-  /** Ayni in-memory DB'yi paylasan TaskItem + Category servisleri ve task repo'su. */
   private def newService(clock: FixedClock) = {
     val db = TestDatabase.empty()
     val taskRepo = new InMemoryTaskItemRepository(db)

@@ -1,0 +1,12 @@
+﻿Folder PATH listing
+Volume serial number is 000001A7 226A:F0E0
+C:\USERS\ALPER\PLAY-FRAMEWORK-TODO\CONF
+    application.conf
+    logback.xml
+    messages
+    messages.en
+    messages.tr
+    routes
+    
+No subfolders exist 
+

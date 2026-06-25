@@ -5,14 +5,11 @@ import java.time.{Instant, LocalDate}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-import domain.category.Category
-import domain.common.{DomainError, Priority}
-import domain.task.{TaskItem, TaskItemCategory}
+import todo.category.domain.Category
+import todo.shared.domain.DomainError
+import todo.shared.domain.Priority
+import todo.task.domain.{TaskItem, TaskItemCategory}
 
-/**
- * TaskItem domain kurallarinin testleri. Saf domain oldugu icin Play gerekmez;
- * zaman/tarih sabit verilerle deterministik tutulur.
- */
 class TaskItemSpec extends AnyWordSpec with Matchers {
 
   private val now = Instant.parse("2026-06-08T10:00:00Z")

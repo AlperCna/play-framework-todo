@@ -8,11 +8,11 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-import domain.common.DomainError
-import repositories.inmemory.InMemoryUserRepository
+import todo.shared.domain.DomainError
+import todo.user.application.UserServiceImpl
+import todo.user.infrastructure.InMemoryUserRepository
 import support.{FixedClock, TestDatabase}
 
-/** UserService: register (benzersizlik) + login (kimlik dogrulama). */
 class UserServiceSpec extends AnyWordSpec with Matchers with ScalaFutures {
 
   private val now = Instant.parse("2026-06-08T10:00:00Z")

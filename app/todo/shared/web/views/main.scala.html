@@ -1,0 +1,38 @@
+@(title: String)(content: Html)(implicit request: MessagesRequestHeader)
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>@title</title>
+        <link rel="stylesheet" media="screen" href="@controllers.routes.Assets.versioned("stylesheets/main.css")">
+        <link rel="shortcut icon" type="image/png" href="@controllers.routes.Assets.versioned("images/favicon.png")">
+        <meta name="csrf-token" content="@play.filters.csrf.CSRF.getToken.fold("")(_.value)">
+    </head>
+    <body>
+        <header class="topbar">
+          <div class="nav-inner">
+            <a class="brand" href="@todo.shared.web.routes.HomeController.index()">@request.messages("app.name")</a>
+            <nav class="nav-links">
+              @request match {
+                case ar: todo.shared.web.AuthenticatedRequest[_] => {
+                  <a href="@todo.task.web.routes.TaskItemController.list()">@request.messages("nav.tasks")</a>
+                  <a href="@todo.category.web.routes.CategoryController.list()">@request.messages("nav.categories")</a>
+                  <span class="nav-user">@ar.user.email</span>
+                  <a href="/todo/logout" class="ghost">@request.messages("nav.logout")</a>
+                }
+                case _ => {
+                  <a href="@todo.user.web.routes.AuthController.loginForm()">@request.messages("nav.login")</a>
+                  <a href="@todo.user.web.routes.AuthController.registerForm()">@request.messages("nav.register")</a>
+                }
+              }
+            </nav>
+          </div>
+        </header>
+
+        <main class="container">
+          @content
+        </main>
+
+      <script src="@controllers.routes.Assets.versioned("javascripts/main.js")" type="text/javascript"></script>
+    </body>
+</html>

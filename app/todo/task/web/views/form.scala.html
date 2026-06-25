@@ -1,0 +1,88 @@
+@(taskForm: Form[todo.task.web.TaskItemFormData], postUrl: Call, heading: String,
+  taskId: Option[Long] = None,
+  assignedCategories: Seq[todo.category.domain.Category] = Nil,
+  availableCategories: Seq[todo.category.domain.Category] = Nil)(implicit request: MessagesRequestHeader)
+
+@import todo.shared.web.views.html.main
+
+@main(heading) {
+
+  <h1>@heading</h1>
+
+  @if(taskForm.hasGlobalErrors) {
+    <ul class="form-errors">
+      @for(err <- taskForm.globalErrors) {
+        <li class="flash-error">@err.message</li>
+      }
+    </ul>
+  }
+
+  @helper.form(action = postUrl, Symbol("class") -> "card-form") {
+
+    @helper.CSRF.formField
+
+    @helper.inputText(
+      taskForm("title"),
+      Symbol("_label") -> request.messages("task.title")
+    )
+
+    @helper.textarea(
+      taskForm("description"),
+      Symbol("_label") -> request.messages("task.description")
+    )
+
+    @helper.select(
+      taskForm("priority"),
+      options = Seq(
+        "0" -> request.messages("task.priority.0"),
+        "1" -> request.messages("task.priority.1"),
+        "2" -> request.messages("task.priority.2")
+      ),
+      Symbol("_label") -> request.messages("task.priority")
+    )
+
+    @helper.inputDate(
+      taskForm("dueDate"),
+      Symbol("_label") -> request.messages("task.dueDate")
+    )
+
+    <div>
+      <button type="submit">@request.messages("task.form.save")</button>
+      <a href="@todo.task.web.routes.TaskItemController.list()">@request.messages("task.form.cancel")</a>
+    </div>
+  }
+
+  @taskId.map { tid =>
+    <section class="task-categories">
+      <h2>@request.messages("task.category.heading")</h2>
+
+      @if(assignedCategories.isEmpty) {
+        <p>@request.messages("task.category.none")</p>
+      } else {
+        <ul>
+          @for(cat <- assignedCategories) {
+            <li>
+              @cat.name
+              @helper.form(action = todo.task.web.routes.TaskItemController.removeFromCategory(tid, cat.id), Symbol("style") -> "display:inline") {
+                @helper.CSRF.formField
+                <button type="submit" class="ghost">@request.messages("task.category.remove")</button>
+              }
+            </li>
+          }
+        </ul>
+      }
+
+      @if(availableCategories.nonEmpty) {
+        @helper.form(action = todo.task.web.routes.TaskItemController.assignToCategory(tid)) {
+          @helper.CSRF.formField
+          <select name="categoryId">
+            @for(cat <- availableCategories) {
+              <option value="@cat.id">@cat.name</option>
+            }
+          </select>
+          <button type="submit">@request.messages("task.category.add")</button>
+        }
+      }
+    </section>
+  }
+}

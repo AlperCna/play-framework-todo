@@ -8,12 +8,11 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-import domain.common.Priority
-import domain.task.TaskItem
-import repositories.inmemory.InMemoryTaskItemRepository
+import todo.shared.domain.Priority
+import todo.task.domain.TaskItem
+import todo.task.infrastructure.InMemoryTaskItemRepository
 import support.TestDatabase
 
-/** Bellek-ici TaskItem repository: id atama ve soft-delete filtreleme (R9). */
 class InMemoryTaskItemRepositorySpec extends AnyWordSpec with Matchers with ScalaFutures {
 
   private val now = Instant.parse("2026-06-08T10:00:00Z")
@@ -36,7 +35,6 @@ class InMemoryTaskItemRepositorySpec extends AnyWordSpec with Matchers with Scal
       val saved = repo.add(newTask("silinecek")).futureValue
       repo.list().futureValue.map(_.id) should contain(saved.id)
 
-      // Soft-delete: userId kopar + audit.deleted, sonra persist
       repo.update(saved.softDeleteWithUser("system", now)).futureValue
 
       repo.list().futureValue.map(_.id) should not contain saved.id

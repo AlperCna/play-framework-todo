@@ -5,11 +5,10 @@ import java.time.Instant
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-import domain.category.Category
-import domain.common.DomainError
-import domain.user.User
+import todo.category.domain.Category
+import todo.shared.domain.DomainError
+import todo.user.domain.User
 
-/** User ve Category temel invariant testleri. */
 class UserAndCategorySpec extends AnyWordSpec with Matchers {
 
   private val now = Instant.parse("2026-06-08T10:00:00Z")

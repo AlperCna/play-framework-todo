@@ -1,0 +1,36 @@
+@(categoryForm: Form[todo.category.web.CategoryFormData], postUrl: Call, heading: String)(implicit request: MessagesRequestHeader)
+
+@import todo.shared.web.views.html.main
+
+@main(heading) {
+
+  <h1>@heading</h1>
+
+  @if(categoryForm.hasGlobalErrors) {
+    <ul class="form-errors">
+      @for(err <- categoryForm.globalErrors) {
+        <li class="flash-error">@err.message</li>
+      }
+    </ul>
+  }
+
+  @helper.form(action = postUrl, Symbol("class") -> "card-form") {
+
+    @helper.CSRF.formField
+
+    @helper.inputText(
+      categoryForm("name"),
+      Symbol("_label") -> request.messages("category.name")
+    )
+
+    @helper.textarea(
+      categoryForm("description"),
+      Symbol("_label") -> request.messages("category.description")
+    )
+
+    <div>
+      <button type="submit">@request.messages("category.form.save")</button>
+      <a href="@todo.category.web.routes.CategoryController.list()">@request.messages("category.form.cancel")</a>
+    </div>
+  }
+}
