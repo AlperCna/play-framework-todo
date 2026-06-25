@@ -18,7 +18,8 @@ GET     /logout                     @org.pac4j.play.LogoutController.logout(requ
 
 # Gorev (TaskItem) CRUD
 # HTML formlari sadece GET ve POST destekledigi icin guncelleme/silme de POST kullanir.
-GET     /tasks                      controllers.TaskItemController.list()
+# `size` varsayilani = sayfa basina kayit (pagination.PageSize.Default ile AYNI tutulmali).
+GET     /tasks                      controllers.TaskItemController.list(page: Int ?= 1, size: Int ?= 5)
 GET     /tasks/new                  controllers.TaskItemController.createForm()
 POST    /tasks                      controllers.TaskItemController.create()
 GET     /tasks/:id/edit             controllers.TaskItemController.editForm(id: Long)
@@ -34,7 +35,8 @@ POST    /tasks/:id/categories                       controllers.TaskItemControll
 POST    /tasks/:id/categories/:categoryId/remove    controllers.TaskItemController.removeFromCategory(id: Long, categoryId: Long)
 
 # Kategori (Category) CRUD
-GET     /categories                 controllers.CategoryController.list()
+# `size` varsayilani = sayfa basina kayit (pagination.PageSize.Default ile AYNI tutulmali).
+GET     /categories                 controllers.CategoryController.list(page: Int ?= 1, size: Int ?= 5)
 GET     /categories/new             controllers.CategoryController.createForm()
 POST    /categories                 controllers.CategoryController.create()
 GET     /categories/:id/edit        controllers.CategoryController.editForm(id: Long)

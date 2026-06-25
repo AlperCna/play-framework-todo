@@ -1,11 +1,12 @@
 @*
- * Kategori listesi sayfasi (READ).
+ * Kategori listesi sayfasi (READ), SAYFALANMIS.
  *
  * Parametreler:
- *   - categories: gosterilecek kategoriler.
+ *   - page: kategorilerin bir sayfasi (`page.items`) + navigasyon metadatasi.
+ *     Sayfalama kontrolu ortak `common.paginationView` partial'i ile basilir.
  *   - request (implicit): flash mesajlari ve ceviri (messages) icin.
  *@
-@(categories: Seq[domain.category.Category])(implicit request: MessagesRequestHeader)
+@(page: pagination.Page[domain.category.Category])(implicit request: MessagesRequestHeader)
 
 @main(request.messages("category.list.title")) {
 
@@ -20,7 +21,7 @@
 
   <p><a href="@routes.CategoryController.createForm()">@request.messages("category.list.addNew")</a></p>
 
-  @if(categories.isEmpty) {
+  @if(page.isEmpty) {
     <p>@request.messages("category.list.empty")</p>
   } else {
     <table>
@@ -33,7 +34,7 @@
         </tr>
       </thead>
       <tbody>
-        @for(category <- categories) {
+        @for(category <- page.items) {
           <tr>
             <td>@category.id</td>
             <td>@category.name</td>
@@ -52,5 +53,8 @@
         }
       </tbody>
     </table>
+
+    @* Ortak, domain-agnostik sayfalama kontrolu (TaskItem listesiyle ayni partial). *@
+    @common.paginationView(page)(n => routes.CategoryController.list(n, page.pageSize))
   }
 }

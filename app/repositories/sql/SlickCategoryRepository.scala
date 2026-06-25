@@ -7,6 +7,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import play.api.db.slick.DatabaseConfigProvider
 
 import domain.category.Category
+import pagination.{Page, PageRequest}
 import persistence.db.mappers.CategoryMappers._ // RowMapper[Category, CategoryRow] implicit instance'i
 import persistence.db.{CategoryRow, RowMapper}
 import repositories.interfaces.CategoryRepository
@@ -28,6 +29,9 @@ class SlickCategoryRepository @Inject() (protected val dbConfigProvider: Databas
 
   override def listByUser(userId: Long): Future[Seq[Category]] =
     listActive(categories.filter(_.userId === userId))
+
+  override def listByUser(userId: Long, page: PageRequest): Future[Page[Category]] =
+    pageActive(categories.filter(_.userId === userId), page)
 
   override def add(category: Category): Future[Category] =
     insertReturningId(categories, mapper.toRow(category)).map(newId => category.copy(id = newId))

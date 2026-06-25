@@ -3,3 +3,12 @@ target
 /.idea
 /logs
 /RUNNING_PID
+
+# Metals / Bloop (VSCode Scala) - kök ve project/ altindaki uretilen dosyalar
+.bloop/
+.metals/
+metals.sbt
+project/project/
+
+# VSCode kisisel ayarlar
+.vscode/

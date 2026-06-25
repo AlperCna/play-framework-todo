@@ -8,6 +8,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import domain.category.Category
 import domain.common.{DomainError, Priority}
 import domain.task.{TaskItem, TaskItemCategory}
+import pagination.{Page, PageRequest}
 import repositories.interfaces.{CategoryRepository, TaskItemCategoryRepository, TaskItemRepository}
 
 /**
@@ -30,7 +31,11 @@ class TaskItemServiceImpl @Inject() (
 
   override def list(): Future[Seq[TaskItem]] = taskRepo.list()
 
-  override def listByUser(userId: Long): Future[Seq[TaskItem]] = taskRepo.listByUser(userId)
+  override def listByUser(userId: Long, page: PageRequest): Future[Page[TaskItem]] =
+    taskRepo.listByUser(userId, page)
+
+  override def hasCompletedByUser(userId: Long): Future[Boolean] =
+    taskRepo.hasCompletedByUser(userId)
 
   override def get(id: Long): Future[Option[TaskItem]] = taskRepo.get(id)
 

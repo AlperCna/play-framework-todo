@@ -10,6 +10,7 @@ import actions.{AuthenticatedAction, AuthenticatedRequest}
 import domain.category.Category
 import domain.common.DomainError
 import forms.CategoryFormData
+import pagination.PageRequest
 import services.CategoryService
 
 /**
@@ -27,9 +28,19 @@ class CategoryController @Inject() (
 )(implicit ec: ExecutionContext)
     extends MessagesAbstractController(cc) {
 
-  /** READ (liste) — yalniz current user'in kategorileri. */
-  def list(): Action[AnyContent] = authAction.async { implicit request =>
-    service.listByUser(request.user.id).map(categories => Ok(views.html.categories.list(categories)))
+  /**
+   * READ (liste) — yalniz current user'in kategorileri, SAYFALANMIS.
+   * [[TaskItemController.list]] ile ayni desen (clamp + aralik-disi sayfada son
+   * sayfaya redirect). Bkz. `pagination` paketi.
+   */
+  def list(page: Int, size: Int): Action[AnyContent] = authAction.async { implicit request =>
+    val pageRequest = PageRequest.from(page, size)
+    service.listByUser(request.user.id, pageRequest).map { result =>
+      if (result.totalCount > 0 && result.pageNumber > result.totalPages)
+        Redirect(routes.CategoryController.list(result.totalPages, result.pageSize))
+      else
+        Ok(views.html.categories.list(result))
+    }
   }
 
   /** CREATE (form). */

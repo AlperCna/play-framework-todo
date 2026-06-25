@@ -7,6 +7,7 @@ import scala.concurrent.Future
 import domain.category.Category
 import domain.common.{DomainError, Priority}
 import domain.task.{TaskItem, TaskItemCategory}
+import pagination.{Page, PageRequest}
 
 /**
  * TaskItem uygulama (application) servisi — orkestrasyon katmani.
@@ -23,8 +24,18 @@ trait TaskItemService {
 
   def list(): Future[Seq[TaskItem]]
 
-  /** Bir kullanicinin silinmemis gorevleri (CurrentUser'a gore listeleme). */
-  def listByUser(userId: Long): Future[Seq[TaskItem]]
+  /**
+   * Bir kullanicinin silinmemis gorevleri, SAYFALANMIS (CurrentUser'a gore liste).
+   * Sayfalama bir is kurali degildir; repo'dan gelen [[pagination.Page]] aynen gecer.
+   */
+  def listByUser(userId: Long, page: PageRequest): Future[Page[TaskItem]]
+
+  /**
+   * Kullanicinin temizlenebilecek (tamamlanmis, silinmemis) gorevi var mi?
+   * Liste sayfasindaki "Tamamlananlari temizle" butonunun gorunurlugu icin;
+   * pagination'dan BAGIMSIZ ([[purgeCompleted]] zaten TUM tamamlananlari temizler).
+   */
+  def hasCompletedByUser(userId: Long): Future[Boolean]
 
   def get(id: Long): Future[Option[TaskItem]]
 

@@ -5,6 +5,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import play.api.db.slick.HasDatabaseConfigProvider
 import slick.jdbc.JdbcProfile
 
+import pagination.{Page, PageRequest}
 import persistence.db.{RowMapper, Tables}
 
 /**
@@ -36,6 +37,28 @@ trait SlickCrudSupport extends HasDatabaseConfigProvider[JdbcProfile] with Table
       ec: ExecutionContext
   ): Future[Option[A]] =
     db.run(q.filter(!_.isDeleted).result.headOption).map(_.map(m.toDomain))
+
+  /**
+   * Aktif (silinmemis) kayitlarin BIR SAYFASI + toplam adet.
+   *
+   * Iki sorgu calistirir: COUNT (toplam sayfa icin) ve LIMIT/OFFSET'li pencere.
+   * Ikisini de `db.run` ile onceden baslatip (val'ler) PARALEL kosariz; sonra
+   * [[pagination.Page]]'e birlestiririz. `listActive` gibi tablodan-bagimsiz:
+   * `BaseTable` (id + isDeleted) tip seviyesinde bilindigi icin generic kalir.
+   */
+  protected def pageActive[A, R, T <: BaseTable[R]](q: Query[T, R, Seq], page: PageRequest)(
+      implicit m: RowMapper[A, R],
+      ec: ExecutionContext
+  ): Future[Page[A]] = {
+    val active = q.filter(!_.isDeleted)
+    val window = active.sortBy(_.id).drop(page.offset).take(page.limit.toLong)
+    val totalF = db.run(active.length.result) // COUNT(*)
+    val rowsF  = db.run(window.result)        // SELECT ... OFFSET/FETCH
+    for {
+      total <- totalF
+      rows  <- rowsF
+    } yield Page.from(rows.map(m.toDomain), page, total.toLong)
+  }
 
   /** Insert + uretilen IDENTITY id (AutoInc kolon insert'te otomatik dislanir). */
   protected def insertReturningId[R, T <: BaseTable[R]](q: TableQuery[T], row: R)(

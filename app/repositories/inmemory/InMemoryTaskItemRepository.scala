@@ -5,6 +5,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 
 import domain.task.TaskItem
+import pagination.{Page, PageRequest}
 import persistence.inmemory.Database
 import repositories.interfaces.TaskItemRepository
 
@@ -30,6 +31,12 @@ class InMemoryTaskItemRepository @Inject() (db: Database) extends TaskItemReposi
       task
     })
 
-  override def listByUser(userId: Long): Future[Seq[TaskItem]] =
-    Future.successful(db.tasks.find(_.userId.contains(userId)))
+  override def listByUser(userId: Long, page: PageRequest): Future[Page[TaskItem]] = {
+    val all    = db.tasks.find(_.userId.contains(userId)) // id'ye sirali, soft-delete haric
+    val window = all.slice(page.offset.toInt, page.offset.toInt + page.limit)
+    Future.successful(Page.from(window, page, all.size.toLong))
+  }
+
+  override def hasCompletedByUser(userId: Long): Future[Boolean] =
+    Future.successful(db.tasks.find(_.userId.contains(userId)).exists(_.isCompleted))
 }

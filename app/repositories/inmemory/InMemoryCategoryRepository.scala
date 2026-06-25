@@ -5,6 +5,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 
 import domain.category.Category
+import pagination.{Page, PageRequest}
 import persistence.inmemory.Database
 import repositories.interfaces.CategoryRepository
 
@@ -18,6 +19,12 @@ class InMemoryCategoryRepository @Inject() (db: Database) extends CategoryReposi
 
   override def listByUser(userId: Long): Future[Seq[Category]] =
     Future.successful(db.categories.find(_.userId == userId))
+
+  override def listByUser(userId: Long, page: PageRequest): Future[Page[Category]] = {
+    val all    = db.categories.find(_.userId == userId) // id'ye sirali, soft-delete haric
+    val window = all.slice(page.offset.toInt, page.offset.toInt + page.limit)
+    Future.successful(Page.from(window, page, all.size.toLong))
+  }
 
   override def add(category: Category): Future[Category] = Future.successful(db.categories.add(category))
 

@@ -76,6 +76,12 @@ task.cleanup.triggered = Temizlik tetiklendi (tamamlananlar birazdan kaldirilir)
 # AJAX toggle beklenmedik sekilde (ag hatasi vb.) basarisiz olunca gosterilir.
 task.ajax.error = Bir hata olustu. Lutfen tekrar deneyin.
 
+# --- Sayfalama (ortak/yeniden kullanilabilir UI bileseni) ---
+pagination.prev = Onceki
+pagination.next = Sonraki
+# {0} mevcut sayfa, {1} toplam sayfa, {2} toplam kayit.
+pagination.summary = Sayfa {0} / {1} — toplam {2} kayit
+
 # --- Uygulama adi (marka) ---
 app.name = Gorev Yoneticisi
 

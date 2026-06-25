@@ -3,6 +3,7 @@ package repositories.interfaces
 import scala.concurrent.Future
 
 import domain.task.TaskItem
+import pagination.{Page, PageRequest}
 
 /**
  * TaskItem verilerine erisim sozlesmesi (port).
@@ -14,6 +15,13 @@ import domain.task.TaskItem
  */
 trait TaskItemRepository extends CrudRepository[TaskItem] {
 
-  /** Bir kullanicinin silinmemis gorevleri. */
-  def listByUser(userId: Long): Future[Seq[TaskItem]]
+  /** Bir kullanicinin silinmemis gorevleri, SAYFALANMIS. */
+  def listByUser(userId: Long, page: PageRequest): Future[Page[TaskItem]]
+
+  /**
+   * Kullanicinin (silinmemis) tamamlanmis gorevi var mi? "Tamamlananlari temizle"
+   * butonunun gorunurlugu icin — SAYFALAMADAN BAGIMSIZ. Tum kayitlari cekmemek
+   * icin sade bir EXISTS/varlik kontrolu yapar.
+   */
+  def hasCompletedByUser(userId: Long): Future[Boolean]
 }

@@ -73,6 +73,12 @@ task.cleanup.triggered = Cleanup triggered (completed tasks removed shortly).
 # Shown by the AJAX toggle when the request fails unexpectedly (network etc.).
 task.ajax.error = Something went wrong. Please try again.
 
+# --- Pagination (shared/reusable UI component) ---
+pagination.prev = Previous
+pagination.next = Next
+# {0} current page, {1} total pages, {2} total records.
+pagination.summary = Page {0} of {1} — {2} total
+
 # --- Application name (brand) ---
 app.name = Task Manager
 

@@ -272,6 +272,36 @@ main.container > p > a { font-weight: 600; text-decoration: none; }
 }
 .task-categories form { display: inline-flex; gap: 0.5rem; align-items: center; }
 
+/* --- Sayfalama kontrolu (ortak partial: common/pagination) --- */
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 1.25rem;
+}
+.pagination .page-link {
+  display: inline-block;
+  min-width: 2.1rem;
+  text-align: center;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-decoration: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.pagination a.page-link:hover { color: var(--primary); border-color: var(--primary); }
+.pagination .page-current {
+  color: #fff;
+  background: var(--primary);
+  border-color: var(--primary);
+}
+.pagination .disabled { color: #c2c7d0; background: var(--bg); cursor: default; }
+.pagination-summary { color: var(--muted); font-size: 0.85rem; margin: 0.6rem 0 0; }
+
 /* --- Basit hero (ana sayfa) --- */
 .hero {
   background: var(--surface);

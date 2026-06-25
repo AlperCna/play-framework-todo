@@ -13,6 +13,7 @@ import actions.{AuthenticatedAction, AuthenticatedRequest}
 import domain.common.DomainError
 import domain.task.TaskItem
 import forms.TaskItemFormData
+import pagination.PageRequest
 import services.{CategoryService, TaskItemService}
 
 /**
@@ -34,9 +35,29 @@ class TaskItemController @Inject() (
   /** Kategori atama icin tek alanli kucuk form (dropdown'dan gelen categoryId). */
   private val assignForm: Form[Long] = Form(single("categoryId" -> longNumber))
 
-  /** READ (liste) — yalniz current user'in gorevleri. */
-  def list(): Action[AnyContent] = authAction.async { implicit request =>
-    service.listByUser(request.user.id).map(tasks => Ok(views.html.tasks.list(tasks)))
+  /**
+   * READ (liste) — yalniz current user'in gorevleri, SAYFALANMIS.
+   *
+   * Ham `?page=&size=` Int'leri kenarda [[pagination.PageRequest.from]] ile
+   * dogrulanip clamp edilir (gecersiz/aralik-disi sayfa -> >=1; max size). Istenen
+   * sayfa, mevcut son sayfayi asarsa (ama kayit varsa) son sayfaya yonlendiririz;
+   * boylece URL temiz kalir ve "hic kayit yok" mesaji yaniltici olmaz.
+   */
+  def list(page: Int, size: Int): Action[AnyContent] = authAction.async { implicit request =>
+    val pageRequest = PageRequest.from(page, size)
+    // Iki sorgu PARALEL: sayfa verisi + "temizlenebilir tamamlanmis var mi" (buton
+    // gorunurlugu — sayfadan bagimsiz, purgeCompleted'in global kapsamiyla tutarli).
+    val pageF         = service.listByUser(request.user.id, pageRequest)
+    val hasCompletedF = service.hasCompletedByUser(request.user.id)
+    for {
+      result       <- pageF
+      hasCompleted <- hasCompletedF
+    } yield {
+      if (result.totalCount > 0 && result.pageNumber > result.totalPages)
+        Redirect(routes.TaskItemController.list(result.totalPages, result.pageSize))
+      else
+        Ok(views.html.tasks.list(result, hasCompleted))
+    }
   }
 
   /** CREATE (form). */

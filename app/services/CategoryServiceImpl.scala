@@ -6,6 +6,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 import domain.category.Category
 import domain.common.DomainError
+import pagination.{Page, PageRequest}
 import repositories.interfaces.CategoryRepository
 
 /** [[CategoryService]]'in implementasyonu. */
@@ -19,6 +20,9 @@ class CategoryServiceImpl @Inject() (categoryRepo: CategoryRepository, clock: Cl
   override def list(): Future[Seq[Category]] = categoryRepo.list()
 
   override def listByUser(userId: Long): Future[Seq[Category]] = categoryRepo.listByUser(userId)
+
+  override def listByUser(userId: Long, page: PageRequest): Future[Page[Category]] =
+    categoryRepo.listByUser(userId, page)
 
   override def get(id: Long): Future[Option[Category]] = categoryRepo.get(id)
 

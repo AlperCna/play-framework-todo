@@ -7,6 +7,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import play.api.db.slick.DatabaseConfigProvider
 
 import domain.task.TaskItem
+import pagination.{Page, PageRequest}
 import persistence.db.mappers.TaskMappers._ // RowMapper[TaskItem, TaskRow] implicit instance'i
 import persistence.db.{RowMapper, TaskRow}
 import repositories.interfaces.TaskItemRepository
@@ -32,8 +33,11 @@ class SlickTaskItemRepository @Inject() (protected val dbConfigProvider: Databas
 
   override def get(id: Long): Future[Option[TaskItem]] = findOneActive(tasks.filter(_.id === id))
 
-  override def listByUser(userId: Long): Future[Seq[TaskItem]] =
-    listActive(tasks.filter(_.userId === userId))
+  override def listByUser(userId: Long, page: PageRequest): Future[Page[TaskItem]] =
+    pageActive(tasks.filter(_.userId === userId), page)
+
+  override def hasCompletedByUser(userId: Long): Future[Boolean] =
+    db.run(tasks.filter(t => t.userId === userId && t.isCompleted && !t.isDeleted).exists.result)
 
   override def add(task: TaskItem): Future[TaskItem] =
     insertReturningId(tasks, mapper.toRow(task)).map(newId => task.copy(id = newId))

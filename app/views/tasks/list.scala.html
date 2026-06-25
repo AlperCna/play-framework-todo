@@ -1,12 +1,16 @@
 @*
- * Gorev (TaskItem) listesi sayfasi (READ).
+ * Gorev (TaskItem) listesi sayfasi (READ), SAYFALANMIS.
  *
  * Parametreler:
- *   - tasks: gosterilecek gorevler.
+ *   - page: gosterilecek gorevlerin bir sayfasi (`page.items`) + navigasyon
+ *     metadatasi (current/total/hasNext...). Sayfalama kontrolu ortak
+ *     `common.paginationView` partial'i ile basilir.
+ *   - hasCompleted: kullanicinin (sayfadan BAGIMSIZ) temizlenebilecek tamamlanmis
+ *     gorevi var mi -> "Tamamlananlari temizle" butonunun gorunurlugu.
  *   - request (implicit): flash mesajlari ve ceviri (messages) icin. Tip
  *     MessagesRequestHeader olmali ki request.messages("anahtar") kullanilabilsin.
  *@
-@(tasks: Seq[domain.task.TaskItem])(implicit request: MessagesRequestHeader)
+@(page: pagination.Page[domain.task.TaskItem], hasCompleted: Boolean)(implicit request: MessagesRequestHeader)
 
 @main(request.messages("task.list.title")) {
 
@@ -28,9 +32,11 @@
   <p><a href="@routes.TaskItemController.createForm()">@request.messages("task.list.addNew")</a></p>
 
   @* Tamamlanmis gorevleri toplu (soft) temizle: CompletedTaskCleaner actor'unu POST ile
-     tetikler. Yalnizca tamamlanmis gorev varsa gosterilir. Silme actor'de async oldugu
-     icin liste hemen yenilense de sonuclar bir an sonra dusebilir. *@
-  @if(tasks.exists(_.isCompleted)) {
+     tetikler — gece 1'deki zamanlanmis is ile AYNI fonksiyon (TUM tamamlananlari temizler,
+     mevcut sayfayla SINIRLI DEGIL). Buton, kullanicinin (sayfadan bagimsiz) tamamlanmis
+     gorevi varsa gosterilir. Silme actor'de async oldugu icin liste hemen yenilense de
+     sonuclar bir an sonra dusebilir. *@
+  @if(hasCompleted) {
     <p>
       @helper.form(action = routes.CleanupController.runCleanup(), Symbol("style") -> "display:inline") {
         @helper.CSRF.formField
@@ -41,7 +47,7 @@
     </p>
   }
 
-  @if(tasks.isEmpty) {
+  @if(page.isEmpty) {
     <p>@request.messages("task.list.empty")</p>
   } else {
     <table>
@@ -56,7 +62,7 @@
         </tr>
       </thead>
       <tbody>
-        @for(task <- tasks) {
+        @for(task <- page.items) {
           <tr>
             <td>@task.id</td>
             <td>@task.title</td>
@@ -110,5 +116,9 @@
         }
       </tbody>
     </table>
+
+    @* Ortak, domain-agnostik sayfalama kontrolu. Reverse routing'i BIZ saglariz
+       (aktif size korunur); partial yalniz `Page[_]` metadatasini bilir. *@
+    @common.paginationView(page)(n => routes.TaskItemController.list(n, page.pageSize))
   }
 }
