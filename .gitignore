@@ -15,3 +15,5 @@ project/project/
 
 # Ortam degiskenleri — asla commit'leme
 .env
+
+docs/
