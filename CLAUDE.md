@@ -1,12 +1,28 @@
 # CLAUDE.md — Mona DRP
 
-Bu repo, **Play Framework 2.9 / Scala 2.13** üzerinde geliştirilmiş bir todo uygulamasından
-**Mona DRP** (Digital Risk Protection) platformuna dönüştürülmektedir.
+**Mona DRP** (Digital Risk Protection), **Play Framework 2.9 / Scala 2.13** üzerinde sıfırdan
+geliştirilen **greenfield** bir modüler monolit platformudur. Hedef kod tabanı `app/drp/` altındadır.
 
-Dökümanlar: `docs/` klasörü. Güncel belgeler: `Mona_DRP_Data_Model_v5_Corrected.docx`,
-`Mona_DRP_Happy_Path_v5.md`, `Mona_DRP_Happy_Path_Data_Flow_Simulation.md`,
-`Mona_DRP_MVP_Plan_Final.pdf`, `Mona_DRP_Backlog_v2.docx`, `Scalability_Fixes.md`,
-`Postgres_Extension_Research_2.md`.
+Repodaki **`app/todo/`** dizini **iş alanıyla ilgisizdir**. Yalnızca hazır mimari pattern'leri
+(Repository, Mapper, pac4j Authentication, Pagination, Slick adapter, Guice modül kompozisyonu)
+çalışan bir örnek üzerinden sağlayan **geçici iskeledir** — modüler monolit yapısını otururken
+referans modül gibi düşünülmüştür. DRP modülleri bu pattern'leri örnek alır; DRP kendi ayakları
+üzerinde durduğunda `todo` iskelesi repodan kaldırılacaktır.
+
+### Dökümanlar (`docs/`)
+
+| Dosya | İçerik |
+|---|---|
+| `migration_final_schema/migration_final_schema.md` | **Migration öncesi final şema kararları** — 16 tablo; tip/nullable/default/FK/ON DELETE/CHECK/index/trigger. **En güncel şema kaynağı.** |
+| `research_documents/Mona_DRP_Happy_Path_v5.md` | MVP Core uçtan uca happy path (pipeline akışı) |
+| `research_documents/Mona_DRP_Happy_Path_v5_Veri_Akisi_Simulasyonu.md` | Happy path'in satır-satır DB simülasyonu (Akbank örneği) |
+| `research_documents/Mona_DRP_Veri_Modeli_v5_duzeltilmis.pdf` | Veri modeli v5 (düzeltilmiş) |
+| `research_documents/Mona_DRP_MVP_Plani.pdf` | MVP planı |
+| `research_documents/Mona_DRP_Ileri_Faz_Yol_Haritasi.pdf` | İleri faz yol haritası |
+| `project_architecture/current_architecture_map.md` | Mevcut mimari haritası + DRP modül eşlemesi |
+| `project_architecture/mona_drp_modular_monolith_skeleton_decision.md` | Modüler monolit iskelet kararı |
+| `project_architecture/todo_modular_monolith_migration.md` | Todo iskelesinden çıkarılan pattern dersleri |
+| `drp-local-setup.md` | Yerel geliştirme ortamı kurulumu (Docker + migration) |
 
 ---
 
@@ -33,6 +49,10 @@ Demo senaryosu: **Akbank** (`akbank.com`) korunan marka, `akbank-guvenli-giris.c
 
 ## 2. Mevcut Repo Durumu (Doğrulanmış)
 
+Repo iki kod tabanı içerir: çalışan **`app/todo/`** iskelesi (modüler monolit pattern referansı —
+geçici, kaldırılacak) ve **`app/drp/`** hedef modülleri (şu an yalnızca `.gitkeep`'li boş iskelet;
+henüz Scala kodu yazılmadı).
+
 ### Tech Stack
 
 | Katman | Teknoloji |
@@ -50,53 +70,62 @@ Demo senaryosu: **Akbank** (`akbank.com`) korunan marka, `akbank-guvenli-giris.c
 
 ### Mevcut Paket Yapısı
 
-```
+```text
 app/
-├── domain/               ← Saf domain; IO yok. Smart ctor, ADT, Either.
-│   ├── task/             ← TaskItem (rich), Urgency ADT, TaskItemCategory
-│   ├── category/         ← Category
-│   ├── user/             ← User
-│   └── common/           ← AuditInfo, AuditableEntity, DomainError, Priority
-├── services/             ← interface + impl (ServiceResult mini-EitherT)
-├── repositories/
-│   ├── interfaces/       ← port'lar (CrudRepository, TaskItemRepository…)
-│   ├── sql/              ← Slick adapter'ları (SlickCrudSupport mixin)
-│   └── inmemory/         ← test adapter'ları
-├── persistence/db/       ← Slick tablo tanımları + Row sınıfları
-│   ├── Tables.scala      ← FACADE: with UsersTable with CategoriesTable …
-│   ├── BaseTables.scala  ← profile DI + BaseTable[R]
-│   └── mappers/          ← RowMapper[Domain, Row] implicit instance'ları
-├── controllers/          ← Play HTTP; form parse → service → Twirl/JSON
-├── modules/
-│   ├── AppModule.scala   ← ROOT: Clock + backend seçimi + context install
-│   ├── SecurityModule.scala
-│   ├── CleanupModule.scala
-│   ├── context/          ← TaskModule, CategoryModule, UserModule
-│   └── persistence/      ← SlickPersistenceModule, InMemoryPersistenceModule
-├── actors/               ← CompletedTaskCleaner (Akka Typed, zamanlanmış)
-├── actions/              ← AuthenticatedAction (pac4j)
-├── filters/              ← AccessLogFilter
-├── forms/                ← Form data sınıfları
-├── pagination/           ← Page, PageRequest, PageWindow
-└── views/                ← Twirl şablonları
+├── todo/                 ← GEÇİCİ İSKELE (pattern referansı; iş alanıyla ilgisiz, kaldırılacak)
+│   ├── shared/           ← AuditInfo/Clock/ServiceResult/Page + CrudRepository, BaseTables,
+│   │                       Tables (facade), RowMapper, SlickCrudSupport, persistence modülleri
+│   ├── task/             ← {domain, application, infrastructure, web} — örnek modül (Akka cleaner dahil)
+│   ├── category/         ← {domain, application, infrastructure, web}
+│   ├── user/             ← {domain, application, infrastructure, web} — pac4j auth + SecurityModule
+│   └── boot/             ← AppModule (tüm modülleri compose eden tek giriş noktası)
+│
+├── drp/                  ← HEDEF DRP KODU (şu an yalnızca .gitkeep — kod yazılmadı)
+│   ├── shared/           → ortak primitive, error/result, helper, ID tipleri
+│   ├── asset/            → entities, asset_groups, assets, exclusions
+│   ├── discovery/        → candidate_discoveries
+│   ├── candidate/        → candidates
+│   ├── crawl/            → crawl_results
+│   ├── analysis/         → page_features, candidate_asset_matches, detection_signals
+│   ├── risk/             → risk_scores, rule_results
+│   ├── review/           → reviews
+│   ├── casework/         → cases, evidence_files
+│   └── platform/
+│       ├── storage/      → blob_storage (StorageService interface)
+│       └── queue/        → JobQueue interface → PGMQ impl
+│
+├── filters/             ← AccessLogFilter (cross-cutting)
+└── migrations/
+    ├── initialize.sql   ← todo iskelesinin SQL Server baseline'ı
+    └── drp-postgres/    ← DRP PostgreSQL migration seti (V001..V006)
 ```
 
-### Modüler Monolit Geçişini Engelleyen 4 Yapışma Noktası
+Her DRP modülü kendi içinde `domain / application / application/ports / infrastructure / web / workers`
+katmanlarını taşır (hepsi her modülde zorunlu değil). Detay:
+`docs/project_architecture/mona_drp_modular_monolith_skeleton_decision.md`.
 
-| # | Sorun | Dosya |
+### Todo İskelesinden Çıkarılan Modülerlik Dersleri
+
+`app/todo/` modüler monolite çevrildi; geriye DRP modüllerini yazarken kaçınılacak 4 ders kaldı
+(detay: `docs/project_architecture/todo_modular_monolith_migration.md`):
+
+| # | Ders | Todo'daki örnek konum |
 |---|---|---|
-| 1 | `TaskItemServiceImpl` doğrudan `CategoryRepository` enjekte ediyor | `app/services/TaskItemServiceImpl.scala:25` |
-| 2 | `domain.task.TaskItem` → `domain.category.Category` import | `app/domain/task/TaskItem.scala:5` |
-| 3 | `Tables.scala` tüm tabloları tek facade'da birleştiriyor | `app/persistence/db/Tables.scala` |
-| 4 | `task_item_categories` cross-module FK (tasks ↔ categories) | DB şema |
+| 1 | Domain sınıfı başka modülün domain'ini import etmemeli (primitive / `shared` ile konuş) | `app/todo/task/domain/TaskItem.scala` (→ `Category` import) |
+| 2 | Modüller arası erişim port üzerinden; cross-module repository DI'ı yapma | `app/todo/task/application/TaskItemServiceImpl.scala` (→ `CategoryRepository` DI) |
+| 3 | Tek `Tables.scala` facade'ı gizli bağımlılık üretir; tablo sahipliği modülde kalmalı | `app/todo/shared/infrastructure/Tables.scala` |
+| 4 | Cross-module FK'da tek sahip belirle (sahip yazar, diğerleri port'tan okur) | `task_item_categories` (DB şema) |
 
-### Güvenlik Notu (Öncelikli)
+### Güvenlik Notu
 
-`conf/application.conf` içinde SA şifresi düz metin commit'li:
+`conf/application.conf` hâlâ todo iskelesinin SQL Server bağlantısını ve **düz metin SA şifresini**
+taşıyor:
 ```
 slick.dbs.default.db.password = "BP4329H42Jk#"
 ```
-→ `SLICK_DB_PASSWORD` env variable'ına taşınmalı.
+Bu satır todo iskelesi kaldırılınca gidecek; o güne kadar repoda düz metin sır bulundurmamak için
+env variable'a (`SLICK_DB_PASSWORD`) taşınmalı. DRP tarafı zaten PostgreSQL'e `.env` üzerinden
+bağlanır (bkz. `.env.example`, `docs/drp-local-setup.md`).
 
 ---
 
@@ -132,104 +161,61 @@ app/drp/
 
 ---
 
-## 4. Veri Modeli v5 (Güncel Şema — 16 Tablo)
+## 4. Veri Modeli v5 (16 Tablo — Özet)
 
-### 4.1 Tablo Özeti
+> **Tek doğru kaynak:** `docs/migration_final_schema/migration_final_schema.md` (tip, nullable,
+> default, FK, ON DELETE, CHECK, index, trigger kararlarının tamamı + tablo-tablo final şema).
+> Aşağısı yalnızca yön içindir; bir çelişki olursa final şema dokümanı geçerlidir.
 
-**Varlık ve Asset Katmanı**
+16 tablo, pipeline katmanlarına göre:
 
-| Tablo | Görev | Tip |
-|---|---|---|
-| `entities` | Korunan marka/kurum/kişi | mutable |
-| `asset_groups` | Entity altında opsiyonel alt gruplama | mutable |
-| `assets` | Korunan dijital varlık (domain/subdomain). Logo/favicon ayrı tip değil; `metadata` JSONB'de referans. | mutable |
-| `exclusions` | Allowlist — kontrol edilmeyecek domain'ler. `skip_reason="whitelisted"` ile `candidate_discoveries`'ta kalır. | mutable |
+| Katman | Tablolar |
+|---|---|
+| Varlık / Asset | `entities`, `asset_groups`, `assets`, `exclusions` |
+| Aday / Tespit | `candidate_discoveries`, `candidates`, `crawl_results`, `page_features`, `candidate_asset_matches`, `detection_signals` |
+| Karar / Aksiyon | `risk_scores`, `rule_results`, `reviews`, `cases`, `evidence_files` |
+| Altyapı | `blob_storage` |
 
-**Aday ve Tespit Katmanı**
+**Akılda tutulacak şema kararları:**
 
-| Tablo | Görev | Tip |
-|---|---|---|
-| `candidate_discoveries` | Ham permütasyon staging tablosu. Exclusion + DNS/HTTP kontrolü burada. Duplicate guard: `UNIQUE(entity_id, normalized_value)`. | mutable |
-| `candidates` | DNS/HTTP'den geçmiş gerçek adaylar. Status: `validated→crawled→analyzed→scored→reviewed→closed` + `eliminated`, `error`. | mutable |
-| `crawl_results` | Site açılmadan üretilemeyen FETCH verisi. `storage_ref` → `blob_storage` manifest. | immutable |
-| `page_features` | Ham DOM'dan çıkarılan yapısal özet. Idempotent: `UNIQUE(crawl_result_id, extractor_version)`. | immutable |
-| `candidate_asset_matches` | Adayın resmi asset'e benzerlik skorları (domain/logo/favicon/dom). | immutable |
-| `detection_signals` | Sayfanın iç sinyalleri (form, password_input, ocr_brand_match). Asset'e referans vermez. | immutable |
+- **Mutable** (`created_at` + `updated_at`, trigger ile): `entities`, `asset_groups`, `assets`, `exclusions`, `candidate_discoveries`, `candidates`, `cases`. Diğer tüm tablolar **immutable / append-only** (yalnızca `created_at`).
+- Tüm FK'lar **ON DELETE RESTRICT** — MVP'de cascade delete yok (kanıt/iz zinciri korunur).
+- PostgreSQL ENUM yok; kritik lifecycle alanları **TEXT + CHECK** (`candidates.status`, `risk_scores.verdict`, `reviews.decision`, `cases.status`, `assets.asset_type`, …). `source` / `match_type` / `signal_type` / `rule_code` gibi genişleyebilir alanlarda CHECK yok.
+- Skor alanları **NUMERIC(5,4)** + `CHECK 0..1` (`similarity_score`, `score`, `total_score`, `confidence`, `weight`).
+- `candidates.discovery_id` **NOT NULL** — manuel dahil her input önce `candidate_discoveries` staging'inden geçer; hiçbir aday doğrudan `candidates`'a yazılmaz.
+- `candidates.status` içinde **`whitelisted` YOK** (staging'de `skip_reason='whitelisted'`); `candidates.asset_id` **YOK** (kaynak asset'e `discovery_id → candidate_discoveries.asset_id` ile gidilir).
+- `evidence_files` **`case_id` taşımaz**; kanıt paketi `case → candidate_id → evidence_files` ile türetilir.
+- Büyük içerik (HTML/DOM/screenshot/OCR) JSONB'ye gömülmez → `blob_storage` (bytea, STORAGE EXTERNAL) + `storage_ref`.
+- **JSONB/TEXT boyut CHECK'leri MVP migration'ında YOK** — gerçek veri gözlemlendikten sonra ayrı bir `V007` hardening migration'ına ertelendi. Yalnızca `redirect_chain` için `jsonb_typeof = 'array'` (boyut değil, veri bütünlüğü) CHECK'i vardır.
 
-**Karar ve Aksiyon Katmanı**
-
-| Tablo | Görev | Tip |
-|---|---|---|
-| `risk_scores` | Ağırlıklı toplam skor + verdict (`clean/suspicious/malicious`). `rule_results` ile tek transaction'da yazılır. | immutable |
-| `rule_results` | Skoru oluşturan her kuralın katkısı (FK → `risk_scores`). | immutable |
-| `reviews` | İnsan onay kararı. Append-only; en son satır geçerli. | immutable/append-only |
-| `cases` | Onaylı tehdit için vaka kaydı. Takedown mock/log. | mutable |
-| `evidence_files` | Kanıt dosya referansları. `case_id` YOK; `case → candidate_id → evidence_files`. | immutable |
-
-**Altyapı**
-
-| Tablo | Görev | Tip |
-|---|---|---|
-| `blob_storage` | HTML/DOM/screenshot/OCR binary içerik (bytea, STORAGE EXTERNAL). Ana tablolar şişmez; `storage_ref` ile erişim. | immutable/append-only |
-
-### 4.2 Önemli Şema Kararları
-
-- `candidates.asset_id` **YOK** — kaynak asset'e `discovery_id → candidate_discoveries.asset_id` ile gidilir.
-- `failed_check_count` yalnızca `inactive/error` denemelerde artar. Exponential backoff: `next_check_at = now() + f(failed_check_count)`.
-- JSONB boyut limitleri CHECK constraint ile zorunlu: `dom_summary < 8KB`, `redirect_chain < 4KB`, `details < 4KB`, `metadata < 2KB`, `llm_summary < 5000 char`.
-- `candidates` index: partial — sadece aktif pipeline adayları (`WHERE status IN ('validated','crawled','analyzed','scored',...)`).
-- `evidence_files(content_hash)` index: partial — `WHERE content_hash IS NOT NULL`.
-
-### 4.3 storage_ref Formatı
-
-```
-pg://evidence/{candidate_id}/{crawl_run_id}/{file_type}.{ext}   ← MVP (blob_storage)
-s3://mona-drp/evidence/{candidate_id}/{crawl_run_id}/...        ← İleride
-```
+**storage_ref formatı:** `pg://evidence/{candidate_id}/{crawl_run_id}/{file_type}.{ext}` (MVP, `blob_storage`) → ileride `s3://mona-drp/evidence/...`.
 
 ---
 
 ## 5. Happy Path Pipeline (v5 — Akbank Örneği)
 
-```
-entities[Akbank] + assets[akbank.com]
-        ↓
-candidate_discoveries[pending] ← permütasyon/manual/complaint
-        ↓ exclusion + DNS/HTTP kontrol
-  whitelisted → staging'de kalır (skip_reason)
-  inactive   → backoff ile recheck (next_check_at)
-  active     → candidates'a TERFİ
-        ↓
-candidates[validated] → crawl_queue
-        ↓ Crawl worker (izole ortam)
-crawl_results + blob_storage (html/dom/screenshot/favicon + crawl_bundle manifest)
-candidates[crawled] → feature_extraction_queue
-        ↓ Feature extraction worker
-page_features (dom_summary JSONB <8KB; tam DOM blob'da)
-        → similarity_queue
-        ↓ Analiz (2 paralel bacak)
-  (a) candidate_asset_matches: domain_sim(0.88) + logo_sim(0.91) + favicon_sim(0.94) + dom_sim(0.82)
-  (b) detection_signals: form_detected(1.0) + password_input_detected(1.0) + ocr_brand_match(0.95)
-candidates[analyzed] → risk_scoring_queue
-        ↓ Risk scoring (tek transaction)
-risk_scores[total=0.91, verdict=malicious] + rule_results[5 kural]
-candidates[scored]
-        ↓ Human review (Twirl ekranı)
-reviews[confirmed, analyst_01]
-candidates[reviewed]
-        ↓ Case + takedown mock
-cases[takedown_requested] + evidence_files[4 dosya referansı]
-candidates[closed] ✓
+> Tam akış + satır-satır DB simülasyonu: `docs/research_documents/Mona_DRP_Happy_Path_v5.md` ve
+> `Mona_DRP_Happy_Path_v5_Veri_Akisi_Simulasyonu.md`. Aşağısı özet.
+
+Korunan marka **Akbank** (`akbank.com`), sahte site `akbank-guvenli-giris.com`. Pipeline öncesi:
+entity/asset tanımı → `candidate_discoveries` staging (exclusion + DNS/HTTP) → aktif aday
+`candidates`'a terfi. Sonrası asenkron worker zinciri; aday şu status milestone'larından geçer
+(her ok bir PGMQ mesajı, her durak kalıcı kanıt yazar):
+
+```text
+validated ─crawl→ crawled ─extract+analyze→ analyzed ─score→ scored ─insan→ reviewed ─case→ closed
+   │            │                  │                        │            │           │
+crawl_queue  crawl_results   candidate_asset_matches     risk_scores  reviews     cases
+             blob_storage    detection_signals           rule_results             evidence_files
+                             page_features
 ```
 
-### Risk Skor Formülü
+Özet: **topla → iki açıdan analiz et (asset benzerliği + sayfa-içi sinyal) → tek skora indir →
+insana onaylat → vaka aç ve kanıtı bağla.**
 
-```
-score = domain_sim×0.25 + logo_sim×0.20 + dom_sim×0.15 + form×0.20 + ocr×0.10
-      (normalize: ham_toplam / 0.90 — fingerprint_score Plus'ta gelecek)
-
-≥0.70 → malicious | ≥0.40 → suspicious | else → clean
-```
+**Risk skor formülü:** `domain_sim×0.25 + logo_sim×0.20 + dom_sim×0.15 + form×0.20 + ocr×0.10`,
+normalize = ham_toplam / 0.90 (fingerprint 0.10 Plus'ta gelecek). Eşik:
+`≥0.70 malicious`, `≥0.40 suspicious`, else `clean`.
 
 ---
 
