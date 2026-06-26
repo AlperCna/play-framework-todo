@@ -353,3 +353,8 @@ deepfake, self-improving model / Agentic SOC.
 - **Migration aracı**: Play Evolutions/Flyway yok; manuel, versiyonlu SQL dosyaları kullanılacak.
 - **Migration konumu**: DRP PostgreSQL dosyaları `app/migrations/drp-postgres/` altında tutulacak.
 - **Şema sahipliği**: MVP'de tek PostgreSQL şeması ve açık FK'lar kullanılacak; modül sınırı kod paketleri ve port'lar üzerinden korunacak.
+
+<!-- SPECKIT START -->
+For additional context about technologies to be used, project structure,
+shell commands, and other important information, read the current plan
+<!-- SPECKIT END -->
