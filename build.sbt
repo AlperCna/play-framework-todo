@@ -10,6 +10,11 @@ lazy val root = (project in file("."))
       guice,
       "com.typesafe.play"       %% "play-slick" % "5.2.0",
       "com.microsoft.sqlserver"  % "mssql-jdbc" % "13.4.0.jre11",
+      // DRP persistence: PostgreSQL + slick-pg (JSONB). Separate `slick.dbs.drp` connection;
+      // the todo scaffold keeps its SQL Server `default` connection.
+      "org.postgresql"           % "postgresql" % "42.7.4",
+      "com.github.tminglei"     %% "slick-pg" % "0.21.1",
+      "com.github.tminglei"     %% "slick-pg_play-json" % "0.21.1",
       "org.pac4j"               %% "play-pac4j" % "12.0.0-PLAY2.9",
       "org.pac4j"                % "pac4j-http" % "6.0.0",
       // pac4j PlayCookieSessionStore'un ShiroAesDataEncrypter'i icin (cookie sifreleme);

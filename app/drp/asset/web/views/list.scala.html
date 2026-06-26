@@ -1,0 +1,43 @@
+@(entities: Seq[drp.asset.domain.Entity])(implicit request: MessagesRequestHeader)
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Mona DRP — Protected Entities &amp; Assets</title>
+  </head>
+  <body>
+    <h1>Protected Entities &amp; Assets</h1>
+
+    @request.flash.get("success").map { message =>
+      <p style="color:green">@message</p>
+    }
+    @request.flash.get("error").map { message =>
+      <p style="color:red">@message</p>
+    }
+
+    <h2>Register a protected entity</h2>
+    @helper.form(action = drp.asset.web.routes.EntityController.create()) {
+      @helper.CSRF.formField
+      <label>Name <input type="text" name="name"></label>
+      <label>Type <input type="text" name="type" value="brand"></label>
+      <button type="submit">Add entity</button>
+    }
+
+    <h2>Entities</h2>
+    @if(entities.isEmpty) {
+      <p>No entities registered yet.</p>
+    } else {
+      <ul>
+        @for(entity <- entities) {
+          <li>
+            <strong>#@entity.id @entity.name</strong> <em>(@entity.entityType)</em>
+            <ul>
+              <li><em>No assets yet.</em></li>
+            </ul>
+          </li>
+        }
+      </ul>
+    }
+  </body>
+</html>

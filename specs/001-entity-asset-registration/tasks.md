@@ -27,9 +27,9 @@ Modular monolith: feature code under `app/drp/asset/`, shared Slick profile unde
 
 **Purpose**: PostgreSQL/Slick wiring both stories depend on. Does NOT touch `slick.dbs.default` (todo / SQL Server).
 
-- [ ] T001 Add the PostgreSQL JDBC driver (`org.postgresql % postgresql`) and slick-pg (`com.github.tminglei %% slick-pg` + its play-json artifact) to `build.sbt` libraryDependencies
-- [ ] T002 Add a dedicated `slick.dbs.drp` Slick database (PostgreSQL profile, JDBC URL/user/password sourced from `.env`, port 55432) to `conf/application.conf`, leaving the existing `slick.dbs.default` (SQL Server) block untouched
-- [ ] T003 [P] Create `MonaPgProfile` (extends slick-pg `ExPostgresProfile` with Play-JSON JSONB support) in `app/drp/shared/infrastructure/MonaPgProfile.scala`
+- [X] T001 Add the PostgreSQL JDBC driver (`org.postgresql % postgresql`) and slick-pg (`com.github.tminglei %% slick-pg` + its play-json artifact) to `build.sbt` libraryDependencies
+- [X] T002 Add a dedicated `slick.dbs.drp` Slick database (PostgreSQL profile, JDBC URL/user/password sourced from `.env`, port 55432) to `conf/application.conf`, leaving the existing `slick.dbs.default` (SQL Server) block untouched
+- [X] T003 [P] Create `MonaPgProfile` (extends slick-pg `ExPostgresProfile` with Play-JSON JSONB support) in `app/drp/shared/infrastructure/MonaPgProfile.scala`
 
 **Checkpoint**: `sbt compile` succeeds with the new deps; `slick.dbs.drp` resolves.
 
@@ -39,7 +39,7 @@ Modular monolith: feature code under `app/drp/asset/`, shared Slick profile unde
 
 **Purpose**: Shared domain pieces both stories use. ⚠️ Complete before US1/US2.
 
-- [ ] T004 Create the shared domain error ADT in `app/drp/asset/domain/AssetDomainError.scala` (cases: `BlankEntityName`, `BlankAssetValue`, `UnknownEntity`, `DuplicateActiveAsset`)
+- [X] T004 Create the shared domain error ADT in `app/drp/asset/domain/AssetDomainError.scala` (cases: `BlankEntityName`, `BlankAssetValue`, `UnknownEntity`, `DuplicateActiveAsset`)
 
 **Checkpoint**: Foundation ready — user stories can begin.
 
@@ -53,21 +53,21 @@ Modular monolith: feature code under `app/drp/asset/`, shared Slick profile unde
 
 ### Tests for User Story 1
 
-- [ ] T005 [P] [US1] Domain spec for `Entity` smart constructor (blank name → `BlankEntityName`; any non-blank type accepted) in `test/drp/asset/domain/EntitySpec.scala`
-- [ ] T006 [P] [US1] Service spec for `EntityService` via `InMemoryEntityRepository` (register persists + appears in list; blank name → error, nothing stored) in `test/drp/asset/application/EntityServiceSpec.scala`
+- [X] T005 [P] [US1] Domain spec for `Entity` smart constructor (blank name → `BlankEntityName`; any non-blank type accepted) in `test/drp/asset/domain/EntitySpec.scala`
+- [X] T006 [P] [US1] Service spec for `EntityService` via `InMemoryEntityRepository` (register persists + appears in list; blank name → error, nothing stored) in `test/drp/asset/application/EntityServiceSpec.scala`
 
 ### Implementation for User Story 1
 
-- [ ] T007 [P] [US1] Create `Entity` domain (immutable case class + smart ctor returning `Either[AssetDomainError, Entity]`; free-text type, read-only timestamps) in `app/drp/asset/domain/Entity.scala`
-- [ ] T008 [P] [US1] Define `EntityRepository` port (`create`, `listAll`) in `app/drp/asset/application/ports/EntityRepository.scala`
-- [ ] T009 [US1] Create `EntitiesTable` + `EntityRow` (Slick via `MonaPgProfile`, mapping the `entities` columns; insert omits `created_at`/`updated_at`) in `app/drp/asset/infrastructure/EntitiesTable.scala`
-- [ ] T010 [US1] Implement `SlickEntityRepository` (`@NamedDatabase("drp")`; insert-returning-id, `listAll` bulk) in `app/drp/asset/infrastructure/SlickEntityRepository.scala` (depends on T008, T009)
-- [ ] T011 [P] [US1] Implement `InMemoryEntityRepository` test adapter in `app/drp/asset/infrastructure/InMemoryEntityRepository.scala` (depends on T008)
-- [ ] T012 [US1] Implement `EntityService` + `EntityServiceImpl` (`register`, `list` → `Future[Either[AssetDomainError, _]]`) in `app/drp/asset/application/EntityService.scala` and `EntityServiceImpl.scala` (depends on T007, T008)
-- [ ] T013 [US1] Create Guice `AssetModule` binding `EntityRepository → SlickEntityRepository`, and register it via `play.modules.enabled += "drp.asset.application.AssetModule"` in `conf/application.conf`, file `app/drp/asset/application/AssetModule.scala` (depends on T010)
-- [ ] T014 [US1] Create `EntityController.create` (POST → 303 redirect to listing; blank name re-renders with a visible message, nothing persisted) + `EntityFormData` in `app/drp/asset/web/EntityController.scala` and `app/drp/asset/web/EntityFormData.scala` (depends on T012)
-- [ ] T015 [US1] Create `AssetController.list` (GET `/drp/assets`) rendering `list.scala.html` — lists all entities, each with an (empty for now) asset list, never erroring on zero assets — in `app/drp/asset/web/AssetController.scala` and `app/drp/asset/web/views/list.scala.html` (depends on T012)
-- [ ] T016 [US1] Add routes `GET /drp/assets` and `POST /drp/assets/entities` to `conf/routes` (depends on T014, T015)
+- [X] T007 [P] [US1] Create `Entity` domain (immutable case class + smart ctor returning `Either[AssetDomainError, Entity]`; free-text type, read-only timestamps) in `app/drp/asset/domain/Entity.scala`
+- [X] T008 [P] [US1] Define `EntityRepository` port (`create`, `listAll`) in `app/drp/asset/application/ports/EntityRepository.scala`
+- [X] T009 [US1] Create `EntitiesTable` + `EntityRow` (Slick via `MonaPgProfile`, mapping the `entities` columns; insert omits `created_at`/`updated_at`) in `app/drp/asset/infrastructure/EntitiesTable.scala`
+- [X] T010 [US1] Implement `SlickEntityRepository` (`@NamedDatabase("drp")`; insert-returning-id, `listAll` bulk) in `app/drp/asset/infrastructure/SlickEntityRepository.scala` (depends on T008, T009)
+- [X] T011 [P] [US1] Implement `InMemoryEntityRepository` test adapter in `app/drp/asset/infrastructure/InMemoryEntityRepository.scala` (depends on T008)
+- [X] T012 [US1] Implement `EntityService` + `EntityServiceImpl` (`register`, `list` → `Future[Either[AssetDomainError, _]]`) in `app/drp/asset/application/EntityService.scala` and `EntityServiceImpl.scala` (depends on T007, T008)
+- [X] T013 [US1] Create Guice `AssetModule` binding `EntityRepository → SlickEntityRepository`, and register it via `play.modules.enabled += "drp.asset.application.AssetModule"` in `conf/application.conf`, file `app/drp/asset/application/AssetModule.scala` (depends on T010)
+- [X] T014 [US1] Create `EntityController.create` (POST → 303 redirect to listing; blank name re-renders with a visible message, nothing persisted) + `EntityFormData` in `app/drp/asset/web/EntityController.scala` and `app/drp/asset/web/EntityFormData.scala` (depends on T012)
+- [X] T015 [US1] Create `AssetController.list` (GET `/drp/assets`) rendering `list.scala.html` — lists all entities, each with an (empty for now) asset list, never erroring on zero assets — in `app/drp/asset/web/AssetController.scala` and `app/drp/asset/web/views/list.scala.html` (depends on T012)
+- [X] T016 [US1] Add routes `GET /drp/assets` and `POST /drp/assets/entities` to `conf/routes` (depends on T014, T015)
 
 **Checkpoint**: US1 fully functional and demoable — register entities and view them. MVP complete.
 
