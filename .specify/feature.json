@@ -1,1 +1,3 @@
-{"feature_directory":"specs/001-entity-asset-registration"}
+{
+  "feature_directory": "specs/002-exclusion-registration"
+}
