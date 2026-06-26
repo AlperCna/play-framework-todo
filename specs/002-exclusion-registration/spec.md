@@ -10,6 +10,13 @@
 
 **Input**: User description: "US-002-Exclusion-Registration.md dosyasındaki hazır user story'yi feature girdisi olarak kullan." (foundational vertical slice — register and view exclusions / allowlist entries under a protected entity, on a server-rendered screen; completes the entity + asset + exclusion setup surface)
 
+## Clarifications
+
+### Session 2026-06-26
+
+- Q: Where is the exclusion listing screen shown? → A: A dedicated per-entity exclusions screen — a new route scoped to one entity (reached from the entity list), showing that entity's exclusions plus the create form; the US-001 `/drp/assets` entity/asset view stays untouched.
+- Q: How is a blank/empty `reason` handled (schema is NOT NULL with no default)? → A: Treat `reason` as required — reject a blank reason with a visible validation message and persist nothing, mirroring the blank-`value` rule.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Register and view exclusions under a protected entity (Priority: P1)
@@ -24,18 +31,20 @@ An analyst declares *what the platform must never flag* by registering an exclus
 
 1. **Given** an existing entity, **When** the analyst registers an exclusion with value "akbankdirekt.com", match type "exact", and reason "owned_unmonitored", **Then** an exclusion is stored under that entity with active status true, the default creator stamp, and creation/update timestamps, and it appears on the entity's exclusion listing screen.
 2. **Given** the exclusion registration form, **When** the analyst submits a blank value, **Then** the system shows a visible validation message and persists nothing.
-3. **Given** no entity with the referenced id exists, **When** the analyst attempts to register an exclusion under it, **Then** the system rejects the attempt and persists nothing.
-4. **Given** an existing entity, **When** the analyst registers an exclusion with a match type from the allowed set other than "exact" (i.e., "registrable_domain", "subdomain_of", or "pattern"), **Then** the exclusion is accepted and stored with that match type.
-5. **Given** an existing entity, **When** the analyst submits a match type outside the allowed set, **Then** the system rejects the attempt and persists nothing.
-6. **Given** an existing entity, **When** the analyst registers an exclusion with a reason such as "third_party_legit" (an open classification), **Then** the exclusion is accepted and the reason is stored exactly as entered.
-7. **Given** an active exclusion already exists for an entity with a given value and match type, **When** the analyst registers another active exclusion with the same entity, value, and match type, **Then** the system rejects the duplicate with a visible message and creates no second record.
-8. **Given** an entity with no exclusions, **When** the analyst opens that entity's exclusion listing screen, **Then** the screen renders an empty list rather than an error.
+3. **Given** the exclusion registration form, **When** the analyst submits a blank reason, **Then** the system shows a visible validation message and persists nothing.
+4. **Given** no entity with the referenced id exists, **When** the analyst attempts to register an exclusion under it, **Then** the system rejects the attempt and persists nothing.
+5. **Given** an existing entity, **When** the analyst registers an exclusion with a match type from the allowed set other than "exact" (i.e., "registrable_domain", "subdomain_of", or "pattern"), **Then** the exclusion is accepted and stored with that match type.
+6. **Given** an existing entity, **When** the analyst submits a match type outside the allowed set, **Then** the system rejects the attempt and persists nothing.
+7. **Given** an existing entity, **When** the analyst registers an exclusion with a reason such as "third_party_legit" (an open classification), **Then** the exclusion is accepted and the reason is stored exactly as entered.
+8. **Given** an active exclusion already exists for an entity with a given value and match type, **When** the analyst registers another active exclusion with the same entity, value, and match type, **Then** the system rejects the duplicate with a visible message and creates no second record.
+9. **Given** an entity with no exclusions, **When** the analyst opens that entity's exclusion listing screen, **Then** the screen renders an empty list rather than an error.
 
 ---
 
 ### Edge Cases
 
 - **Blank value**: rejected with a visible validation message; nothing persisted.
+- **Blank reason**: rejected with a visible validation message; nothing persisted (reason is required — NOT NULL with no DB default).
 - **Exclusion under a non-existent entity**: rejected; nothing persisted (the owning entity must exist).
 - **Match type outside the allowed set** (anything other than `exact` / `registrable_domain` / `subdomain_of` / `pattern`): rejected; nothing persisted. Match type is a closed set.
 - **Open reason value** (e.g., "third_party_legit", or any other non-blank reason): accepted and stored exactly as entered — reason is an open classification with no fixed set.
@@ -49,13 +58,13 @@ An analyst declares *what the platform must never flag* by registering an exclus
 ### Functional Requirements
 
 - **FR-001**: The system MUST allow an analyst to register an exclusion under an existing protected entity by providing a value, a match type, and a reason, persisting it with active status defaulting to true, the default creator stamp, and creation/update timestamps.
-- **FR-002**: The system MUST reject exclusion registration when the value is blank, persisting nothing and showing a visible validation message.
+- **FR-002**: The system MUST reject exclusion registration when the value is blank OR when the reason is blank, persisting nothing and showing a visible validation message. Both `value` and `reason` are required inputs (`reason` is NOT NULL with no DB default).
 - **FR-003**: The system MUST reject exclusion registration when the referenced owning entity does not exist, persisting nothing and showing a visible message. The owning entity is required for every exclusion in this slice.
 - **FR-004**: The system MUST accept a match type only from the closed set `exact`, `registrable_domain`, `subdomain_of`, `pattern`, and MUST reject any value outside that set, persisting nothing.
-- **FR-005**: The system MUST accept any non-blank reason as an open classification (e.g., "manual", "owned_unmonitored", "third_party_legit") without enforcing a fixed set of allowed values, and MUST store it exactly as entered.
+- **FR-005**: The system MUST accept any non-blank reason as an open classification (e.g., "manual", "owned_unmonitored", "third_party_legit") without enforcing a fixed set of allowed values, and MUST store it exactly as entered. (A blank reason is rejected per FR-002.)
 - **FR-006**: The system MUST prevent registration of a duplicate active exclusion (same owning entity, value, and match type) and surface the rejection as a visible message rather than failing abnormally.
 - **FR-007**: The system MUST store an exclusion's value exactly as entered (e.g., "akbankdirekt.com"), without transforming it to a derived, normalized, or registrable form.
-- **FR-008**: The system MUST present a server-rendered screen that lists the exclusions registered for an entity; an entity with no exclusions MUST render with an empty list rather than an error.
+- **FR-008**: The system MUST present a dedicated, per-entity server-rendered screen (a route scoped to a single entity, reachable from the entity list) that lists the exclusions registered for that entity and hosts the create form; an entity with no exclusions MUST render with an empty list rather than an error. This screen MUST NOT alter the existing US-001 entity/asset listing view.
 - **FR-009**: The system MUST host the exclusion capability inside the existing asset module, reusing the existing entity-existence check rather than duplicating it, and MUST NOT alter the US-001 entity/asset behavior or introduce reads/writes into unrelated pipeline modules.
 
 ### Preserved Behaviors *(MUST stay unchanged)*
@@ -70,8 +79,8 @@ An analyst declares *what the platform must never flag* by registering an exclus
 
 - **In scope**:
   - Registering an exclusion under an existing entity (value + match type + reason), persisting it with active status defaulting to true and audit stamps.
-  - A server-rendered screen listing the exclusions for an entity.
-  - The minimal module wiring to host the exclusion capability inside the existing asset module (`app/drp/asset/`), reusing US-001's entity-existence check.
+  - A dedicated, per-entity server-rendered screen (own route, reached from the entity list) that lists the exclusions for one entity and hosts the create form.
+  - The minimal module wiring to host the exclusion capability inside the existing asset module (`app/drp/asset/`), reusing US-001's entity-existence check; the existing US-001 entity/asset listing view is not modified.
   - Relying on the already-written asset-layer schema (`V001`, which includes `exclusions`) for the table — this slice authors no new migration and runs none (migrations are applied as a manual human/setup step).
 - **Out of scope** (MUST NOT be built or touched):
   - **Applying** exclusions during candidate discovery / matching (the `skip_reason = "whitelisted"` skip logic belongs to the `candidate_discoveries` user story) — this slice only registers and views them.
@@ -87,7 +96,7 @@ An analyst declares *what the platform must never flag* by registering an exclus
 ### Measurable Outcomes
 
 - **SC-001**: In a single session, an analyst can register an exclusion "akbankdirekt.com" (match type "exact", reason "owned_unmonitored") under an existing entity and see it on that entity's exclusion listing screen — using only the registration form, with no manual data steps.
-- **SC-002**: 100% of invalid submissions (blank value; exclusion under a non-existent entity; match type outside the allowed set; active duplicate) are rejected with a visible message and produce zero new persisted records.
+- **SC-002**: 100% of invalid submissions (blank value; blank reason; exclusion under a non-existent entity; match type outside the allowed set; active duplicate) are rejected with a visible message and produce zero new persisted records.
 - **SC-003**: An entity with no exclusions is displayed correctly (empty list) and never produces an error.
 - **SC-004**: A reason value other than the common ones (e.g., "third_party_legit") is accepted and shown exactly as entered.
 - **SC-005**: 100% of registered exclusion values are stored exactly as entered, with no transformation to a derived/normalized/registrable form.
