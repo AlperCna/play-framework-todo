@@ -37,10 +37,21 @@ $migrations = @(
     "V006__pgmq_queues_up.sql"
 )
 
+# psql yerel kurulu mu?
+$psqlLocal = $null -ne (Get-Command psql -ErrorAction SilentlyContinue)
+
 foreach ($migration in $migrations) {
     Write-Host "-> $migration" -ForegroundColor Yellow
     $filePath = Join-Path $MigrationsDir $migration
-    & psql -h $dbHost -p $dbPort -U $dbUser -d $dbName -v ON_ERROR_STOP=1 -f $filePath
+
+    if ($psqlLocal) {
+        & psql -h $dbHost -p $dbPort -U $dbUser -d $dbName -v ON_ERROR_STOP=1 -f $filePath
+    } else {
+        # Yerel psql yoksa Docker container icindeki psql kullan
+        Get-Content $filePath -Raw | docker compose exec -T postgres `
+            psql -U $dbUser -d $dbName -v ON_ERROR_STOP=1
+    }
+
     if ($LASTEXITCODE -ne 0) {
         Write-Error "HATA: $migration basarisiz oldu."
         exit 1
@@ -50,4 +61,8 @@ foreach ($migration in $migrations) {
 
 Write-Host ""
 Write-Host "Migration tamamlandi." -ForegroundColor Green
-Write-Host "Kontrol icin: psql -h $dbHost -p $dbPort -U $dbUser -d $dbName -f scripts\check_drp_schema.sql"
+if ($psqlLocal) {
+    Write-Host "Kontrol icin: psql -h $dbHost -p $dbPort -U $dbUser -d $dbName -f scripts\check_drp_schema.sql"
+} else {
+    Write-Host "Kontrol icin: docker compose exec postgres psql -U $dbUser -d $dbName -f /dev/stdin < scripts\check_drp_schema.sql"
+}

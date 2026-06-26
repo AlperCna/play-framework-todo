@@ -1,54 +1,11 @@
-# Routes
-# This file defines all application routes (Higher priority routes first)
-# https://www.playframework.com/documentation/latest/ScalaRouting
-# ~~~~
+# Mona DRP — Routes
 
-# Ana sayfa
-GET     /                           todo.shared.web.HomeController.index()
-GET     /todo                       todo.shared.web.HomeController.index()
+GET  /         drp.shared.web.HomeController.index()
+GET  /health   drp.shared.web.HealthController.health()
 
-# --- TODO modulu ---
+# Static assets
+GET  /assets/*file   controllers.Assets.versioned(path="/public", file: Asset)
 
-# Kimlik dogrulama (auth) — PUBLIC
-GET     /todo/login                 todo.user.web.AuthController.loginForm()
-GET     /todo/register              todo.user.web.AuthController.registerForm()
-POST    /todo/register              todo.user.web.AuthController.register()
-# pac4j: login formu callback'e POST eder; kimlik dogrulama burada islenir.
-GET     /todo/callback              @org.pac4j.play.CallbackController.callback(request: Request)
-POST    /todo/callback              @org.pac4j.play.CallbackController.callback(request: Request)
-# pac4j logout (profil/oturum temizlenir, defaultUrl=/todo/login'e yonlenir).
-GET     /todo/logout                @org.pac4j.play.LogoutController.logout(request: Request)
-
-# Gorev (TaskItem) CRUD
-GET     /todo/tasks                 todo.task.web.TaskItemController.list(page: Int ?= 1, size: Int ?= 5)
-GET     /todo/tasks/new             todo.task.web.TaskItemController.createForm()
-POST    /todo/tasks                 todo.task.web.TaskItemController.create()
-GET     /todo/tasks/:id/edit        todo.task.web.TaskItemController.editForm(id: Long)
-POST    /todo/tasks/:id             todo.task.web.TaskItemController.update(id: Long)
-POST    /todo/tasks/:id/complete    todo.task.web.TaskItemController.complete(id: Long)
-POST    /todo/tasks/:id/reopen      todo.task.web.TaskItemController.reopen(id: Long)
-POST    /todo/tasks/:id/delete      todo.task.web.TaskItemController.delete(id: Long)
-# AJAX (JSON)
-POST    /todo/tasks/:id/complete.json    todo.task.web.TaskItemController.completeJson(id: Long)
-POST    /todo/tasks/:id/reopen.json      todo.task.web.TaskItemController.reopenJson(id: Long)
-# Gorev <-> Kategori atama
-POST    /todo/tasks/:id/categories                    todo.task.web.TaskItemController.assignToCategory(id: Long)
-POST    /todo/tasks/:id/categories/:categoryId/remove todo.task.web.TaskItemController.removeFromCategory(id: Long, categoryId: Long)
-
-# Kategori (Category) CRUD
-GET     /todo/categories            todo.category.web.CategoryController.list(page: Int ?= 1, size: Int ?= 5)
-GET     /todo/categories/new        todo.category.web.CategoryController.createForm()
-POST    /todo/categories            todo.category.web.CategoryController.create()
-GET     /todo/categories/:id/edit   todo.category.web.CategoryController.editForm(id: Long)
-POST    /todo/categories/:id        todo.category.web.CategoryController.update(id: Long)
-POST    /todo/categories/:id/delete todo.category.web.CategoryController.delete(id: Long)
-
-# Bakim — tamamlanmis gorevleri elle temizle
-POST    /todo/cleanup               todo.shared.web.CleanupController.runCleanup()
-
-# ForTry
-GET     /todo/fortry/try1           todo.shared.web.ForTryController.try1()
-GET     /todo/fortry/try2           todo.shared.web.ForTryController.try2()
-
-# Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
+# --- Todo referans kodu (devre disi) ---
+# Asagidaki route'lar kasitli olarak yoruma alinmistir.
+# app/todo/ kodu derlenmeye devam eder ancak hicbir endpoint'e baglanmaz.

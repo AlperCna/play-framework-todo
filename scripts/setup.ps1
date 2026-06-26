@@ -83,7 +83,10 @@ Write-Host "  DB       : $dbName"
 Write-Host "  Kullanici: $dbUser"
 Write-Host ""
 Write-Host "Sema dogrulama icin:" -ForegroundColor Cyan
-Write-Host "  psql 'postgresql://${dbUser}:***@${dbHost}:${dbPort}/${dbName}' -f scripts\check_drp_schema.sql"
+Write-Host "  # Yerel psql varsa:"
+Write-Host "    psql 'postgresql://${dbUser}:***@${dbHost}:${dbPort}/${dbName}' -f scripts\check_drp_schema.sql"
+Write-Host "  # Yoksa Docker ile:"
+Write-Host "    docker compose exec postgres psql -U ${dbUser} -d ${dbName}"
 Write-Host ""
 Write-Host "Uygulamayi baslatmak icin:" -ForegroundColor Cyan
 Write-Host "  sbt run"

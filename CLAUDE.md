@@ -81,14 +81,16 @@ app/
 └── views/                ← Twirl şablonları
 ```
 
-### Modüler Monolit Geçişini Engelleyen 4 Yapışma Noktası
+### Modüler Monolit Geçişi — Çözülen Yapışma Noktaları
 
-| # | Sorun | Dosya |
+| # | Sorun | Durum |
 |---|---|---|
-| 1 | `TaskItemServiceImpl` doğrudan `CategoryRepository` enjekte ediyor | `app/services/TaskItemServiceImpl.scala:25` |
-| 2 | `domain.task.TaskItem` → `domain.category.Category` import | `app/domain/task/TaskItem.scala:5` |
-| 3 | `Tables.scala` tüm tabloları tek facade'da birleştiriyor | `app/persistence/db/Tables.scala` |
-| 4 | `task_item_categories` cross-module FK (tasks ↔ categories) | DB şema |
+| 1 | `TaskItemServiceImpl` doğrudan `CategoryRepository` enjekte ediyordu | ✅ `CategoryLookup` consumer-owned port ile çözüldü |
+| 2 | `domain.task.TaskItem` → `domain.category.Category` import | ✅ `categoryId: Long + categoryDeleted: Boolean` parametrelerine geçildi |
+| 3 | `Tables.scala` tüm tabloları tek facade'da birleştiriyordu | ✅ Kaldırıldı; her modül kendi tablo trait'ini taşıyor |
+| 4 | `task_item_categories` cross-module FK (tasks ↔ categories) | ✅ Sahiplik task modülüne verildi |
+
+Modüler monolit referans implementasyonu: `todo-modular-monolith/` projesi.
 
 ### Güvenlik Notu (Öncelikli)
 
@@ -127,7 +129,7 @@ app/drp/
 | Docker yok | `ghcr.io/pgmq/pg18-pgmq:v1.10.0` — `scripts/setup.ps1` ile tek komut | ✅ Tamamlandı |
 | Akka actor cleanup | **PGMQ** + `JobQueue` trait (interface soyutlaması zorunlu) | ⬜ Bekliyor |
 | 4 tablo (T-SQL) | **16 tablo** (PostgreSQL migration'ları) | ✅ 16 tablo aktif |
-| JSONB yok | `slick-pg` + CHECK constraint'ler | ⬜ Slick layer bekliyor |
+| JSONB yok | `slick-pg` + JSONB kolonlar | ⬜ Slick layer bekliyor |
 | `outbox_jobs` yok | PGMQ queues (pgmq extension) | ✅ 5 queue hazır |
 
 ---
@@ -150,21 +152,21 @@ app/drp/
 | Tablo | Görev | Tip |
 |---|---|---|
 | `candidate_discoveries` | Ham permütasyon staging tablosu. Exclusion + DNS/HTTP kontrolü burada. Duplicate guard: `UNIQUE(entity_id, normalized_value)`. | mutable |
-| `candidates` | DNS/HTTP'den geçmiş gerçek adaylar. Status: `validated→crawled→analyzed→scored→reviewed→closed` + `eliminated`, `error`. | mutable |
+| `candidates` | DNS/HTTP'den geçmiş gerçek adaylar. FK: `entity_id` (denorm), `discovery_id`. Status: `validated→crawled→analyzed→scored→reviewed→closed` + `eliminated`, `error`. | mutable |
 | `crawl_results` | Site açılmadan üretilemeyen FETCH verisi. `storage_ref` → `blob_storage` manifest. | immutable |
 | `page_features` | Ham DOM'dan çıkarılan yapısal özet. Idempotent: `UNIQUE(crawl_result_id, extractor_version)`. | immutable |
-| `candidate_asset_matches` | Adayın resmi asset'e benzerlik skorları (domain/logo/favicon/dom). | immutable |
-| `detection_signals` | Sayfanın iç sinyalleri (form, password_input, ocr_brand_match). Asset'e referans vermez. | immutable |
+| `candidate_asset_matches` | Adayın resmi asset'e benzerlik skorları (domain/logo/favicon/dom). `crawl_result_id` nullable FK. | immutable |
+| `detection_signals` | Sayfanın iç sinyalleri (form, password_input, ocr_brand_match). `crawl_result_id` nullable FK. | immutable |
 
 **Karar ve Aksiyon Katmanı**
 
 | Tablo | Görev | Tip |
 |---|---|---|
-| `risk_scores` | Ağırlıklı toplam skor + verdict (`clean/suspicious/malicious`). `rule_results` ile tek transaction'da yazılır. | immutable |
-| `rule_results` | Skoru oluşturan her kuralın katkısı (FK → `risk_scores`). | immutable |
-| `reviews` | İnsan onay kararı. Append-only; en son satır geçerli. | immutable/append-only |
-| `cases` | Onaylı tehdit için vaka kaydı. Takedown mock/log. | mutable |
-| `evidence_files` | Kanıt dosya referansları. `case_id` YOK; `case → candidate_id → evidence_files`. | immutable |
+| `risk_scores` | Ağırlıklı toplam skor + verdict (`clean/suspicious/malicious`). FK: `candidate_id`, `crawl_result_id` (nullable). Alanlar: `total_score`, `verdict`, `confidence`, `reasons` JSONB, `llm_summary`, `rule_set_version`. `rule_results` ile tek transaction'da yazılır. | immutable |
+| `rule_results` | Skoru oluşturan her kuralın katkısı. FK: `risk_score_id`. Alanlar: `rule_code`, `weight`, `detail` JSONB. | immutable |
+| `reviews` | İnsan onay kararı. Append-only; en son satır geçerli. FK: `candidate_id`, `risk_score_id`. Decision: `confirmed / false_positive / needs_more_info`. | immutable/append-only |
+| `cases` | Onaylı tehdit için vaka kaydı. FK: `candidate_id`, `review_id`. Status: `open / takedown_requested / closed / false_positive`. Takedown mock/log. | mutable |
+| `evidence_files` | Kanıt dosya referansları. FK: `candidate_id`, `crawl_result_id` (nullable). `case_id` YOK; `case → candidate_id → evidence_files`. | immutable |
 
 **Altyapı**
 
@@ -174,11 +176,12 @@ app/drp/
 
 ### 4.2 Önemli Şema Kararları
 
-- `candidates.asset_id` **YOK** — kaynak asset'e `discovery_id → candidate_discoveries.asset_id` ile gidilir.
+- `candidates.asset_id` **YOK** — kaynak asset'e `discovery_id → candidate_discoveries.asset_id` ile gidilir. `entity_id` ise denormalizasyon amacıyla doğrudan candidates'ta bulunur.
 - `failed_check_count` yalnızca `inactive/error` denemelerde artar. Exponential backoff: `next_check_at = now() + f(failed_check_count)`.
-- JSONB boyut limitleri CHECK constraint ile zorunlu: `dom_summary < 8KB`, `redirect_chain < 4KB`, `details < 4KB`, `metadata < 2KB`, `llm_summary < 5000 char`.
 - `candidates` index: partial — sadece aktif pipeline adayları (`WHERE status IN ('validated','crawled','analyzed','scored',...)`).
 - `evidence_files(content_hash)` index: partial — `WHERE content_hash IS NOT NULL`.
+- `blob_storage.data` kolonuna `SET STORAGE EXTERNAL` uygulanmıştır — TOAST sıkıştırması bypass edilir, büyük binary'ler için zorunlu.
+- `uq_cases_candidate_active`: `WHERE status IN ('open', 'takedown_requested')` — bir candidate için aynı anda tek aktif case olabilir.
 
 ### 4.3 storage_ref Formatı
 
