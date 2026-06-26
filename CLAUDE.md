@@ -341,9 +341,12 @@ deepfake, self-improving model / Agentic SOC.
 - **Şema sahipliği**: MVP'de tek PostgreSQL şeması ve açık FK'lar kullanılacak; modül sınırı kod paketleri ve port'lar üzerinden korunacak.
 
 <!-- SPECKIT START -->
-**Active feature**: `specs/001-entity-asset-registration/` — Protected Entity & Asset Registration
-(first DRP vertical slice; asset module + dedicated `slick.dbs.drp` PostgreSQL connection).
-Plan: `specs/001-entity-asset-registration/plan.md` (with `spec.md`, `research.md`, `data-model.md`,
+**Active feature**: `specs/002-exclusion-registration/` — Exclusion (Allowlist) Registration
+(third foundational setup-surface slice; additive within the existing `app/drp/asset/` module —
+register + view per-entity exclusions; reuses `slick.dbs.drp`, `MonaPgProfile`, and
+`EntityRepository.existsById`; no new migration/dependency; US-001 entity/asset behavior + `/drp/assets`
+view left untouched).
+Plan: `specs/002-exclusion-registration/plan.md` (with `spec.md`, `research.md`, `data-model.md`,
 `quickstart.md`, `contracts/`). Read that plan for technologies, project structure, and commands for
 the current work.
 <!-- SPECKIT END -->
