@@ -4,6 +4,7 @@ $ErrorActionPreference = "Stop"
 
 $ProjectRoot   = Split-Path $PSScriptRoot -Parent
 $MigrationsDir = Join-Path $ProjectRoot "app\migrations\drp-postgres"
+$ComposeFile   = Join-Path $ProjectRoot "docker-compose.yml"
 $EnvFile       = Join-Path $ProjectRoot ".env"
 
 # .env dosyasını yükle
@@ -47,7 +48,9 @@ $migrations = @(
 foreach ($migration in $migrations) {
     Write-Host "-> $migration" -ForegroundColor Yellow
     $filePath = Join-Path $MigrationsDir $migration
-    & psql -h $dbHost -p $dbPort -U $dbUser -d $dbName -v ON_ERROR_STOP=1 -f $filePath
+    Get-Content $filePath -Raw | docker compose -f $ComposeFile exec -T `
+        -e PGPASSWORD=$env:DB_PASSWORD postgres `
+        psql -U $dbUser -d $dbName -v ON_ERROR_STOP=1
     if ($LASTEXITCODE -ne 0) {
         Write-Error "HATA: $migration basarisiz oldu."
         exit 1

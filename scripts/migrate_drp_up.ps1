@@ -4,6 +4,7 @@ $ErrorActionPreference = "Stop"
 
 $ProjectRoot  = Split-Path $PSScriptRoot -Parent
 $MigrationsDir = Join-Path $ProjectRoot "app\migrations\drp-postgres"
+$ComposeFile  = Join-Path $ProjectRoot "docker-compose.yml"
 $EnvFile      = Join-Path $ProjectRoot ".env"
 
 # .env dosyasını yükle
@@ -28,19 +29,35 @@ Write-Host "=== Mona DRP Migration UP ===" -ForegroundColor Cyan
 Write-Host "Hedef: ${dbHost}:${dbPort}/${dbName}" -ForegroundColor Gray
 Write-Host ""
 
+# Her migration + o migration uygulandiysa var olacak "sentinel" nesne.
+# Sentinel mevcutsa o adim atlanir -> script tekrar calistirilabilir (idempotent).
 $migrations = @(
-    "V001__asset_layer_up.sql"
-    "V002__discovery_layer_up.sql"
-    "V003__storage_layer_up.sql"
-    "V004__pipeline_layer_up.sql"
-    "V005__decision_layer_up.sql"
-    "V006__pgmq_queues_up.sql"
+    @{ File = "V001__asset_layer_up.sql";     Sentinel = "public.entities" }
+    @{ File = "V002__discovery_layer_up.sql"; Sentinel = "public.candidates" }
+    @{ File = "V003__storage_layer_up.sql";   Sentinel = "public.blob_storage" }
+    @{ File = "V004__pipeline_layer_up.sql";  Sentinel = "public.crawl_results" }
+    @{ File = "V005__decision_layer_up.sql";  Sentinel = "public.cases" }
+    @{ File = "V006__pgmq_queues_up.sql";     Sentinel = "pgmq.q_crawl_queue" }
 )
 
-foreach ($migration in $migrations) {
+# Verilen relation (schema.tablo) DB'de var mi? to_regclass yoksa NULL doner.
+function Test-RelationExists($relation) {
+    $out = (docker compose -f $ComposeFile exec -T -e PGPASSWORD=$env:DB_PASSWORD postgres `
+            psql -U $dbUser -d $dbName -tAc "SELECT to_regclass('$relation') IS NOT NULL;") -join "`n"
+    return ($out.Trim() -eq 't')
+}
+
+foreach ($m in $migrations) {
+    $migration = $m.File
     Write-Host "-> $migration" -ForegroundColor Yellow
+    if (Test-RelationExists $m.Sentinel) {
+        Write-Host "   ZATEN UYGULANMIS, atlaniyor ($($m.Sentinel) mevcut)." -ForegroundColor DarkGray
+        continue
+    }
     $filePath = Join-Path $MigrationsDir $migration
-    & psql -h $dbHost -p $dbPort -U $dbUser -d $dbName -v ON_ERROR_STOP=1 -f $filePath
+    Get-Content $filePath -Raw | docker compose -f $ComposeFile exec -T `
+        -e PGPASSWORD=$env:DB_PASSWORD postgres `
+        psql -U $dbUser -d $dbName -v ON_ERROR_STOP=1
     if ($LASTEXITCODE -ne 0) {
         Write-Error "HATA: $migration basarisiz oldu."
         exit 1
@@ -50,4 +67,4 @@ foreach ($migration in $migrations) {
 
 Write-Host ""
 Write-Host "Migration tamamlandi." -ForegroundColor Green
-Write-Host "Kontrol icin: psql -h $dbHost -p $dbPort -U $dbUser -d $dbName -f scripts\check_drp_schema.sql"
+Write-Host "Kontrol icin: Get-Content scripts\check_drp_schema.sql -Raw | docker compose exec -T postgres psql -U $dbUser -d $dbName"
