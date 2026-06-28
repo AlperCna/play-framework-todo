@@ -38,6 +38,7 @@ Sync Impact Report
   `domain / application (+ application/ports) / infrastructure / web / workers`. Dependencies point
   inward only: `web`/`workers` → `application` → `domain`, and `infrastructure` → `application/ports`.
   The `domain` layer MUST stay pure — no Play, Slick, HTTP, JSON, or DB types in it.
+- The `web` layer (controllers + Twirl views) MUST stay thin: no business/decision logic and no direct data access — it always goes through an `application` service. A Twirl view is the **pure render of a typed view-model** passed by its controller; it MUST NOT call a service/repository, and domain/persistence types MUST NOT leak into it.
 - Module dependency direction is one-way along the pipeline
   (`asset → discovery → candidate → crawl → analysis → risk → review → casework`; `shared`,
   `platform.storage`, `platform.queue` are horizontal helpers). No upward or cyclic module dependency.

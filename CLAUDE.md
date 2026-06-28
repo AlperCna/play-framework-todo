@@ -321,6 +321,41 @@ deepfake, self-improving model / Agentic SOC.
 
 ---
 
+## 9.1 View / Web Katmanı Konvansiyonları
+
+> **Kural kaynağı:** Constitution **Madde I** — `web` katmanı ince; controller iş kararı vermez,
+> repository'ye dokunmaz (yalnızca `application` servisi); Twirl view = **typed view-model'in saf
+> render'ı**, domain/persistence tipi sızmaz. Aşağısı bunun **"nasıl"ı**; referans implementasyon
+> çalışır halde `app/todo/.../web/`. Yeni DRP web feature'ları bu kalıbı izler.
+
+- **Controller:** `MessagesAbstractController(cc)`'tan türet, i18n `request.messages("key")`. Servis
+  sonucunu HTTP + view'a map et:
+  `Right(_) → Redirect(...).flashing("success" -> msg)` · `Left(DomainError.NotFound(..)) → NotFound(msg)` ·
+  `Left(err) → BadRequest(view(form.withGlobalError(messages(err.code))))`.
+- **View-model:** Controller domain entity'sini view'a **doğrudan vermez** — `web` paketinde bir
+  view-model'e map eder, Twirl'e yalnızca onu (+ primitive / `Form` / `Call`) geçirir. Write tarafı
+  zaten `*FormData` (örn. `TaskItemFormData`); read tarafı için `*ViewModel` kur.
+  ⚠ Mevcut `todo` ve `drp/asset` view'ları bu kuralı **henüz ihlal ediyor** (view'a
+  `Seq[...domain.Category]` / `Seq[...domain.Exclusion]`) — kopyalama, yeni kodda view-model kullan.
+- **Form + validation:** `web` paketinde `*FormData` + Play `Form`;
+  `bindFromRequest().fold(formWithErrors => BadRequest(view), data => …)`. Domain hatası global error'a:
+  `form.fill(data).withGlobalError(messages(err.code))`, view `@if(form.hasGlobalErrors)` ile gösterir.
+- **CSRF (mevcut kalıp, araştırma değil):** Play default filtreleri açık
+  (`conf/application.conf`'ta `play.filters.enabled += …`, `=` değil → CSRF korunur). Her
+  `@helper.form { … }` içine `@helper.CSRF.formField`.
+- **Twirl şablonu:** Konum `app/<...>/<module>/web/views/*.scala.html`, çağrı
+  `<module>.web.views.html.<isim>`. İlk satır typed `@(…)` parametreleri; şablonda business logic yok.
+- **Layout / partial:** Ortak base layout (`@main(title){ … }`, todo'da `todo.shared.web.views.html.main`)
+  + yeniden kullanılan partial (`paginationView`). DRP'nin henüz ortak layout'u yok — ilk DRP web
+  feature'ı `drp/shared/web/views/main` kurar (şu an `exclusions.scala.html` HTML'i inline yazıyor; kopyalama).
+- **Routes:** Tek `conf/routes` dosyası; DRP route'ları `/drp/<module>/...` prefix + yorum bloklarıyla
+  gruplanır (modül başına ayrı dosya yok).
+- **Auth:** Korumalı controller `AuthenticatedAction` (`authAction { … }` / `.async`); kullanıcıya
+  `request.user` (`AuthenticatedRequest`) üzerinden erişilir.
+- **Açık karar (henüz standart yok):** `DomainError`'ı global yerine **field-level** form hatasına eşleme.
+
+---
+
 ## 10. Çalışma Kuralları
 
 - **Önce keşfet → plan sun → onay al → uygula.** Büyük tek seferlik refactor yapma.
