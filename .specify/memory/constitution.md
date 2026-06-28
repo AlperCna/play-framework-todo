@@ -1,5 +1,20 @@
 <!--
 Sync Impact Report
+
+== Amendment 2026-06-29: 1.0.0 → 2.0.0 (MAJOR) ==
+- Principle I, cross-module access rule REDEFINED (backward-incompatible): cross-module **read** no
+  longer MAY use a direct Slick query — it now MUST go through the owner's `application/ports/` read
+  port returning a typed read-model. Removing a previously-allowed path is a backward-incompatible
+  redefinition → MAJOR bump.
+- Rationale: a direct cross-module read forced either a duplicated Slick mapping in the reader or a
+  silent schema coupling (an owner schema change breaks the reader). Routing reads through a read port
+  keeps the table mapping single-sourced in the owner and stops domain/persistence types leaking across
+  module boundaries. Resolves the prior constitution↔CLAUDE.md tension in favour of CLAUDE.md Lesson 4
+  ("diğerleri port'tan okur").
+- Dependent files synced: .claude/agents/scope-reviewer.md (check item 2). CLAUDE.md Lessons 2 & 4
+  already aligned (no change). Constitution-Aciklama.md Layer-1 bullet updated.
+
+== Initial ratification (1.0.0) ==
 - Version change: 1.1.0 (biggerphish / .NET baseline) → 1.0.0 (Mona DRP initial ratification)
 - Bump rationale: This file was REPURPOSED from another project's constitution (biggerphish, a
   brownfield .NET 8 / Clean Architecture codebase) to Mona DRP — a GREENFIELD Scala 2.13 / Play 2.9
@@ -42,9 +57,12 @@ Sync Impact Report
 - Module dependency direction is one-way along the pipeline
   (`asset → discovery → candidate → crawl → analysis → risk → review → casework`; `shared`,
   `platform.storage`, `platform.queue` are horizontal helpers). No upward or cyclic module dependency.
-- Cross-module **write / state change** MUST go through the owning module's `application/ports/`
-  interface; cross-module **read** MAY use a direct Slick query. **Single-Writer**: every table has
-  exactly one writer module.
+- Cross-module access MUST go through the owning module's `application/ports/` interface for **both**
+  directions. A **write / state change** calls a write port (the owner performs the write — **Single-Writer**:
+  every table has exactly one writer module). A **read** calls a read port that returns a typed
+  **read-model** (a projection) — never the owner's domain entity or Slick row. A module MUST NOT run a
+  direct Slick query against another module's table. **In-module** access (a module to its own tables) is
+  direct via its own Slick adapter.
 - New code MUST reuse the established mechanisms (smart-constructor domain returning
   `Either[DomainError, _]`, `ServiceResult`, repository port + Slick adapter, per-module Guice module)
   rather than introducing a parallel/duplicate way of doing the same thing.
@@ -184,4 +202,4 @@ and `docs/`, not here.
   principles I–VII by number — keep them in sync when renumbering). Any complexity that bends a principle
   MUST be justified in `plan.md`'s Complexity Tracking.
 
-**Version**: 1.0.0 | **Ratified**: 2026-06-26 | **Last Amended**: 2026-06-26
+**Version**: 2.0.0 | **Ratified**: 2026-06-26 | **Last Amended**: 2026-06-29

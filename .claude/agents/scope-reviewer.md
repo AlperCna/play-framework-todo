@@ -52,9 +52,11 @@ pattern-reference scaffold, slated for removal). You NEVER modify anything. You 
    Within a module, do dependencies point inward (`web`/`workers` → `application` → `domain`;
    `infrastructure` → `application/ports`), with a PURE `domain` (no Play/Slick/HTTP/JSON/DB imports)?
    Is the module dependency direction one-way (`asset → discovery → candidate → crawl → analysis →
-   risk → review → casework`; no upward or cyclic edge)? Cross-module **write/state-change** only
-   through the owner's `application/ports/` interface (Single-Writer); cross-module **read** MAY be a
-   direct Slick query. Any new cross-module shortcut, duplicate mechanism, or code built on / reshaping
+   risk → review → casework`; no upward or cyclic edge)? Cross-module access goes
+   through the owner's `application/ports/` interface for **both** directions — a **write/state-change**
+   via a write port (Single-Writer) and a **read** via a read port returning a typed **read-model** (a
+   projection, never the owner's domain entity or Slick row). A **direct Slick query against another
+   module's table** is a violation (in-module access may be direct). Any new cross-module shortcut, duplicate mechanism, or code built on / reshaping
    `app/todo/`?
 3. **Out-of-story business logic (Constitution I):** Did the diff change behavior NOT described by the
    active user story / FRs? Did it touch any "preserved / MUST stay the same" behavior?
