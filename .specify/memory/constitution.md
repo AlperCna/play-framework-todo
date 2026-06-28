@@ -124,8 +124,11 @@ exactly where an agent is most tempted to drift.
 
 - Scala **2.13.18** / Play **2.9**; Guice DI — each DRP module exposes its own Guice `Module`, composed
   at a root `DrpModule`. Views are Twirl server-rendered; **no React / SPA**.
-- Domain: immutable `final case class` + smart constructors; validation returns `Either[DomainError, _]`;
-  closed sets are ADTs. Services return `Future[Either[DomainError, _]]` / `ServiceResult`. No IO in `domain`.
+- Domain: immutable `final case class` + smart constructors; validation returns `Either[DomainError, _]`.
+  Closed sets are `sealed trait` + `final case class` / `case object` ADTs — `sealed` so the compiler
+  enforces exhaustive matching. Model so that **illegal states are unrepresentable**: constrain values
+  through smart constructors and meaningful wrapper types, not bare `String` / `Int`. Services return
+  `Future[Either[DomainError, _]]` / `ServiceResult`. No IO in `domain`.
 - Persistence: PostgreSQL + `slick-pg`. The repository **port** lives in `<module>/application`, the Slick
   adapter in `<module>/infrastructure`; each module owns its own Slick table definitions (DRP does NOT
   accumulate a single growing `Tables` facade).

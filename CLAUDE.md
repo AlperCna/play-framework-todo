@@ -354,6 +354,44 @@ deepfake, self-improving model / Agentic SOC.
   `request.user` (`AuthenticatedRequest`) üzerinden erişilir.
 - **Açık karar (henüz standart yok):** `DomainError`'ı global yerine **field-level** form hatasına eşleme.
 
+
+## 9.2 Scala Kod Konvansiyonları (domain-bağımsız)
+
+> Veri modelleme **MUST'ları constitution'da** (Additional Constraints → Domain bullet:
+> ADT/`sealed`/illegal-states/`Either`/smart constructor). Burası onların uygulama notu + ek stil.
+> **Kurallar** = always/never (zorlayıcı). **Heuristik** = yalnızca tercih; istisnası gerekçeyle
+> serbest, MUST diye encode etme.
+
+**Kurallar (always / never)**
+
+- **Structural recursion:** ADT üzerindeki fonksiyon her case'i ele alır; `sealed` sayesinde derleyici
+  eksik case'i yakalar — kod verinin şeklini takip eder.
+- **`map` / `flatMap` / for-comprehension ile zincirle** — nested `try`/`if` yok. ⚠ for-comprehension
+  **fail-fast**'tir (ilk `Left`'te durur). Birden çok alan hatasını **birden** göstermen gerekiyorsa
+  (form validation) bu yetmez → Cats `Validated` (`Ior`).
+- **Trait `default` implementasyonu TÜM alt tipler için doğru olmalı;** değilse default verme.
+- **Genişletme type class ile** (sahip olmadığın tipe davranış → ad-hoc polymorphism). **Instance
+  paketleme:** tek instance + tipin sahibi sensin → `companion object`; çok instance ya da tipin sahibi
+  değilsin → ayrı obje + explicit import.
+- **Implicit conversion YASAK** (`implicit def A => B` yok; `import scala.language.implicitConversions`
+  görürsen dur). Enrichment → `implicit class`; type class → `implicit val` / `implicit parameter`.
+- **`case class` + `copy`** standart veri taşıyıcı; **`companion.apply`** = factory / smart constructor.
+
+**Heuristik (tercih — zorlama yok)**
+
+- **Önce modeli ands/ors olarak çiz** (BNF benzeri); ADT mekanik olarak ondan türesin.
+- **Polymorphism mi, pattern match mi:** metot yalnızca sınıfın kendi alanlarına bağlıysa → sınıf içinde;
+  dış veriye bağlı ya da çok implementasyon → harici objede `match`. ("Tek implementasyonda base trait'te
+  match kazanır" bir tercih, kanun değil — OO-eğilimli ekipler davranışı tipte tutar.)
+- **`fold`:** ADT'ne bir `fold` (katamorfizma) **sağla**; ama her fonksiyonu fold ile yazma —
+  okunabilirlik düşer.
+- **Generics mi, trait/case class mı:** kalıcı/isimli/tekrar kullanılan kavram → trait/case class;
+  hızlı tek seferlik → `Tuple` / `Option` / `Either`.
+- **OO ↔ FP ekseni (expression problem):** yeni **veri** sık eklenecekse OO (davranışı tipte tut); yeni
+  **davranış** sık eklenecekse `sealed` + `match`. Hangi eksen sık değişiyorsa ona göre seç.
+
+> Not: hepsi Scala **2.13** biçimi; 3'e geçilirse ADT → `enum`, type class → `given` / `using`.
+
 ---
 
 ## 10. Çalışma Kuralları
