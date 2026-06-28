@@ -27,4 +27,25 @@ object AssetDomainError {
     val code = "drp.asset.error.duplicateActiveAsset"
     val message = s"An active asset '$value' already exists under entity $entityId."
   }
+
+  case object BlankExclusionValue extends AssetDomainError {
+    val code = "drp.asset.error.blankExclusionValue"
+    val message = "Exclusion value cannot be blank."
+  }
+
+  case object BlankExclusionReason extends AssetDomainError {
+    val code = "drp.asset.error.blankExclusionReason"
+    val message = "Exclusion reason cannot be blank."
+  }
+
+  final case class InvalidMatchType(value: String) extends AssetDomainError {
+    val code = "drp.asset.error.invalidMatchType"
+    val message = s"'$value' is not a valid match type."
+  }
+
+  final case class DuplicateActiveExclusion(entityId: Long, value: String, matchType: String)
+      extends AssetDomainError {
+    val code = "drp.asset.error.duplicateActiveExclusion"
+    val message = s"An active exclusion '$value' ($matchType) already exists under entity $entityId."
+  }
 }

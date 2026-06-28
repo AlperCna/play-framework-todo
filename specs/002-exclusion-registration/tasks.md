@@ -27,7 +27,7 @@ Modular monolith: feature code under `app/drp/asset/`, tests under `test/drp/ass
 
 **Purpose**: Confirm the inherited wiring this slice depends on — **no changes** are made here (all present from US-001).
 
-- [ ] T001 Verify prerequisites exist and require no change: `slick-pg` + PostgreSQL driver in `build.sbt`; the `slick.dbs.drp` block + `play.modules.enabled += "drp.asset.application.AssetModule"` in `conf/application.conf`; `app/drp/shared/infrastructure/MonaPgProfile.scala`; and the `exclusions` table (CHECK `ck_exclusions_match_type`, FK `fk_exclusions_entity`, partial unique index `uq_exclusions_entity_active_value_match`, `set_updated_at` trigger) in `app/migrations/drp-postgres/V001__asset_layer_up.sql`
+- [X] T001 Verify prerequisites exist and require no change: `slick-pg` + PostgreSQL driver in `build.sbt`; the `slick.dbs.drp` block + `play.modules.enabled += "drp.asset.application.AssetModule"` in `conf/application.conf`; `app/drp/shared/infrastructure/MonaPgProfile.scala`; and the `exclusions` table (CHECK `ck_exclusions_match_type`, FK `fk_exclusions_entity`, partial unique index `uq_exclusions_entity_active_value_match`, `set_updated_at` trigger) in `app/migrations/drp-postgres/V001__asset_layer_up.sql`
 
 **Checkpoint**: `sbt compile` succeeds on the current tree; the `drp` datasource and `exclusions` schema are in place.
 
@@ -37,7 +37,7 @@ Modular monolith: feature code under `app/drp/asset/`, tests under `test/drp/ass
 
 **Purpose**: Extend the module-wide error ADT both the domain and the tests depend on. ⚠️ Complete before US1.
 
-- [ ] T002 Extend the shared `AssetDomainError` ADT in `app/drp/asset/domain/AssetDomainError.scala` with additive cases `BlankExclusionValue`, `BlankExclusionReason`, `InvalidMatchType(value: String)`, and `DuplicateActiveExclusion(entityId: Long, value: String, matchType: String)` (reuse the existing `UnknownEntity` for FR-003; do not modify existing entity/asset cases)
+- [X] T002 Extend the shared `AssetDomainError` ADT in `app/drp/asset/domain/AssetDomainError.scala` with additive cases `BlankExclusionValue`, `BlankExclusionReason`, `InvalidMatchType(value: String)`, and `DuplicateActiveExclusion(entityId: Long, value: String, matchType: String)` (reuse the existing `UnknownEntity` for FR-003; do not modify existing entity/asset cases)
 
 **Checkpoint**: Foundation ready — US1 can begin.
 
@@ -51,23 +51,23 @@ Modular monolith: feature code under `app/drp/asset/`, tests under `test/drp/ass
 
 ### Tests for User Story 1
 
-- [ ] T003 [P] [US1] Domain spec for the `Exclusion` smart constructor (blank value → `BlankExclusionValue`; blank reason → `BlankExclusionReason`; out-of-set match type → `InvalidMatchType`; each of the four allowed match types accepted; `value` kept exactly as entered) in `test/drp/asset/domain/ExclusionSpec.scala`
-- [ ] T004 [P] [US1] Service spec for `ExclusionService` via `InMemoryExclusionRepository` + `InMemoryEntityRepository` (register under an existing entity persists + appears in `listByEntity`; blank value, blank reason, unknown entity, and an active duplicate each → the matching error with nothing stored; open reason e.g. "third_party_legit" accepted; `listByEntity` returns only the target entity's exclusions) in `test/drp/asset/application/ExclusionServiceSpec.scala`
+- [X] T003 [P] [US1] Domain spec for the `Exclusion` smart constructor (blank value → `BlankExclusionValue`; blank reason → `BlankExclusionReason`; out-of-set match type → `InvalidMatchType`; each of the four allowed match types accepted; `value` kept exactly as entered) in `test/drp/asset/domain/ExclusionSpec.scala`
+- [X] T004 [P] [US1] Service spec for `ExclusionService` via `InMemoryExclusionRepository` + `InMemoryEntityRepository` (register under an existing entity persists + appears in `listByEntity`; blank value, blank reason, unknown entity, and an active duplicate each → the matching error with nothing stored; open reason e.g. "third_party_legit" accepted; `listByEntity` returns only the target entity's exclusions) in `test/drp/asset/application/ExclusionServiceSpec.scala`
 
 ### Implementation for User Story 1
 
-- [ ] T005 [P] [US1] Create `ExclusionMatchType` sealed ADT + string codec (`Exact`↔"exact", `RegistrableDomain`↔"registrable_domain", `SubdomainOf`↔"subdomain_of", `Pattern`↔"pattern"; `asValue` / `fromValue`) in `app/drp/asset/domain/ExclusionMatchType.scala`
-- [ ] T006 [US1] Create `Exclusion` domain (immutable case class + smart ctor → `Either[AssetDomainError, Exclusion]`; required `entityId: Long`; `matchType: ExclusionMatchType` via `fromValue`; non-blank `value`/`reason`; `isActive=true`, `createdBy="system"` reflecting DB defaults; read-only timestamps) in `app/drp/asset/domain/Exclusion.scala` (depends on T002, T005)
-- [ ] T007 [P] [US1] Define the `ExclusionRepository` port (`create`, `listByEntity`, `existsActiveDuplicate`) in `app/drp/asset/application/ports/ExclusionRepository.scala`
-- [ ] T008 [US1] Create `ExclusionsTable` + `ExclusionRow` (Slick via `MonaPgProfile`, mapping the `exclusions` columns; `entity_id` as `Option[Long]`; insert omits `is_active`/`created_by`/`created_at`/`updated_at` so DB defaults + trigger apply) in `app/drp/asset/infrastructure/ExclusionsTable.scala`
-- [ ] T009 [US1] Implement `SlickExclusionRepository` (`@NamedDatabase("drp")`; insert-returning-id with read-back; `listByEntity` bulk ordered by id; `existsActiveDuplicate` single query) in `app/drp/asset/infrastructure/SlickExclusionRepository.scala` (depends on T007, T008)
-- [ ] T010 [P] [US1] Implement `InMemoryExclusionRepository` test adapter (assigns id/timestamps, `is_active=true`, `created_by="system"`; enforces the active-duplicate guard in memory) in `app/drp/asset/infrastructure/InMemoryExclusionRepository.scala` (depends on T007)
-- [ ] T011 [US1] Implement `ExclusionService` + `ExclusionServiceImpl` (`register`: domain-validate → check owning entity via the existing `EntityRepository.existsById` (→ `UnknownEntity`) → `existsActiveDuplicate` pre-check (→ `DuplicateActiveExclusion`) → persist; `listByEntity`) in `app/drp/asset/application/ExclusionService.scala` and `ExclusionServiceImpl.scala` (depends on T006, T007; reuses US-001's `EntityRepository` port)
-- [ ] T012 [US1] Extend Guice `AssetModule` with `bind(ExclusionService).to(ExclusionServiceImpl)` and `bind(ExclusionRepository).to(SlickExclusionRepository)` in `app/drp/asset/application/AssetModule.scala` (additive; leaves the entity bindings intact) (depends on T009, T011)
-- [ ] T013 [P] [US1] Create `ExclusionFormData` form (`value` nonEmptyText, `matchType` nonEmptyText default "exact", `reason` nonEmptyText; `entityId` comes from the path, not the form) in `app/drp/asset/web/ExclusionFormData.scala`
-- [ ] T014 [US1] Create `ExclusionController` — `list(entityId)` (GET; guard with `EntityRepository.existsById`/service, redirect to `/drp/assets` with a visible error if the entity is missing; else render the view with the entity's exclusions) and `create(entityId)` (POST → 303 back to the listing on success; blank value / blank reason / out-of-set match type / unknown entity / active duplicate each redirect back with a visible flash message, nothing persisted) in `app/drp/asset/web/ExclusionController.scala` (depends on T011, T013)
-- [ ] T015 [US1] Create the dedicated per-entity view `exclusions.scala.html` (header "Exclusions for entity #<id>"; flash success/error; create form with a `matchType` select of the four values + `value` + `reason`; list each exclusion's value/match type/reason/active/timestamps; "No exclusions yet." when empty) in `app/drp/asset/web/views/exclusions.scala.html` (depends on T014)
-- [ ] T016 [US1] Add routes `GET /drp/assets/entities/:entityId/exclusions` and `POST /drp/assets/entities/:entityId/exclusions` to `conf/routes` (additive; do not modify the existing `/drp/assets` routes) (depends on T014, T015)
+- [X] T005 [P] [US1] Create `ExclusionMatchType` sealed ADT + string codec (`Exact`↔"exact", `RegistrableDomain`↔"registrable_domain", `SubdomainOf`↔"subdomain_of", `Pattern`↔"pattern"; `asValue` / `fromValue`) in `app/drp/asset/domain/ExclusionMatchType.scala`
+- [X] T006 [US1] Create `Exclusion` domain (immutable case class + smart ctor → `Either[AssetDomainError, Exclusion]`; required `entityId: Long`; `matchType: ExclusionMatchType` via `fromValue`; non-blank `value`/`reason`; `isActive=true`, `createdBy="system"` reflecting DB defaults; read-only timestamps) in `app/drp/asset/domain/Exclusion.scala` (depends on T002, T005)
+- [X] T007 [P] [US1] Define the `ExclusionRepository` port (`create`, `listByEntity`, `existsActiveDuplicate`) in `app/drp/asset/application/ports/ExclusionRepository.scala`
+- [X] T008 [US1] Create `ExclusionsTable` + `ExclusionRow` (Slick via `MonaPgProfile`, mapping the `exclusions` columns; `entity_id` as `Option[Long]`; insert omits `is_active`/`created_by`/`created_at`/`updated_at` so DB defaults + trigger apply) in `app/drp/asset/infrastructure/ExclusionsTable.scala`
+- [X] T009 [US1] Implement `SlickExclusionRepository` (`@NamedDatabase("drp")`; insert-returning-id with read-back; `listByEntity` bulk ordered by id; `existsActiveDuplicate` single query) in `app/drp/asset/infrastructure/SlickExclusionRepository.scala` (depends on T007, T008)
+- [X] T010 [P] [US1] Implement `InMemoryExclusionRepository` test adapter (assigns id/timestamps, `is_active=true`, `created_by="system"`; enforces the active-duplicate guard in memory) in `app/drp/asset/infrastructure/InMemoryExclusionRepository.scala` (depends on T007)
+- [X] T011 [US1] Implement `ExclusionService` + `ExclusionServiceImpl` (`register`: domain-validate → check owning entity via the existing `EntityRepository.existsById` (→ `UnknownEntity`) → `existsActiveDuplicate` pre-check (→ `DuplicateActiveExclusion`) → persist; `listByEntity`) in `app/drp/asset/application/ExclusionService.scala` and `ExclusionServiceImpl.scala` (depends on T006, T007; reuses US-001's `EntityRepository` port)
+- [X] T012 [US1] Extend Guice `AssetModule` with `bind(ExclusionService).to(ExclusionServiceImpl)` and `bind(ExclusionRepository).to(SlickExclusionRepository)` in `app/drp/asset/application/AssetModule.scala` (additive; leaves the entity bindings intact) (depends on T009, T011)
+- [X] T013 [P] [US1] Create `ExclusionFormData` form (`value` nonEmptyText, `matchType` nonEmptyText default "exact", `reason` nonEmptyText; `entityId` comes from the path, not the form) in `app/drp/asset/web/ExclusionFormData.scala`
+- [X] T014 [US1] Create `ExclusionController` — `list(entityId)` (GET; guard with `EntityRepository.existsById`/service, redirect to `/drp/assets` with a visible error if the entity is missing; else render the view with the entity's exclusions) and `create(entityId)` (POST → 303 back to the listing on success; blank value / blank reason / out-of-set match type / unknown entity / active duplicate each redirect back with a visible flash message, nothing persisted) in `app/drp/asset/web/ExclusionController.scala` (depends on T011, T013)
+- [X] T015 [US1] Create the dedicated per-entity view `exclusions.scala.html` (header "Exclusions for entity #<id>"; flash success/error; create form with a `matchType` select of the four values + `value` + `reason`; list each exclusion's value/match type/reason/active/timestamps; "No exclusions yet." when empty) in `app/drp/asset/web/views/exclusions.scala.html` (depends on T014)
+- [X] T016 [US1] Add routes `GET /drp/assets/entities/:entityId/exclusions` and `POST /drp/assets/entities/:entityId/exclusions` to `conf/routes` (additive; do not modify the existing `/drp/assets` routes) (depends on T014, T015)
 
 **Checkpoint**: US1 fully functional and demoable — register and view per-entity exclusions. MVP complete.
 
@@ -75,9 +75,9 @@ Modular monolith: feature code under `app/drp/asset/`, tests under `test/drp/ass
 
 ## Phase 4: Polish & Cross-Cutting Concerns
 
-- [ ] T017 [P] Run `sbt test` and confirm green — new `drp.asset` exclusion specs AND all pre-existing suites (todo + US-001 `EntitySpec`/`EntityServiceSpec`) pass (Constitution Dev-Workflow)
+- [X] T017 [P] Run `sbt test` and confirm green — new `drp.asset` exclusion specs AND all pre-existing suites (todo + US-001 `EntitySpec`/`EntityServiceSpec`) pass (Constitution Dev-Workflow)
 - [ ] T018 Execute `quickstart.md` scenarios 1–10 against `sbt run` and confirm each expected outcome (incl. zero rows in `exclusions` on every rejection path: scenarios 2, 3, 4, 6, 8)
-- [ ] T019 [P] Scope/architecture self-check: `app/drp/asset/web/views/list.scala.html` and all US-001 entity/asset files are unmodified; `slick.dbs.default` and `app/todo/**` untouched; `Exclusion` domain has no Play/Slick/HTTP/JSON imports; the listing/duplicate paths make no DB call inside a loop; `ExclusionServiceImpl` reuses the same-module `EntityRepository` (no cross-module DI); `created_by` is left to the DB `'system'` default (Constitution I, II, V)
+- [X] T019 [P] Scope/architecture self-check: `app/drp/asset/web/views/list.scala.html` and all US-001 entity/asset files are unmodified; `slick.dbs.default` and `app/todo/**` untouched; `Exclusion` domain has no Play/Slick/HTTP/JSON imports; the listing/duplicate paths make no DB call inside a loop; `ExclusionServiceImpl` reuses the same-module `EntityRepository` (no cross-module DI); `created_by` is left to the DB `'system'` default (Constitution I, II, V)
 
 ---
 

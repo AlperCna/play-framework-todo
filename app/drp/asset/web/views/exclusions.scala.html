@@ -1,0 +1,51 @@
+@(entityId: Long, exclusions: Seq[drp.asset.domain.Exclusion])(implicit request: MessagesRequestHeader)
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Mona DRP — Exclusions for entity #@entityId</title>
+  </head>
+  <body>
+    <h1>Exclusions for entity #@entityId</h1>
+
+    <p><a href="@drp.asset.web.routes.AssetController.list()">&larr; Back to entities</a></p>
+
+    @request.flash.get("success").map { message =>
+      <p style="color:green">@message</p>
+    }
+    @request.flash.get("error").map { message =>
+      <p style="color:red">@message</p>
+    }
+
+    <h2>Register an exclusion</h2>
+    @helper.form(action = drp.asset.web.routes.ExclusionController.create(entityId)) {
+      @helper.CSRF.formField
+      <label>Value <input type="text" name="value"></label>
+      <label>Match type
+        <select name="matchType">
+          <option value="exact">exact</option>
+          <option value="registrable_domain">registrable_domain</option>
+          <option value="subdomain_of">subdomain_of</option>
+          <option value="pattern">pattern</option>
+        </select>
+      </label>
+      <label>Reason <input type="text" name="reason" value="owned_unmonitored"></label>
+      <button type="submit">Add exclusion</button>
+    }
+
+    <h2>Exclusions</h2>
+    @if(exclusions.isEmpty) {
+      <p>No exclusions yet.</p>
+    } else {
+      <ul>
+        @for(exclusion <- exclusions) {
+          <li>
+            <strong>@exclusion.value</strong> <em>(@exclusion.matchType.asValue)</em>
+            &mdash; reason: @exclusion.reason, active: @exclusion.isActive, by: @exclusion.createdBy
+          </li>
+        }
+      </ul>
+    }
+  </body>
+</html>
