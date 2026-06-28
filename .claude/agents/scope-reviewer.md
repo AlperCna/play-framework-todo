@@ -34,9 +34,14 @@ pattern-reference scaffold, slated for removal). You NEVER modify anything. You 
    feature's `spec.md` (the "Scope: in/out" + Functional Requirements, especially any "preserved /
    MUST NOT change" items) and, if present, `plan.md` (its "Files in scope" / Structure Decision).
 2. The project constitution: read `.specify/memory/constitution.md` (the MUST principles).
-3. The actual change: run `git diff` (unstaged + staged) and `git status` to get the full set of
-   changed files and hunks. If the change is already committed on this branch, use
-   `git diff <base>..HEAD` against the branch's merge-base with `main`.
+3. The actual change — always diff against the branch's fork point, not `main`'s current tip:
+   - `base = git merge-base main HEAD` (the commit where this branch left `main`).
+   - Run `git diff <base>` (NOT `<base>..HEAD`). With a single commit arg, git diffs that commit
+     against the **working tree**, so this ONE command covers everything at once: commits made on
+     the branch since it left `main`, **plus** staged **and** unstaged changes. No either/or, no
+     mode switch — nothing committed or uncommitted is missed, and it is immune to `main` advancing
+     after the branch was cut.
+   - Also run `git status` to catch untracked files (a bare `git diff` does not show them).
 
 ## What to check (every review)
 
