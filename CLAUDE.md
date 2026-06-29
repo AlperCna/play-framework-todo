@@ -248,6 +248,7 @@ trait JobQueue {
   def dequeue(queue: String, count: Int, vt: Duration): Future[List[Job]]
   def complete(queue: String, jobId: JobId): Future[Unit]
   def fail(queue: String, jobId: JobId, error: String): Future[Unit]
+  def metrics(queue: String): Future[QueueMetrics]
 }
 // MVP: PgmqJobQueue  |  İleride: KafkaJobQueue
 ```
@@ -256,7 +257,7 @@ trait JobQueue {
 
 ```scala
 trait StorageService {
-  def store(candidateId: Long, fileType: String, data: Array[Byte], contentType: String): Future[StorageRef]
+  def store(candidateId: Long, crawlRunId: Long, fileType: String, data: Array[Byte], contentType: String): Future[StorageRef]
   def retrieve(ref: StorageRef): Future[Array[Byte]]
   def delete(ref: StorageRef): Future[Unit]
 }
@@ -317,7 +318,7 @@ deepfake, self-improving model / Agentic SOC.
 | Backend/API | Scala Play Framework | Server-rendered; React yok |
 | Template engine | Play Twirl | Human review ekranı dahil |
 | Actor/worker | *(açık karar)* | Worker yürütme runtime'ı netleşmedi → `docs/acik-kararlar.md`; mesajlaşma `JobQueue`/PGMQ arkasında (§6) |
-| DB | PostgreSQL + `slick-pg` | JSONB + pgmq için |
+| DB | PostgreSQL + `slick-pg` | DRP hedef DB (todo hâlâ SQL Server — bkz §2); JSONB + pgmq için |
 | Mesaj kuyruğu | PGMQ (pgmq extension) | `JobQueue` interface arkasında |
 | Dosya depolama | PostgreSQL `bytea` / `blob_storage` | `StorageService` interface arkasında |
 | Crawler | Browserless.io veya izole Docker/VM | Ana sunucudan izole |
