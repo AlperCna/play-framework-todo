@@ -1,0 +1,29 @@
+@(form: play.api.data.Form[drp.asset.web.AssetFormData], postAction: play.api.mvc.Call, entityId: Long, title: String)(implicit request: play.api.mvc.MessagesRequestHeader)
+@drp.shared.web.views.html.main(title) {
+  <h1>@title</h1>
+  @if(form.hasGlobalErrors) {
+    <ul class="errors">@for(err <- form.globalErrors) { <li>@err.message</li> }</ul>
+  }
+  @helper.form(action = postAction) {
+    @helper.CSRF.formField
+    <p>
+      <label>Type
+        <select name="assetType">
+        @for(code <- drp.asset.domain.AssetType.codes) {
+          <option value="@code" @if(form("assetType").value.contains(code)){selected}>@code</option>
+        }
+        </select>
+      </label>
+    </p>
+    <p><label>Value <input type="text" name="value" value="@form("value").value.getOrElse("")"></label></p>
+    <fieldset>
+      <legend>Reference metadata (optional)</legend>
+      <p><label>Homepage URL <input type="text" name="homepageUrl" value="@form("homepageUrl").value.getOrElse("")"></label></p>
+      <p><label>Login page URL <input type="text" name="loginPageUrl" value="@form("loginPageUrl").value.getOrElse("")"></label></p>
+      <p><label>Logo ref <input type="text" name="logoRef" value="@form("logoRef").value.getOrElse("")"></label></p>
+      <p><label>Favicon ref <input type="text" name="faviconRef" value="@form("faviconRef").value.getOrElse("")"></label></p>
+    </fieldset>
+    <button type="submit">Save</button>
+  }
+  <p><a href="@drp.asset.web.routes.EntityController.view(entityId)">‹ back to entity</a></p>
+}

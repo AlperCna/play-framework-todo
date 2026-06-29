@@ -6,16 +6,19 @@ import scala.concurrent.{ExecutionContext, Future}
 
 import play.api.mvc.{MessagesAbstractController, MessagesControllerComponents}
 
-import drp.asset.application.EntityService
+import drp.asset.application.{AssetService, EntityService}
 import drp.asset.domain.EntityId
 import drp.shared.application.PageRequest
 import drp.shared.domain.DomainError
 
 /** Thin web layer for entities — binds the form, calls the service, maps results to HTTP + view-model. */
 @Singleton
-class EntityController @Inject() (cc: MessagesControllerComponents, service: EntityService)(
-    implicit ec: ExecutionContext
-) extends MessagesAbstractController(cc) {
+class EntityController @Inject() (
+    cc: MessagesControllerComponents,
+    service: EntityService,
+    assetService: AssetService
+)(implicit ec: ExecutionContext)
+    extends MessagesAbstractController(cc) {
 
   private val listCall = routes.EntityController.list()
 
@@ -41,9 +44,13 @@ class EntityController @Inject() (cc: MessagesControllerComponents, service: Ent
   }
 
   def view(id: Long) = Action.async { implicit request =>
-    service.get(EntityId(id)).map {
-      case Some(e) => Ok(views.html.entityView(EntityViewModel.from(e)))
-      case None    => NotFound(request.messages("drp.entity.notFound"))
+    val eid = EntityId(id)
+    service.get(eid).flatMap {
+      case None => Future.successful(NotFound(request.messages("drp.entity.notFound")))
+      case Some(e) =>
+        assetService.listByEntity(eid).map { assets =>
+          Ok(views.html.entityView(EntityViewModel.from(e), assets.map(AssetViewModel.from)))
+        }
     }
   }
 

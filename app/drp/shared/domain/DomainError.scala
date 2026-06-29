@@ -28,6 +28,15 @@ object DomainError {
     val message = "Exclusion value cannot be empty."
   }
 
+  final case class InvalidAssetType(raw: String) extends DomainError {
+    val code = "error.drp.asset.invalidType"
+    val message = s"'$raw' is not a valid asset type (expected: domain or subdomain)."
+  }
+  final case class AssetNotFound(id: Long) extends DomainError {
+    val code = "error.drp.asset.notFound"
+    val message = s"Asset $id was not found."
+  }
+
   final case class EntityNotFound(id: Long) extends DomainError {
     val code = "error.drp.entity.notFound"
     val message = s"Entity $id was not found."

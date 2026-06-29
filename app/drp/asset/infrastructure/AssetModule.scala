@@ -3,10 +3,10 @@ package drp.asset.infrastructure
 import com.google.inject.AbstractModule
 import play.api.{Configuration, Environment, Mode}
 
-import drp.asset.application.{EntityService, EntityServiceImpl}
-import drp.asset.application.ports.EntityRepository
-import drp.asset.infrastructure.inmemory.InMemoryEntityRepository
-import drp.asset.infrastructure.slick.SlickEntityRepository
+import drp.asset.application.{AssetService, AssetServiceImpl, EntityService, EntityServiceImpl}
+import drp.asset.application.ports.{AssetRepository, EntityRepository}
+import drp.asset.infrastructure.inmemory.{InMemoryAssetRepository, InMemoryEntityRepository}
+import drp.asset.infrastructure.slick.{SlickAssetRepository, SlickEntityRepository}
 
 /**
  * Guice wiring for the DRP `asset` module. Installed by `drp.boot.DrpModule`.
@@ -20,8 +20,14 @@ class AssetModule(environment: Environment, configuration: Configuration) extend
 
   override def configure(): Unit = {
     bind(classOf[EntityService]).to(classOf[EntityServiceImpl])
+    bind(classOf[AssetService]).to(classOf[AssetServiceImpl])
 
-    if (useInMemory) bind(classOf[EntityRepository]).to(classOf[InMemoryEntityRepository])
-    else bind(classOf[EntityRepository]).to(classOf[SlickEntityRepository])
+    if (useInMemory) {
+      bind(classOf[EntityRepository]).to(classOf[InMemoryEntityRepository])
+      bind(classOf[AssetRepository]).to(classOf[InMemoryAssetRepository])
+    } else {
+      bind(classOf[EntityRepository]).to(classOf[SlickEntityRepository])
+      bind(classOf[AssetRepository]).to(classOf[SlickAssetRepository])
+    }
   }
 }

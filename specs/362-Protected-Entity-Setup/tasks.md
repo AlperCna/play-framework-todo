@@ -62,20 +62,20 @@
 **Goal**: Assets under an entity with discrete reference metadata; per-entity duplicate + parent + same-entity-group rules.
 **Independent test**: Under "Akbank" add asset `domain`/`akbank.com` (refs) → active, listed; duplicate tuple rejected; invalid parent rejected.
 
-- [ ] T025 [P] [US2] `app/drp/asset/domain/AssetType.scala` (closed enum `domain`/`subdomain` + codec) and `AssetMetadata.scala` (homepage/login/logo/favicon optional refs).
-- [ ] T026 [P] [US2] `app/drp/asset/domain/Asset.scala` — `AssetId` + `final case class Asset` + `Asset.create(...)` (blank value → `EmptyAssetValue`; `is_active=true`).
-- [ ] T027 [P] [US2] `app/drp/asset/infrastructure/AssetMetadataCodec.scala` — `AssetMetadata` ⇄ JSONB (references only).
-- [ ] T028 [P] [US2] `test/drp/asset/domain/AssetSpec.scala` — smart-ctor (blank value → error; metadata assembled from discrete refs).
-- [ ] T029 [US2] `app/drp/asset/application/ports/AssetRepository.scala` — port (`add`/`get`/`existsActive(entity,assetType,value)`/`update`/`listByEntity`).
-- [ ] T030 [US2] `app/drp/asset/infrastructure/inmemory/InMemoryAssetRepository.scala` — active `(entity,asset_type,value)` dup check.
-- [ ] T031 [US2] `app/drp/asset/application/AssetService.scala` + impl — parent entity exists (`EntityNotFound`); group same-entity (`AssetGroupEntityMismatch`); duplicate (`DuplicateAsset`).
-- [ ] T032 [P] [US2] `test/drp/asset/application/AssetServiceSpec.scala` via in-memory repos — register; duplicate tuple rejected; invalid parent rejected; cross-entity group prevented; blank value rejected.
-- [ ] T033 [US2] `app/drp/asset/infrastructure/tables/AssetsTable.scala` (Slick, JSONB metadata via MonaPgProfile) + `slick/SlickAssetRepository.scala`.
-- [ ] T034 [US2] Wire `AssetService` + `AssetRepository` in `AssetModule`.
-- [ ] T035 [P] [US2] `app/drp/asset/web/AssetFormData.scala` (discrete metadata fields) + `AssetViewModel.scala`.
-- [ ] T036 [US2] `app/drp/asset/web/AssetController.scala` — newForm/create/editForm/update under an entity.
-- [ ] T037 [P] [US2] Twirl `app/drp/asset/web/views/assetForm.scala.html` + render assets (full) inside `entityView`.
-- [ ] T038 [US2] Add `/drp/entities/:entityId/assets` + `/drp/assets/:id/edit|update` routes to `conf/routes`.
+- [X] T025 [P] [US2] `app/drp/asset/domain/AssetType.scala` (closed enum `domain`/`subdomain` + codec) and `AssetMetadata.scala` (homepage/login/logo/favicon optional refs).
+- [X] T026 [P] [US2] `app/drp/asset/domain/Asset.scala` — `AssetId` + `final case class Asset` + `Asset.create(...)` (blank value → `EmptyAssetValue`; `is_active=true`).
+- [X] T027 [P] [US2] `app/drp/asset/infrastructure/AssetMetadataCodec.scala` — `AssetMetadata` ⇄ JSONB (references only).
+- [X] T028 [P] [US2] `test/drp/asset/domain/AssetSpec.scala` — smart-ctor (blank value → error; metadata assembled from discrete refs).
+- [X] T029 [US2] `app/drp/asset/application/ports/AssetRepository.scala` — port (`add`/`get`/`existsActive(entity,assetType,value)`/`update`/`listByEntity`).
+- [X] T030 [US2] `app/drp/asset/infrastructure/inmemory/InMemoryAssetRepository.scala` — active `(entity,asset_type,value)` dup check.
+- [X] T031 [US2] `app/drp/asset/application/AssetService.scala` + impl — parent entity exists (`EntityNotFound`); group same-entity (`AssetGroupEntityMismatch`); duplicate (`DuplicateAsset`).
+- [X] T032 [P] [US2] `test/drp/asset/application/AssetServiceSpec.scala` via in-memory repos — register; duplicate tuple rejected; invalid parent rejected; cross-entity group prevented; blank value rejected.
+- [X] T033 [US2] `app/drp/asset/infrastructure/tables/AssetsTable.scala` (Slick, JSONB metadata via MonaPgProfile) + `slick/SlickAssetRepository.scala`.
+- [X] T034 [US2] Wire `AssetService` + `AssetRepository` in `AssetModule`.
+- [X] T035 [P] [US2] `app/drp/asset/web/AssetFormData.scala` (discrete metadata fields) + `AssetViewModel.scala`.
+- [X] T036 [US2] `app/drp/asset/web/AssetController.scala` — newForm/create/editForm/update under an entity.
+- [X] T037 [P] [US2] Twirl `app/drp/asset/web/views/assetForm.scala.html` + render assets (full) inside `entityView`.
+- [X] T038 [US2] Add `/drp/entities/:entityId/assets` + `/drp/assets/:id/edit|update` routes to `conf/routes`.
 
 **Checkpoint**: US1 + US2 work independently.
 
