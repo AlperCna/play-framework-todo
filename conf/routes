@@ -77,5 +77,15 @@ POST    /drp/entities/:entityId/asset-groups      drp.asset.web.AssetGroupContro
 GET     /drp/asset-groups/:id/edit                drp.asset.web.AssetGroupController.editForm(id: Long)
 POST    /drp/asset-groups/:id                     drp.asset.web.AssetGroupController.update(id: Long)
 
+# --- Discovery ---
+GET     /drp/discoveries                    drp.discovery.web.DiscoveryController.list(entityId: Option[Long] ?= None, status: Option[String] ?= None, page: Int ?= 1)
+GET     /drp/discoveries/new               drp.discovery.web.DiscoveryController.newForm(entityId: Option[Long] ?= None)
+POST    /drp/discoveries                   drp.discovery.web.DiscoveryController.submit
+GET     /drp/discoveries/:id               drp.discovery.web.DiscoveryController.detail(id: Long)
+
+# --- Permutation Intake ---
+GET     /drp/permutation-intake/new        drp.discovery.web.PermutationIntakeController.newForm(assetId: Long)
+POST    /drp/permutation-intake            drp.discovery.web.PermutationIntakeController.submit
+
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

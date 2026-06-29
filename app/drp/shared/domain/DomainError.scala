@@ -75,4 +75,28 @@ object DomainError {
     val code = "error.drp.assetGroup.duplicateName"
     val message = s"An asset group named '$name' already exists for this entity."
   }
+
+  case object EmptyDiscoveryValue extends DomainError {
+    val code = "error.drp.discovery.emptyValue"
+    val message = "Discovery value cannot be empty."
+  }
+  final case class AssetEntityMismatch(assetId: Long, entityId: Long) extends DomainError {
+    val code = "error.drp.discovery.assetEntityMismatch"
+    val message = s"Asset $assetId does not belong to entity $entityId."
+  }
+  final case class AssetNotDomainType(assetId: Long) extends DomainError {
+    val code = "error.drp.discovery.assetNotDomainType"
+    val message = s"Asset $assetId is not a domain-type asset."
+  }
+  final case class AssetNotActive(assetId: Long) extends DomainError {
+    val code = "error.drp.discovery.assetNotActive"
+    val message = s"Asset $assetId is not active."
+  }
+  final case class DiscoveryNotFound(id: Long) extends DomainError {
+    val code = "error.drp.discovery.notFound"
+    val message = s"Discovery $id was not found."
+  }
+  final case class PermutationProviderFailure(message: String) extends DomainError {
+    val code = "error.drp.discovery.permutationProviderFailure"
+  }
 }

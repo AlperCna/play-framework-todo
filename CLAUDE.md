@@ -426,6 +426,6 @@ deepfake, self-improving model / Agentic SOC.
 > Henüz **netleşmemiş** kararlar (kesin olmayan teknik seçimler) ayrı tutulur: `docs/acik-kararlar.md` — netleşince buraya/constitution'a taşınır.
 
 <!-- SPECKIT START -->
-**Active feature**: `specs/362-Protected-Entity-Setup/` — Protected Entity Setup (Entity, Asset, Asset Group & Exclusion CRUD foundation). First real DRP module: `app/drp/asset/` + self-contained `app/drp/shared/` (mirrors todo patterns, no `app/todo` import). Stands up the PostgreSQL/slick-pg foundation (`slick.dbs.drp` + `MonaPgProfile`); tables exist in `V001`; adds `V007` for `entities.name` UNIQUE. Sync-only, no-delete, no auth gate.
-Plan: `specs/362-Protected-Entity-Setup/plan.md` (with `spec.md`, `research.md`, `data-model.md`, `quickstart.md`, `contracts/`). Read that plan for technologies, project structure, and commands for the current work.
+**Active feature**: `specs/363-candidate-discovery-intake/` — Candidate Discovery Intake & Staging (US-363). Builds `app/drp/discovery/` module: manual domain submission form, permutation intake via replaceable provider boundary, hostname normalisation, four-mode exclusion matching, deduplication, paginated list/detail with status filter. Extends `AssetView` with `isActive`. No new migration (V002 already covers `candidate_discoveries`). Sync-only, no queue, no worker.
+Plan: `specs/363-candidate-discovery-intake/plan.md` (with `spec.md`, `research.md`, `data-model.md`, `quickstart.md`, `contracts/`). Read that plan for technologies, project structure, and commands for the current work.
 <!-- SPECKIT END -->

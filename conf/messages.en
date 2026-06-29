@@ -186,3 +186,22 @@ error.drp.exclusion.emptyValue = Exclusion value cannot be empty.
 error.drp.exclusion.invalidMatchType = Invalid match type.
 error.drp.exclusion.duplicate = This exclusion already exists for this entity.
 error.drp.exclusion.notFound = Exclusion not found.
+
+# =========================================================================
+# DRP — Candidate Discovery Intake & Staging (US-363)
+# =========================================================================
+
+# --- UI texts ---
+drp.discovery.submitted = Discovery submitted successfully.
+drp.discovery.notFound = Discovery not found.
+drp.permutation.submitted = Permutation intake triggered successfully.
+# {0} -> count of newly staged discoveries
+drp.permutation.staged = {0} new discoveries staged.
+
+# --- DRP domain error messages (discovery) ---
+error.drp.discovery.emptyValue = Discovery value cannot be empty.
+error.drp.discovery.assetEntityMismatch = The selected asset does not belong to the selected entity.
+error.drp.discovery.assetNotDomainType = Permutation intake is only available for domain-type assets.
+error.drp.discovery.assetNotActive = The selected asset is not active.
+error.drp.discovery.permutationProviderFailure = The permutation provider encountered an error. Please try again.
+error.drp.discovery.notFound = Discovery not found.

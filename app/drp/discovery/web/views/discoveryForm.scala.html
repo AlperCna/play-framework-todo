@@ -1,0 +1,45 @@
+@(form: play.api.data.Form[drp.discovery.web.DiscoveryFormData], entities: Seq[(Long, String)], assets: Seq[(Long, String)], preselectedEntityId: Option[Long])(implicit request: play.api.mvc.MessagesRequestHeader)
+@drp.shared.web.views.html.main("New Discovery") {
+  <p class="breadcrumbs">
+    <a href="@drp.asset.web.routes.EntityController.list()">Entities</a> /
+    <a href="@drp.discovery.web.routes.DiscoveryController.list(form("entityId").value.flatMap(_.toLongOption), None, 1)">Discoveries</a> /
+    New
+  </p>
+  <h1>Report Suspicious Domain</h1>
+  @if(form.hasGlobalErrors) {
+    <ul class="errors">
+      @for(e <- form.globalErrors) { <li>@request.messages(e.message)</li> }
+    </ul>
+  }
+  @helper.form(action = drp.discovery.web.routes.DiscoveryController.submit) {
+    @helper.CSRF.formField
+    <div>
+      <label for="entityId">Protected Entity</label>
+      <select id="entityId" name="entityId"
+              onchange="window.location.href='@drp.discovery.web.routes.DiscoveryController.newForm()' + '?entityId=' + encodeURIComponent(this.value)">
+        @for((id, name) <- entities) {
+          <option value="@id" @if(form("entityId").value.contains(id.toString) || preselectedEntityId.contains(id)){selected}>@name</option>
+        }
+      </select>
+      @form("entityId").errors.map { e => <span class="field-error">@request.messages(e.message)</span> }
+    </div>
+    <div>
+      <label for="assetId">Protected Asset (optional — select to anchor to a specific asset)</label>
+      <select id="assetId" name="assetId">
+        <option value="">— none —</option>
+        @for((id, value) <- assets) {
+          <option value="@id" @if(form("assetId").value.contains(id.toString)){selected}>@value</option>
+        }
+      </select>
+    </div>
+    <div>
+      <label for="value">Suspicious Domain or URL</label>
+      <input type="text" id="value" name="value" value="@form("value").value.getOrElse("")" placeholder="e.g. akbank-guvenli-giris.com" />
+      @form("value").errors.map { e => <span class="field-error">@request.messages(e.message)</span> }
+    </div>
+    <div class="form-actions">
+      <button type="submit">Submit</button>
+      <a href="@drp.discovery.web.routes.DiscoveryController.list(form("entityId").value.flatMap(_.toLongOption), None, 1)">Cancel</a>
+    </div>
+  }
+}

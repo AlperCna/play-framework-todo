@@ -1,0 +1,88 @@
+@(entityName: String, entityId: Long, entities: Seq[(Long, String)], page: drp.shared.application.Page[drp.discovery.web.DiscoveryViewModel], currentFilter: Option[drp.discovery.application.DiscoveryStatusFilter], currentPage: Int)(implicit request: play.api.mvc.MessagesRequestHeader)
+@drp.shared.web.views.html.main("Discoveries — " + entityName) {
+  <p class="breadcrumbs">
+    <a href="@drp.asset.web.routes.EntityController.list()">Entities</a> /
+    <a href="@drp.asset.web.routes.EntityController.view(entityId)">@entityName</a> /
+    Discoveries
+  </p>
+  <h1>Discoveries — @entityName</h1>
+  @request.flash.get("success").map { msg => <p class="flash">@msg</p> }
+
+  <div class="actions">
+    <a class="button-link" href="@drp.discovery.web.routes.DiscoveryController.newForm(Some(entityId))">Report suspicious domain</a>
+    <a class="button-link secondary" href="@drp.asset.web.routes.EntityController.view(entityId)">Back to entity</a>
+  </div>
+
+  <div>
+    <label for="discoveryEntity">Protected Entity</label>
+    <select id="discoveryEntity"
+            onchange="window.location.href='@drp.discovery.web.routes.DiscoveryController.list()' + '?entityId=' + encodeURIComponent(this.value)">
+      @for((id, label) <- entities) {
+        <option value="@id" @if(id == entityId){selected}>@label</option>
+      }
+    </select>
+  </div>
+
+  <div style="display:flex;gap:.75rem;margin-bottom:1rem;">
+    <a href="@drp.discovery.web.routes.DiscoveryController.list(Some(entityId), None, 1)"
+       style="padding:.35rem .75rem;border-radius:5px;background:@if(currentFilter.isEmpty){var(--primary);color:#04121b}else{var(--surface-2)}">All</a>
+    <a href="@drp.discovery.web.routes.DiscoveryController.list(Some(entityId), Some("pending"), 1)"
+       style="padding:.35rem .75rem;border-radius:5px;background:@if(currentFilter.contains(drp.discovery.application.DiscoveryStatusFilter.PendingValidation)){var(--primary);color:#04121b}else{var(--surface-2)}">Pending Validation</a>
+    <a href="@drp.discovery.web.routes.DiscoveryController.list(Some(entityId), Some("whitelisted"), 1)"
+       style="padding:.35rem .75rem;border-radius:5px;background:@if(currentFilter.contains(drp.discovery.application.DiscoveryStatusFilter.Whitelisted)){var(--safe);color:#04121b}else{var(--surface-2)}">Whitelisted</a>
+    <a href="@drp.discovery.web.routes.DiscoveryController.list(Some(entityId), Some("invalid_format"), 1)"
+       style="padding:.35rem .75rem;border-radius:5px;background:@if(currentFilter.contains(drp.discovery.application.DiscoveryStatusFilter.InvalidFormat)){var(--danger);color:#fff}else{var(--surface-2)}">Invalid Format</a>
+  </div>
+
+  @if(page.items.isEmpty) {
+    <div class="empty-state">
+      No discoveries found for this entity and status filter.
+      <a href="@drp.discovery.web.routes.DiscoveryController.newForm(Some(entityId))">Report the first suspicious domain</a>.
+    </div>
+  } else {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Value</th>
+            <th>Normalized</th>
+            <th>Source</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+        @for(d <- page.items) {
+          <tr>
+            <td class="mono">@d.value</td>
+            <td class="mono">@d.normalizedValue</td>
+            <td><span class="badge source">@d.source</span></td>
+            <td>
+              @d.skipReason match {
+                case Some("whitelisted")   => { <span class="badge safe">Whitelisted</span> }
+                case Some("invalid_format") => { <span class="badge danger">Invalid Format</span> }
+                case _ => { <span class="badge pending">@d.statusLabel</span> }
+              }
+            </td>
+            <td class="muted">@d.createdAt</td>
+            <td><a href="@drp.discovery.web.routes.DiscoveryController.detail(d.id)">view</a></td>
+          </tr>
+        }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if(page.total > 0) {
+  <p class="muted">
+    @if(page.hasPrev) {
+      <a href="@drp.discovery.web.routes.DiscoveryController.list(Some(entityId), currentFilter.map(drp.discovery.application.DiscoveryStatusFilter.toQueryParam), currentPage - 1)">‹ prev</a>
+    }
+    <span>page @page.page / @page.totalPages (@page.total total)</span>
+    @if(page.hasNext) {
+      <a href="@drp.discovery.web.routes.DiscoveryController.list(Some(entityId), currentFilter.map(drp.discovery.application.DiscoveryStatusFilter.toQueryParam), currentPage + 1)">next ›</a>
+    }
+  </p>
+  }
+}

@@ -1,0 +1,32 @@
+@(form: play.api.data.Form[drp.discovery.web.PermutationIntakeFormData], assetDomain: String, entityName: String, assetId: Long)(implicit request: play.api.mvc.MessagesRequestHeader)
+@drp.shared.web.views.html.main("Permutation Intake") {
+  <p class="breadcrumbs">
+    <a href="@drp.asset.web.routes.EntityController.list()">Entities</a> /
+    <a href="@drp.asset.web.routes.EntityController.view(form("entityId").value.flatMap(_.toLongOption).getOrElse(0L))">@entityName</a> /
+    Permutation intake
+  </p>
+  <h1>Request Permutation Intake</h1>
+  @request.flash.get("error").map { msg => <ul class="errors"><li>@msg</li></ul> }
+  @if(form.hasGlobalErrors) {
+    <ul class="errors">
+      @for(e <- form.globalErrors) { <li>@e.message</li> }
+    </ul>
+  }
+
+  <p style="color:var(--muted)">
+    This will generate look-alike domain variants for <strong style="color:var(--text)">@assetDomain</strong>
+    (entity: <strong style="color:var(--text)">@entityName</strong>) and stage them as candidates for DNS/HTTP validation.
+  </p>
+  <p style="color:var(--muted)">Already-staged variants will be skipped automatically.</p>
+  <p class="muted"><strong>Demo provider:</strong> local verification uses a deterministic sample batch.</p>
+
+  @helper.form(action = drp.discovery.web.routes.PermutationIntakeController.submit) {
+    @helper.CSRF.formField
+    <input type="hidden" name="entityId" value="@form("entityId").value.getOrElse("")" />
+    <input type="hidden" name="assetId"  value="@assetId" />
+    <div class="form-actions">
+      <button type="submit">Confirm &amp; Run</button>
+      <a href="@drp.asset.web.routes.EntityController.view(form("entityId").value.flatMap(_.toLongOption).getOrElse(0L))">Cancel</a>
+    </div>
+  }
+}

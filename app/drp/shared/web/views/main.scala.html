@@ -40,8 +40,12 @@
         font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
         color: var(--primary);
       }
+      header.app a.brand:hover { text-decoration: none; }
       header.app .brand::before { content: "▰▰ "; opacity: .8; }
       header.app .tag { color: var(--muted); font-size: .8rem; letter-spacing: .04em; }
+      header.app nav { display: flex; gap: 1rem; margin-left: auto; }
+      header.app nav a { color: var(--muted); font-size: .9rem; font-weight: 600; }
+      header.app nav a:hover { color: var(--primary); text-decoration: none; }
       main { max-width: 980px; margin: 2rem auto; padding: 0 1.25rem; }
       .panel {
         background: var(--surface);
@@ -62,7 +66,18 @@
         padding: .55rem 1.15rem; border-radius: 6px; cursor: pointer; font-size: .95rem;
       }
       button:hover { box-shadow: 0 0 0 2px rgba(0, 210, 255, .35); }
+      .button-link {
+        display: inline-block; background: var(--primary); color: #04121b; font-weight: 600;
+        padding: .5rem .9rem; border-radius: 6px;
+      }
+      .button-link:hover { color: #04121b; text-decoration: none; box-shadow: 0 0 0 2px rgba(0, 210, 255, .25); }
+      .button-link.secondary { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+      .actions { display: flex; flex-wrap: wrap; gap: .65rem; margin: .75rem 0 1.25rem; }
+      .breadcrumbs { color: var(--muted); font-size: .85rem; margin: 0 0 .85rem; }
+      .breadcrumbs a { color: var(--muted); }
+      .breadcrumbs a:hover { color: var(--primary); }
       form { margin: 0; }
+      form > div { margin-bottom: .85rem; }
       label { display: block; margin: .35rem 0; color: var(--muted); font-size: .9rem; }
       input[type=text], select {
         display: block; width: 100%; max-width: 440px; margin-top: .3rem;
@@ -71,12 +86,30 @@
         font-size: .95rem;
       }
       input[type=text]:focus, select:focus { outline: none; border-color: var(--primary); }
+      .field-error { display: block; color: var(--danger); font-size: .82rem; margin-top: .3rem; }
+      .form-actions { display: flex; align-items: center; gap: .8rem; margin-top: 1rem; }
       fieldset { border: 1px solid var(--border); border-radius: 8px; margin: 1rem 0; padding: .75rem 1.1rem; }
       legend { color: var(--muted); padding: 0 .4rem; font-size: .85rem; }
       table { width: 100%; border-collapse: collapse; margin: .5rem 0 1rem; }
       th, td { text-align: left; padding: .55rem .6rem; border-bottom: 1px solid var(--border); }
       thead th { color: var(--muted); font-weight: 600; font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; }
       tbody tr:hover { background: var(--surface-2); }
+      .table-wrap { width: 100%; overflow-x: auto; }
+      .empty-state {
+        color: var(--muted); background: var(--bg); border: 1px dashed var(--border);
+        border-radius: 8px; padding: 1.25rem; margin: 1rem 0;
+      }
+      .badge {
+        display: inline-block; border-radius: 999px; padding: .15rem .55rem;
+        font-size: .76rem; font-weight: 700; white-space: nowrap;
+        background: var(--surface-2); color: var(--text);
+      }
+      .badge.pending { color: var(--primary); border: 1px solid rgba(0, 210, 255, .45); }
+      .badge.safe { color: var(--safe); border: 1px solid rgba(0, 230, 118, .45); }
+      .badge.danger { color: var(--danger); border: 1px solid rgba(255, 51, 51, .45); }
+      .badge.source { color: var(--muted); border: 1px solid var(--border); }
+      .muted { color: var(--muted); }
+      .mono { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; overflow-wrap: anywhere; }
       dl { display: grid; grid-template-columns: max-content 1fr; gap: .4rem 1.25rem; margin: 1rem 0; }
       dt { color: var(--muted); }
       dd { margin: 0; }
@@ -90,12 +123,25 @@
         padding: .6rem .9rem .6rem 1.6rem; margin: 0 0 1rem;
       }
       ul.errors li { margin: .15rem 0; }
+      @@media (max-width: 680px) {
+        header.app { flex-wrap: wrap; padding: .8rem 1rem; }
+        header.app .tag { display: none; }
+        header.app nav { width: 100%; margin-left: 0; padding-top: .4rem; border-top: 1px solid var(--border); }
+        main { margin: 1rem auto; padding: 0 .75rem; }
+        .panel { padding: 1.1rem; }
+        dl { grid-template-columns: 1fr; gap: .15rem; }
+        dd { margin-bottom: .55rem; }
+      }
     </style>
   </head>
   <body>
     <header class="app">
-      <span class="brand">Mona DRP</span>
+      <a class="brand" href="@drp.asset.web.routes.EntityController.list()">Mona DRP</a>
       <span class="tag">Digital Risk Protection</span>
+      <nav aria-label="DRP navigation">
+        <a href="@drp.asset.web.routes.EntityController.list()">Entities</a>
+        <a href="@drp.discovery.web.routes.DiscoveryController.list()">Discoveries</a>
+      </nav>
     </header>
     <main>
       <div class="panel">@content</div>

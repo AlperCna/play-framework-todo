@@ -189,3 +189,22 @@ error.drp.exclusion.emptyValue = Exclusion degeri bos olamaz.
 error.drp.exclusion.invalidMatchType = Gecersiz eslesme tipi.
 error.drp.exclusion.duplicate = Bu entity altinda ayni exclusion zaten var.
 error.drp.exclusion.notFound = Exclusion bulunamadi.
+
+# =========================================================================
+# DRP — Candidate Discovery Intake & Staging (US-363)
+# =========================================================================
+
+# --- UI metinleri ---
+drp.discovery.submitted = Discovery basariyla gonderildi.
+drp.discovery.notFound = Discovery bulunamadi.
+drp.permutation.submitted = Permutasyon intake baslatildi.
+# {0} -> yeni staging'e eklenen kayit sayisi
+drp.permutation.staged = {0} yeni discovery staging''e eklendi.
+
+# --- DRP domain hata mesajlari (discovery) ---
+error.drp.discovery.emptyValue = Discovery degeri bos olamaz.
+error.drp.discovery.assetEntityMismatch = Secilen asset, secilen entity'ye ait degil.
+error.drp.discovery.assetNotDomainType = Permutasyon intake yalnizca domain tipi asset'ler icin kullanilabilir.
+error.drp.discovery.assetNotActive = Secilen asset aktif degil.
+error.drp.discovery.permutationProviderFailure = Permutasyon saglayicisi bir hatayla karsilasti. Lutfen tekrar deneyin.
+error.drp.discovery.notFound = Discovery bulunamadi.

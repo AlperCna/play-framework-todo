@@ -5,6 +5,7 @@ import play.api.{Configuration, Environment}
 
 import drp.shared.application.{Clock, SystemClock}
 import drp.asset.infrastructure.AssetModule
+import drp.discovery.infrastructure.DiscoveryModule
 
 /**
  * Root Guice module for the DRP modular monolith — binds shared services and composes each DRP module.
@@ -15,5 +16,6 @@ class DrpModule(environment: Environment, configuration: Configuration) extends 
   override def configure(): Unit = {
     bind(classOf[Clock]).to(classOf[SystemClock])
     install(new AssetModule(environment, configuration))
+    install(new DiscoveryModule(environment, configuration))
   }
 }

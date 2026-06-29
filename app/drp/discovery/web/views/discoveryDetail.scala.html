@@ -1,0 +1,43 @@
+@(vm: drp.discovery.web.DiscoveryViewModel)(implicit request: play.api.mvc.MessagesRequestHeader)
+@drp.shared.web.views.html.main("Discovery #" + vm.id) {
+  <p class="breadcrumbs">
+    <a href="@drp.asset.web.routes.EntityController.list()">Entities</a> /
+    <a href="@drp.asset.web.routes.EntityController.view(vm.entityId)">@vm.entityName</a> /
+    <a href="@drp.discovery.web.routes.DiscoveryController.list(Some(vm.entityId), None, 1)">Discoveries</a> /
+    #@vm.id
+  </p>
+  <h1>Discovery #@vm.id</h1>
+  <div class="actions">
+    <a class="button-link secondary" href="@drp.discovery.web.routes.DiscoveryController.list(Some(vm.entityId), None, 1)">Back to discoveries</a>
+  </div>
+
+  <dl>
+    <dt>Entity</dt>
+    <dd><a href="@drp.asset.web.routes.EntityController.view(vm.entityId)">@vm.entityName</a> (id @vm.entityId)</dd>
+    @vm.assetId.map { aid =>
+      <dt>Asset</dt>
+      <dd>#@aid @vm.assetValue.map { v => — <span class="mono">@v</span> }</dd>
+    }
+    <dt>Submitted value</dt>
+    <dd class="mono">@vm.value</dd>
+    <dt>Normalized value</dt>
+    <dd class="mono">@vm.normalizedValue</dd>
+    <dt>Source</dt>
+    <dd><span class="badge source">@vm.source</span></dd>
+    <dt>DNS status</dt>
+    <dd>@vm.dnsStatus</dd>
+    <dt>Skip reason</dt>
+    <dd>
+      @vm.skipReason match {
+        case Some("whitelisted")   => { <span class="badge safe">Whitelisted</span> }
+        case Some("invalid_format") => { <span class="badge danger">Invalid Format</span> }
+        case Some(other)           => { @other }
+        case None                  => { — }
+      }
+    </dd>
+    <dt>Status</dt>
+    <dd>@vm.statusLabel</dd>
+    <dt>Created</dt>
+    <dd>@vm.createdAt</dd>
+  </dl>
+}
