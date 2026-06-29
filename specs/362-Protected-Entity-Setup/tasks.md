@@ -39,19 +39,19 @@
 **Goal**: Create/edit/view entities; paginated entity list; no delete.
 **Independent test**: Create "Akbank"/"brand" → appears in paginated list; duplicate name rejected; blank name rejected.
 
-- [ ] T012 [P] [US1] `app/drp/asset/domain/EntityType.scala` — open enum (`Brand`/`Person`/`Institution`/`Other(raw)`) + String codec.
-- [ ] T013 [P] [US1] `app/drp/asset/domain/Entity.scala` — `EntityId` + `final case class Entity` + `Entity.create(name, type)` smart ctor (`Either[DomainError, Entity]`, blank name → `EmptyEntityName`).
-- [ ] T014 [P] [US1] `test/drp/asset/domain/EntitySpec.scala` — smart-ctor validation (valid create; blank name → `EmptyEntityName`; type codec round-trip incl. unknown→`Other`).
-- [ ] T015 [US1] `app/drp/asset/application/ports/EntityRepository.scala` — port (`add`/`get`/`existsById`/`existsByName`/`update`/`list(PageRequest)`).
-- [ ] T016 [US1] `app/drp/asset/infrastructure/inmemory/InMemoryEntityRepository.scala` — test adapter (assigns id/timestamps; `existsByName`).
-- [ ] T017 [US1] `app/drp/asset/application/EntityService.scala` + `EntityServiceImpl` — create/update/get/`list(page)`; duplicate-name pre-check → `DuplicateEntityName`.
-- [ ] T018 [P] [US1] `test/drp/asset/application/EntityServiceSpec.scala` via `InMemoryEntityRepository` — register persists + appears in list; duplicate name → error, nothing written; blank → error; edit changes fields (created stable).
-- [ ] T019 [US1] `app/drp/asset/infrastructure/tables/EntitiesTable.scala` (Slick/MonaPgProfile) + `app/drp/asset/infrastructure/slick/SlickEntityRepository.scala` on the `drp` datasource.
-- [ ] T020 [US1] Wire `EntityService`→`EntityServiceImpl` and `EntityRepository`→(Slick/InMemory by mode) in `AssetModule`.
-- [ ] T021 [P] [US1] `app/drp/asset/web/EntityFormData.scala` (+ Play `Form`) and `EntityViewModel.scala`.
-- [ ] T022 [US1] `app/drp/asset/web/EntityController.scala` — `list(page)` / `newForm` / `create` / `view` / `editForm` / `update` (no delete); domain-error → global form error.
-- [ ] T023 [P] [US1] Twirl views `app/drp/asset/web/views/{entitiesList,entityForm,entityView}.scala.html` using the shared `main` layout + `@helper.CSRF.formField`.
-- [ ] T024 [US1] Add `/drp/entities` routes (list/new/create/view/edit/update) to `conf/routes` under a `# DRP 362` comment group.
+- [X] T012 [P] [US1] `app/drp/asset/domain/EntityType.scala` — open enum (`Brand`/`Person`/`Institution`/`Other(raw)`) + String codec.
+- [X] T013 [P] [US1] `app/drp/asset/domain/Entity.scala` — `EntityId` + `final case class Entity` + `Entity.create(name, type)` smart ctor (`Either[DomainError, Entity]`, blank name → `EmptyEntityName`).
+- [X] T014 [P] [US1] `test/drp/asset/domain/EntitySpec.scala` — smart-ctor validation (valid create; blank name → `EmptyEntityName`; type codec round-trip incl. unknown→`Other`).
+- [X] T015 [US1] `app/drp/asset/application/ports/EntityRepository.scala` — port (`add`/`get`/`existsById`/`existsByName`/`update`/`list(PageRequest)`).
+- [X] T016 [US1] `app/drp/asset/infrastructure/inmemory/InMemoryEntityRepository.scala` — test adapter (assigns id/timestamps; `existsByName`).
+- [X] T017 [US1] `app/drp/asset/application/EntityService.scala` + `EntityServiceImpl` — create/update/get/`list(page)`; duplicate-name pre-check → `DuplicateEntityName`.
+- [X] T018 [P] [US1] `test/drp/asset/application/EntityServiceSpec.scala` via `InMemoryEntityRepository` — register persists + appears in list; duplicate name → error, nothing written; blank → error; edit changes fields (created stable).
+- [X] T019 [US1] `app/drp/asset/infrastructure/tables/EntitiesTable.scala` (Slick/MonaPgProfile) + `app/drp/asset/infrastructure/slick/SlickEntityRepository.scala` on the `drp` datasource.
+- [X] T020 [US1] Wire `EntityService`→`EntityServiceImpl` and `EntityRepository`→(Slick/InMemory by mode) in `AssetModule`.
+- [X] T021 [P] [US1] `app/drp/asset/web/EntityFormData.scala` (+ Play `Form`) and `EntityViewModel.scala`.
+- [X] T022 [US1] `app/drp/asset/web/EntityController.scala` — `list(page)` / `newForm` / `create` / `view` / `editForm` / `update` (no delete); domain-error → global form error.
+- [X] T023 [P] [US1] Twirl views `app/drp/asset/web/views/{entitiesList,entityForm,entityView}.scala.html` using the shared `main` layout + `@helper.CSRF.formField`.
+- [X] T024 [US1] Add `/drp/entities` routes (list/new/create/view/edit/update) to `conf/routes` under a `# DRP 362` comment group.
 
 **Checkpoint**: US1 independently usable — paginated entity CRUD (no delete).
 

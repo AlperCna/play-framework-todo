@@ -1,0 +1,23 @@
+@(page: drp.shared.application.Page[drp.asset.web.EntityViewModel])(implicit request: play.api.mvc.MessagesRequestHeader)
+@drp.shared.web.views.html.main("Protected Entities") {
+  <h1>Protected Entities</h1>
+  @request.flash.get("success").map { msg => <p class="flash">@msg</p> }
+  <p><a href="@drp.asset.web.routes.EntityController.newForm()">+ New entity</a></p>
+  <table>
+    <thead><tr><th>Name</th><th>Type</th><th></th></tr></thead>
+    <tbody>
+    @for(e <- page.items) {
+      <tr>
+        <td><a href="@drp.asset.web.routes.EntityController.view(e.id)">@e.name</a></td>
+        <td>@e.entityType</td>
+        <td><a href="@drp.asset.web.routes.EntityController.editForm(e.id)">edit</a></td>
+      </tr>
+    }
+    </tbody>
+  </table>
+  <p>
+    @if(page.hasPrev) { <a href="@drp.asset.web.routes.EntityController.list(page.page - 1)">‹ prev</a> }
+    <span>page @page.page / @page.totalPages (@page.total total)</span>
+    @if(page.hasNext) { <a href="@drp.asset.web.routes.EntityController.list(page.page + 1)">next ›</a> }
+  </p>
+}

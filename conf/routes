@@ -50,5 +50,14 @@ POST    /todo/cleanup               todo.shared.web.CleanupController.runCleanup
 GET     /todo/fortry/try1           todo.shared.web.ForTryController.try1()
 GET     /todo/fortry/try2           todo.shared.web.ForTryController.try2()
 
+# --- DRP modulu : Protected Entity Setup (US-362) ---
+# Entity (Protected Entity) CRUD — list paginated; NO delete (create + edit only)
+GET     /drp/entities               drp.asset.web.EntityController.list(page: Int ?= 1)
+GET     /drp/entities/new           drp.asset.web.EntityController.newForm()
+POST    /drp/entities               drp.asset.web.EntityController.create()
+GET     /drp/entities/:id           drp.asset.web.EntityController.view(id: Long)
+GET     /drp/entities/:id/edit      drp.asset.web.EntityController.editForm(id: Long)
+POST    /drp/entities/:id           drp.asset.web.EntityController.update(id: Long)
+
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

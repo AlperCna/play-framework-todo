@@ -1,0 +1,14 @@
+@(entity: drp.asset.web.EntityViewModel)(implicit request: play.api.mvc.MessagesRequestHeader)
+@drp.shared.web.views.html.main(entity.name) {
+  <h1>@entity.name</h1>
+  <dl>
+    <dt>Type</dt><dd>@entity.entityType</dd>
+    <dt>Created</dt><dd>@entity.createdAt</dd>
+    <dt>Updated</dt><dd>@entity.updatedAt</dd>
+  </dl>
+  @* US2/US3/US4 will render this entity's assets, asset groups and active exclusions here. *@
+  <p>
+    <a href="@drp.asset.web.routes.EntityController.editForm(entity.id)">edit</a> ·
+    <a href="@drp.asset.web.routes.EntityController.list()">‹ back to list</a>
+  </p>
+}
