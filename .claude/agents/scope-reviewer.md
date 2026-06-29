@@ -60,17 +60,18 @@ pattern-reference scaffold, slated for removal). You NEVER modify anything. You 
    `app/todo/`?
 3. **Out-of-story business logic (Constitution I):** Did the diff change behavior NOT described by the
    active user story / FRs? Did it touch any "preserved / MUST stay the same" behavior?
-4. **Data access (Constitution V):** Any DB call inside a loop (should be a bulk fetch)? Any read/write
+4. **Data access (Constitution IV):** Any DB call inside a loop (should be a bulk fetch)? Any unbounded
+   / `SELECT *` read of a set that grows with data without pagination (`Page`/`PageRequest`) and without
+   a stated small/fixed-bound justification? Any read/write
    path that ignores concurrency / race conditions? Any pipeline worker that is NOT idempotent
    (re-processing the same message could duplicate rows or double-promote a candidate)? Any large
    content (HTML/DOM/screenshot/OCR/binary) embedded in a JSONB column or queue payload instead of
    going to `blob_storage` + `storage_ref`?
-5. **Single responsibility & comments (Constitution III, VI):** New methods doing more than one thing?
+5. **Single responsibility & comments (Constitution III, V):** New methods doing more than one thing?
    A public abstraction (file/trait/public method) whose purpose is NOT obvious from its signature yet
    carries no short "what it does" comment — OR the opposite: noisy line-by-line HOW narration / comments
-   that merely restate the code (both violate VI)?
-6. **Correctness vs performance (Constitution IV):** Performance tuning mixed into a correctness change?
-7. **Platform & pipeline invariants (Additional Constraints — MUST):**
+   that merely restate the code (both violate V)?
+6. **Platform & pipeline invariants (Additional Constraints — MUST):**
    - **Staging discipline:** any write to `candidates` that does NOT originate from a
      `candidate_discoveries` promotion (every manual/permutation/feed input must enter staging first)?
    - **Queue/storage abstraction:** business code binding directly to PGMQ functions or `blob_storage`
@@ -103,7 +104,7 @@ Produce a structured report:
 2. **Findings table** with columns: Severity (Critical / High / Medium / Low), Category (Scope /
    Architecture / Constitution-<n> / Platform / Type-lens), Location (file:line or file), Finding,
    Why it matters. Quote the relevant diff hunk or spec line for each finding.
-3. **Constitution check:** one line per principle (I–VII) plus one line for the Additional-Constraints
+3. **Constitution check:** one line per principle (I–VI) plus one line for the Additional-Constraints
    platform invariants → Pass / Concern / Violation.
 4. **Verdict (final line):** `APPROVE` (no Critical/High findings) or `NEEDS FIX` (list the blocking
    items). Be specific and conservative — when unsure whether something is in scope, flag it.

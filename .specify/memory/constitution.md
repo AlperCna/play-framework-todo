@@ -1,6 +1,38 @@
 <!--
 Sync Impact Report
 
+== Amendment 2026-06-29: 3.0.1 → 4.0.0 (MAJOR) ==
+- Principle IV (Data Access Discipline): pagination strengthened from "large sets MUST paginate" to
+  "pagination is the DEFAULT for any growing-set list read; a full/unbounded `SELECT *` read is allowed
+  ONLY for a known small fixed-bound set, stated as the reason." Newly makes some previously-allowed
+  unbounded reads non-compliant → backward-incompatible → MAJOR.
+- Known retroactive conflicts (left as-is, point-in-time records): specs/001 loads all entities + assets
+  at demo scale; the todo scaffold's unbounded `list*` methods. These become "exceptions needing a
+  stated bound" or pagination candidates when they leave demo scale.
+- scope-reviewer item 4 (Data access): synced — now flags unbounded/`SELECT *` reads of a growing set
+  lacking pagination or a stated small/fixed-bound justification.
+
+== Amendment 2026-06-29: 3.0.0 → 3.0.1 (PATCH) ==
+- Principle IV (Data Access Discipline): added a directive that "bulk fetch" is NOT "unbounded" —
+  large result sets are read with bounded pagination (`Page`/`PageRequest`), not loaded wholesale.
+  Refines the existing bulk-fetch rule (no principle removed/redefined) → PATCH.
+- scope-reviewer item 4 (Data access) already covers the data-discipline lens broadly; an explicit
+  unbounded-load / pagination check can be added there later if it proves needed (not synced this run).
+
+== Amendment 2026-06-29: 2.0.0 → 3.0.0 (MAJOR) ==
+- Principle IV "Correctness Before Performance" REMOVED. Its performance floor already lives in
+  Principle V (Data Access Discipline) and behavior-preservation in Principle VII; the only unique
+  rule it added (do not bundle optimization into the correctness change) was judged not worth a
+  standalone principle. Removing a principle is backward-incompatible → MAJOR bump.
+- Renumbered: V→IV (Data Access Discipline), VI→V (Abstraction in Comments), VII→VI (Type-Conditional).
+  Now 6 principles (I–VI).
+- Dependent files synced: .claude/agents/scope-reviewer.md (dropped the "Correctness vs performance"
+  check item; renumbered Data-access V→IV and comments VI→V; "I–VII"→"I–VI"). Constitution-Aciklama.md
+  Layer-0/Layer-1 updated.
+- NOT updated (historical point-in-time records, left as-is): specs/001-*, specs/002-* — their
+  plan.md Constitution-Check tables and research/tasks/data-model "Constitution V" references still
+  use the OLD numbering.
+
 == Amendment 2026-06-29: 1.0.0 → 2.0.0 (MAJOR) ==
 - Principle I, cross-module access rule REDEFINED (backward-incompatible): cross-module **read** no
   longer MAY use a direct Slick query — it now MUST go through the owner's `application/ports/` read
@@ -21,25 +53,24 @@ Sync Impact Report
   modular monolith. The format/structure is preserved; the content is rewritten to fit the DRP
   architecture and to stay consistent with CLAUDE.md. biggerphish's 1.x history does not apply, so the
   Mona DRP constitution starts at 1.0.0.
-- Principles (7) — numbering preserved so dependent tools (scope-reviewer.md, /speckit-analyze) that
-  reference "Constitution I–VII" by number keep mapping:
-  - I  Architecture Boundary Conformance (was "Architecture Preservation") — modular monolith boundaries
-  - II  Scope Boundary (kept)
-  - III Single Responsibility (kept)
-  - IV  Correctness Before Performance (kept)
-  - V   Data Access Discipline (kept + idempotent workers + no big content in JSONB/payload)
-  - VI  Abstraction Reflected in Comments (kept; reconciled with CLAUDE.md §10 comment rule)
-  - VII Type-Conditional Behavior Preservation (kept; aligned to the 6 us-input task Types)
+- Principles (6) — dependent tools (scope-reviewer.md, /speckit-analyze) reference "Constitution I–VI"
+  by number, so renumbering here requires syncing them (done this run):
+  - I   Architecture Boundary Conformance (was "Architecture Preservation") — modular monolith boundaries
+  - II  Scope Boundary
+  - III Single Responsibility
+  - IV  Data Access Discipline (idempotent workers + no big content in JSONB/payload)
+  - V   Abstraction Reflected in Comments (reconciled with CLAUDE.md §10 comment rule)
+  - VI  Type-Conditional Behavior Preservation (aligned to the 6 us-input task Types)
 - Sections: "Additional Constraints — Mona DRP Platform & Stack" (replaces ".NET / C# Conventions"),
   "Development Workflow & Quality Gates" (now: ScalaTest suites MUST keep passing), "Governance".
 - Templates / agents checked for alignment:
   - .specify/templates/plan-template.md  ✅ "Constitution Check" gate is dynamic — auto-picks these principles; no new mandatory section introduced.
   - .specify/templates/spec-template.md  ✅ these principles add no new mandatory spec section.
   - .specify/templates/tasks-template.md ✅ no new principle-driven task category required.
-  - .specify/templates/us-input-template.md ✅ already tech-agnostic; its 6 Type values back Principle VII.
+  - .specify/templates/us-input-template.md ✅ already tech-agnostic; its 6 Type values back Principle VI.
 - Deferred TODOs (still carry .NET / Clean Architecture wording — adapt next, this run only did constitution.md):
   - .claude/agents/scope-reviewer.md — rewrite the ".NET 8 / Clean Architecture" framing + check list to
-    the Scala modular monolith (its I–VII references already map; only the prose/lens needs porting).
+    the Scala modular monolith (its I–VI references already map; only the prose/lens needs porting).
   - Re-verify spec/plan/tasks templates + .claude/skills/speckit-* prose for any residual .NET references.
 -->
 
@@ -89,27 +120,23 @@ spec's declared scope so a reviewer can verify it quickly.
 
 **Rationale**: One responsibility per unit keeps changes local and review tractable.
 
-### IV. Correctness Before Performance (MUST)
-
-- Step 1 MUST be a working version that meets the requirement without breaking architecture.
-- Step 2 (a SEPARATE change) MAY apply a measurable performance improvement.
-- Performance work MUST NOT be mixed into the correctness change.
-
-**Rationale**: Mixing the two hides regressions and makes both harder to review and revert.
-
-### V. Data Access Discipline (MUST)
+### IV. Data Access Discipline (MUST)
 
 - DB calls inside loops are FORBIDDEN. Fetch the required set in bulk, then process it in memory.
+- Pagination is the DEFAULT for list reads: any query returning a set that grows with data MUST use
+  `Page` / `PageRequest`. A full / unbounded read (`SELECT *` without a bound) is allowed ONLY when the
+  set has a known small fixed upper bound (e.g., a lookup/enum table, one parent's bounded children),
+  and that bound MUST be the stated reason — it is never the default.
 - Read/write paths MUST explicitly address concurrency / race conditions. Pipeline workers MUST be
   idempotent — re-processing the same queue message MUST NOT create duplicates or double-promote a
   candidate.
 - Large content (HTML, DOM, screenshot, OCR output, any binary) MUST NOT be embedded in a JSONB column
   or a queue message payload; it is stored in `blob_storage` and referenced via `storage_ref`.
 
-**Rationale**: Per-iteration DB calls, non-idempotent workers, and fat JSONB/payloads are the silent
-performance and correctness defects of an async pipeline.
+**Rationale**: Per-iteration DB calls, unbounded in-memory loads, non-idempotent workers, and fat
+JSONB/payloads are the silent performance and correctness defects of an async pipeline.
 
-### VI. Abstraction Reflected in Comments (MUST)
+### V. Abstraction Reflected in Comments (MUST)
 
 - A public abstraction (package / file / trait / public method) carries a short comment stating WHAT it
   does where the signature alone does not already make the abstraction obvious.
@@ -119,7 +146,7 @@ performance and correctness defects of an async pipeline.
 **Rationale**: The intended abstraction should be readable without reverse-engineering the code; but a
 comment that merely restates the code is itself noise.
 
-### VII. Type-Conditional Behavior Preservation (MUST)
+### VI. Type-Conditional Behavior Preservation (MUST)
 
 The us-input `Type` selects what "correct" means (the 6 supported values:
 Feature Implementation, Feature Enhancement, Bug Fixing, Refactoring, Performance Optimization,
@@ -199,7 +226,7 @@ and `docs/`, not here.
 - Versioning policy: **MAJOR** = backward-incompatible principle removal/redefinition; **MINOR** = a new
   principle or section added; **PATCH** = clarifications and wording.
 - Compliance: `/speckit-analyze` and the `scope-reviewer` subagent verify adherence (both reference
-  principles I–VII by number — keep them in sync when renumbering). Any complexity that bends a principle
+  principles I–VI by number — keep them in sync when renumbering). Any complexity that bends a principle
   MUST be justified in `plan.md`'s Complexity Tracking.
 
-**Version**: 2.0.0 | **Ratified**: 2026-06-26 | **Last Amended**: 2026-06-29
+**Version**: 4.0.0 | **Ratified**: 2026-06-26 | **Last Amended**: 2026-06-29
