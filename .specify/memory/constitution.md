@@ -8,6 +8,9 @@ Sync Impact Report
   integration tests (not covered by the in-memory backend). Codifies the existing convention (todo
   scaffold + specs/001-002, which already comply) → PATCH.
 - Constitution-Aciklama.md Layer-1 (Development Workflow) updated to match.
+- .specify/templates/tasks-template.md aligned (Governance dependent-template sync): the generic
+  "Tests are OPTIONAL" policy + per-story "(OPTIONAL …)" headings replaced — for code-producing
+  features the tasks step generates a service ScalaTest spec + an in-memory adapter per new port.
 
 == Amendment 2026-06-29: 4.0.0 → 4.0.1 (PATCH) ==
 - Principle VI (Type-Conditional Behavior Preservation): added an explicit bullet for
