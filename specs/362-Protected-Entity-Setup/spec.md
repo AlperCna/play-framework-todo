@@ -138,7 +138,7 @@ Optionally, the analyst creates **asset groups** under an entity and assigns ass
 
 - **In scope**:
   - A new setup module owning the four record types (entity, asset, asset group, exclusion) and their create / edit / list / view screens.
-  - Schema for `entities`, `assets`, `asset_groups`, `exclusions` per v5 (fields, FK directions, nullability), created/updated timestamps on all four, recommended indexes (`assets(entity_id, asset_type, value)`, `exclusions(entity_id, is_active)`), and uniqueness: `entities.name` (global), `assets(entity_id, value)` (per entity).
+  - Schema for `entities`, `assets`, `asset_groups`, `exclusions` per v5 (fields, FK directions, nullability), created/updated timestamps on all four, recommended indexes (`assets(entity_id, asset_type, value)`, `exclusions(entity_id, is_active)`), and uniqueness: `entities.name` (global, via `V007`), `assets(entity_id, asset_type, value) WHERE is_active` (per entity, among active assets).
   - The read seam ("active exclusions for an entity", "resolve entity + its assets") — defined here; consumed later.
 - **Out of scope** (MUST NOT be touched):
   - Any deletion — hard or soft/deactivation. Create + edit only; active flag not user-managed.

@@ -27,7 +27,6 @@ POST  /drp/assets/:id                        drp.asset.web.AssetController.updat
 # Exclusions (entity-scoped)
 GET   /drp/entities/:entityId/exclusions/new   drp.asset.web.ExclusionController.newForm(entityId: Long)
 POST  /drp/entities/:entityId/exclusions       drp.asset.web.ExclusionController.create(entityId: Long)
-GET   /drp/asset-groups stays distinct from exclusions; exclusions list shown in the entity view
 GET   /drp/exclusions/:id/edit                 drp.asset.web.ExclusionController.editForm(id: Long)
 POST  /drp/exclusions/:id                       drp.asset.web.ExclusionController.update(id: Long)
 ```

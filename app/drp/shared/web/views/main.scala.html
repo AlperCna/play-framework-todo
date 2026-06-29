@@ -1,0 +1,17 @@
+@(title: String)(content: Html)
+@*
+ * Shared DRP base layout — the single Twirl shell every DRP screen renders into.
+ * Call as `drp.shared.web.views.html.main("Title"){ ... }`. Keep it presentation-only.
+ *@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@title — Mona DRP</title>
+  </head>
+  <body>
+    <header><strong>Mona DRP</strong></header>
+    <main>@content</main>
+  </body>
+</html>

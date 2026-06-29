@@ -11,8 +11,8 @@
 
 ## Phase 1: Setup (build + datasource)
 
-- [ ] T001 Add PostgreSQL deps to `build.sbt`: `"com.github.tminglei" %% "slick-pg" % "0.21.x"` and `"org.postgresql" % "postgresql" % "42.7.x"` (verify Slick-3.4 compatibility on first resolve).
-- [ ] T002 Add the `slick.dbs.drp` datasource to `conf/application.conf` (profile `drp.shared.infrastructure.MonaPgProfile$`, PostgreSQL driver, URL/user/password from `DB_HOST/DB_PORT/DB_NAME/DB_USER/DB_PASSWORD` env). Leave `slick.dbs.default` (SQL Server / todo) untouched.
+- [X] T001 Add PostgreSQL deps to `build.sbt`: `"com.github.tminglei" %% "slick-pg" % "0.21.x"` and `"org.postgresql" % "postgresql" % "42.7.x"` (verify Slick-3.4 compatibility on first resolve).
+- [X] T002 Add the `slick.dbs.drp` datasource to `conf/application.conf` (profile `drp.shared.infrastructure.MonaPgProfile$`, PostgreSQL driver, URL/user/password from `DB_HOST/DB_PORT/DB_NAME/DB_USER/DB_PASSWORD` env). Leave `slick.dbs.default` (SQL Server / todo) untouched.
 
 ---
 
@@ -20,15 +20,15 @@
 
 **⚠️ No user story can start until this phase is complete.**
 
-- [ ] T003 [P] Create `app/drp/shared/infrastructure/MonaPgProfile.scala` — slick-pg `ExPostgresProfile` + JSON(B) support.
-- [ ] T004 [P] Create `app/drp/shared/domain/DomainError.scala` — sealed base (`code` + `message`) with values from data-model (`EmptyEntityName`, `EmptyAssetValue`, `EmptyAssetGroupName`, `EmptyExclusionValue`, `EntityNotFound`, `AssetGroupNotFound`, `DuplicateEntityName`, `DuplicateAsset`, `DuplicateExclusion`, `AssetGroupEntityMismatch`).
-- [ ] T005 [P] Create `app/drp/shared/application/ServiceResult.scala` — `Future[Either[DomainError, A]]` wrapper (`map`/`flatMap`/`fromEither`/`fromFuture`/`fromOptionF`), mirroring the todo pattern (no todo import).
-- [ ] T006 [P] Create `app/drp/shared/application/Page.scala` and `PageRequest.scala` — pagination value types.
-- [ ] T007 [P] Create `app/drp/shared/application/Clock.scala` (+ `SystemClock`) — `now(): Instant` seam for testable timestamps.
-- [ ] T008 [P] Create `app/drp/shared/web/views/main.scala.html` — base DRP Twirl layout (`@main(title){ … }`).
-- [ ] T009 [P] Write migration `app/migrations/drp-postgres/V007__entity_name_unique_up.sql` (`CREATE UNIQUE INDEX uq_entities_name ON entities(name);`) and `V007__entity_name_unique_down.sql` (`DROP INDEX uq_entities_name;`). **Do NOT execute** — a human applies it.
-- [ ] T010 Create `app/drp/asset/infrastructure/AssetModule.scala` — Guice module skeleton with a mode-aware persistence switch (Test → in-memory repo bindings, else → Slick repo bindings); service bindings added per story.
-- [ ] T011 Create `app/drp/shared/boot/DrpModule.scala` (bind `Clock`→`SystemClock`; `install(new AssetModule)`) and register it in `conf/application.conf` (`play.modules.enabled += "drp.boot.DrpModule"`).
+- [X] T003 [P] Create `app/drp/shared/infrastructure/MonaPgProfile.scala` — slick-pg `ExPostgresProfile` + JSON(B) support.
+- [X] T004 [P] Create `app/drp/shared/domain/DomainError.scala` — sealed base (`code` + `message`) with values from data-model (`EmptyEntityName`, `EmptyAssetValue`, `EmptyAssetGroupName`, `EmptyExclusionValue`, `EntityNotFound`, `AssetGroupNotFound`, `DuplicateEntityName`, `DuplicateAsset`, `DuplicateExclusion`, `AssetGroupEntityMismatch`).
+- [X] T005 [P] Create `app/drp/shared/application/ServiceResult.scala` — `Future[Either[DomainError, A]]` wrapper (`map`/`flatMap`/`fromEither`/`fromFuture`/`fromOptionF`), mirroring the todo pattern (no todo import).
+- [X] T006 [P] Create `app/drp/shared/application/Page.scala` and `PageRequest.scala` — pagination value types.
+- [X] T007 [P] Create `app/drp/shared/application/Clock.scala` (+ `SystemClock`) — `now(): Instant` seam for testable timestamps.
+- [X] T008 [P] Create `app/drp/shared/web/views/main.scala.html` — base DRP Twirl layout (`@main(title){ … }`).
+- [X] T009 [P] Write migration `app/migrations/drp-postgres/V007__entity_name_unique_up.sql` (`CREATE UNIQUE INDEX uq_entities_name ON entities(name);`) and `V007__entity_name_unique_down.sql` (`DROP INDEX uq_entities_name;`). **Do NOT execute** — a human applies it.
+- [X] T010 Create `app/drp/asset/infrastructure/AssetModule.scala` — Guice module skeleton with a mode-aware persistence switch (Test → in-memory repo bindings, else → Slick repo bindings); service bindings added per story.
+- [X] T011 Create `app/drp/boot/DrpModule.scala` (bind `Clock`→`SystemClock`; `install(new AssetModule)`) and register it in `conf/application.conf` (`play.modules.enabled += "drp.boot.DrpModule"`).
 
 **Checkpoint**: project compiles, app boots, `drp` datasource resolves lazily; todo path unaffected.
 
