@@ -1,0 +1,13 @@
+@(form: play.api.data.Form[drp.asset.web.AssetGroupFormData], postAction: play.api.mvc.Call, entityId: Long, title: String)(implicit request: play.api.mvc.MessagesRequestHeader)
+@drp.shared.web.views.html.main(title) {
+  <h1>@title</h1>
+  @if(form.hasGlobalErrors) {
+    <ul class="errors">@for(err <- form.globalErrors) { <li>@err.message</li> }</ul>
+  }
+  @helper.form(action = postAction) {
+    @helper.CSRF.formField
+    <p><label>Name <input type="text" name="name" value="@form("name").value.getOrElse("")"></label></p>
+    <button type="submit">Save</button>
+  }
+  <p><a href="@drp.asset.web.routes.EntityController.view(entityId)">‹ back to entity</a></p>
+}

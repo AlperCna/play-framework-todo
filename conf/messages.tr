@@ -146,3 +146,46 @@ category.list.col.actions = Islemler
 category.action.edit = Duzenle
 category.action.delete = Sil
 category.action.deleteConfirm = Silinsin mi?
+
+# =========================================================================
+# DRP — Protected Entity Setup (US-362)
+# =========================================================================
+
+# --- UI metinleri (controller flash / baslik) ---
+drp.entity.new = Yeni Entity
+drp.entity.edit = Entity Duzenle
+drp.entity.created = Entity olusturuldu.
+drp.entity.updated = Entity guncellendi.
+drp.entity.notFound = Entity bulunamadi.
+drp.asset.new = Yeni Asset
+drp.asset.edit = Asset Duzenle
+drp.asset.created = Asset olusturuldu.
+drp.asset.updated = Asset guncellendi.
+drp.asset.notFound = Asset bulunamadi.
+drp.exclusion.new = Yeni Exclusion
+drp.exclusion.edit = Exclusion Duzenle
+drp.exclusion.created = Exclusion olusturuldu.
+drp.exclusion.updated = Exclusion guncellendi.
+drp.exclusion.notFound = Exclusion bulunamadi.
+drp.assetGroup.new = Yeni Asset Grubu
+drp.assetGroup.edit = Asset Grubu Duzenle
+drp.assetGroup.created = Asset grubu olusturuldu.
+drp.assetGroup.updated = Asset grubu guncellendi.
+drp.assetGroup.notFound = Asset grubu bulunamadi.
+
+# --- DRP domain hata mesajlari (DomainError.code -> mesaj) ---
+error.drp.entity.emptyName = Entity adi bos olamaz.
+error.drp.entity.duplicateName = Bu isimde bir entity zaten var.
+error.drp.entity.notFound = Entity bulunamadi.
+error.drp.asset.emptyValue = Asset degeri bos olamaz.
+error.drp.asset.invalidType = Gecersiz asset tipi (domain veya subdomain).
+error.drp.asset.duplicate = Bu entity altinda ayni asset zaten var.
+error.drp.asset.notFound = Asset bulunamadi.
+error.drp.assetGroup.emptyName = Asset grubu adi bos olamaz.
+error.drp.assetGroup.duplicateName = Bu entity altinda ayni isimde grup zaten var.
+error.drp.assetGroup.entityMismatch = Asset yalnizca kendi entity'sine ait bir gruba eklenebilir.
+error.drp.assetGroup.notFound = Asset grubu bulunamadi.
+error.drp.exclusion.emptyValue = Exclusion degeri bos olamaz.
+error.drp.exclusion.invalidMatchType = Gecersiz eslesme tipi.
+error.drp.exclusion.duplicate = Bu entity altinda ayni exclusion zaten var.
+error.drp.exclusion.notFound = Exclusion bulunamadi.

@@ -6,7 +6,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 import play.api.mvc.{MessagesAbstractController, MessagesControllerComponents}
 
-import drp.asset.application.{AssetService, EntityService, ExclusionService}
+import drp.asset.application.{AssetGroupService, AssetService, EntityService, ExclusionService}
 import drp.asset.domain.EntityId
 import drp.shared.application.PageRequest
 import drp.shared.domain.DomainError
@@ -17,7 +17,8 @@ class EntityController @Inject() (
     cc: MessagesControllerComponents,
     service: EntityService,
     assetService: AssetService,
-    exclusionService: ExclusionService
+    exclusionService: ExclusionService,
+    groupService: AssetGroupService
 )(implicit ec: ExecutionContext)
     extends MessagesAbstractController(cc) {
 
@@ -52,7 +53,13 @@ class EntityController @Inject() (
         for {
           assets     <- assetService.listByEntity(eid)
           exclusions <- exclusionService.listActiveByEntity(eid)
-        } yield Ok(views.html.entityView(EntityViewModel.from(e), assets.map(AssetViewModel.from), exclusions.map(ExclusionViewModel.from)))
+          groups     <- groupService.listByEntity(eid)
+        } yield Ok(views.html.entityView(
+          EntityViewModel.from(e),
+          assets.map(AssetViewModel.from),
+          exclusions.map(ExclusionViewModel.from),
+          groups.map(AssetGroupViewModel.from)
+        ))
     }
   }
 

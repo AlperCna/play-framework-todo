@@ -4,6 +4,8 @@ import com.google.inject.AbstractModule
 import play.api.{Configuration, Environment, Mode}
 
 import drp.asset.application.{
+  AssetGroupService,
+  AssetGroupServiceImpl,
   AssetReadPortImpl,
   AssetService,
   AssetServiceImpl,
@@ -12,9 +14,25 @@ import drp.asset.application.{
   ExclusionService,
   ExclusionServiceImpl
 }
-import drp.asset.application.ports.{AssetReadPort, AssetRepository, EntityRepository, ExclusionRepository}
-import drp.asset.infrastructure.inmemory.{InMemoryAssetRepository, InMemoryEntityRepository, InMemoryExclusionRepository}
-import drp.asset.infrastructure.slick.{SlickAssetRepository, SlickEntityRepository, SlickExclusionRepository}
+import drp.asset.application.ports.{
+  AssetGroupRepository,
+  AssetReadPort,
+  AssetRepository,
+  EntityRepository,
+  ExclusionRepository
+}
+import drp.asset.infrastructure.inmemory.{
+  InMemoryAssetGroupRepository,
+  InMemoryAssetRepository,
+  InMemoryEntityRepository,
+  InMemoryExclusionRepository
+}
+import drp.asset.infrastructure.slick.{
+  SlickAssetGroupRepository,
+  SlickAssetRepository,
+  SlickEntityRepository,
+  SlickExclusionRepository
+}
 
 /**
  * Guice wiring for the DRP `asset` module. Installed by `drp.boot.DrpModule`.
@@ -30,16 +48,19 @@ class AssetModule(environment: Environment, configuration: Configuration) extend
     bind(classOf[EntityService]).to(classOf[EntityServiceImpl])
     bind(classOf[AssetService]).to(classOf[AssetServiceImpl])
     bind(classOf[ExclusionService]).to(classOf[ExclusionServiceImpl])
+    bind(classOf[AssetGroupService]).to(classOf[AssetGroupServiceImpl])
     bind(classOf[AssetReadPort]).to(classOf[AssetReadPortImpl])
 
     if (useInMemory) {
       bind(classOf[EntityRepository]).to(classOf[InMemoryEntityRepository])
       bind(classOf[AssetRepository]).to(classOf[InMemoryAssetRepository])
       bind(classOf[ExclusionRepository]).to(classOf[InMemoryExclusionRepository])
+      bind(classOf[AssetGroupRepository]).to(classOf[InMemoryAssetGroupRepository])
     } else {
       bind(classOf[EntityRepository]).to(classOf[SlickEntityRepository])
       bind(classOf[AssetRepository]).to(classOf[SlickAssetRepository])
       bind(classOf[ExclusionRepository]).to(classOf[SlickExclusionRepository])
+      bind(classOf[AssetGroupRepository]).to(classOf[SlickAssetGroupRepository])
     }
   }
 }

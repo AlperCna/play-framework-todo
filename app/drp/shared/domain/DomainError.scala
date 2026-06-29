@@ -71,4 +71,8 @@ object DomainError {
     val code = "error.drp.assetGroup.entityMismatch"
     val message = "An asset can only join an asset group that belongs to the same entity."
   }
+  final case class DuplicateAssetGroupName(entityId: Long, name: String) extends DomainError {
+    val code = "error.drp.assetGroup.duplicateName"
+    val message = s"An asset group named '$name' already exists for this entity."
+  }
 }

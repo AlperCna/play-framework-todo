@@ -71,5 +71,11 @@ POST    /drp/entities/:entityId/exclusions      drp.asset.web.ExclusionControlle
 GET     /drp/exclusions/:id/edit                drp.asset.web.ExclusionController.editForm(id: Long)
 POST    /drp/exclusions/:id                     drp.asset.web.ExclusionController.update(id: Long)
 
+# Asset group (entity-scoped create; id-scoped edit) — NO delete
+GET     /drp/entities/:entityId/asset-groups/new  drp.asset.web.AssetGroupController.newForm(entityId: Long)
+POST    /drp/entities/:entityId/asset-groups      drp.asset.web.AssetGroupController.create(entityId: Long)
+GET     /drp/asset-groups/:id/edit                drp.asset.web.AssetGroupController.editForm(id: Long)
+POST    /drp/asset-groups/:id                     drp.asset.web.AssetGroupController.update(id: Long)
+
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

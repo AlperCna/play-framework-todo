@@ -6,39 +6,49 @@ import scala.concurrent.{ExecutionContext, Future}
 
 import play.api.mvc.{MessagesAbstractController, MessagesControllerComponents}
 
-import drp.asset.application.AssetService
+import drp.asset.application.{AssetGroupService, AssetService}
 import drp.asset.domain.{AssetId, EntityId}
-import drp.shared.domain.DomainError
 
-/** Thin web layer for assets (entity-scoped create; id-scoped edit). No delete. */
+/** Thin web layer for assets (entity-scoped create; id-scoped edit). Group dropdown is populated per entity. No delete. */
 @Singleton
-class AssetController @Inject() (cc: MessagesControllerComponents, service: AssetService)(
-    implicit ec: ExecutionContext
-) extends MessagesAbstractController(cc) {
+class AssetController @Inject() (
+    cc: MessagesControllerComponents,
+    service: AssetService,
+    groupService: AssetGroupService
+)(implicit ec: ExecutionContext)
+    extends MessagesAbstractController(cc) {
 
-  def newForm(entityId: Long) = Action { implicit request =>
-    Ok(views.html.assetForm(AssetFormData.form, routes.AssetController.create(entityId), entityId, request.messages("drp.asset.new")))
+  private def groupsFor(entityId: EntityId): Future[Seq[AssetGroupViewModel]] =
+    groupService.listByEntity(entityId).map(_.map(AssetGroupViewModel.from))
+
+  def newForm(entityId: Long) = Action.async { implicit request =>
+    groupsFor(EntityId(entityId)).map { groups =>
+      Ok(views.html.assetForm(AssetFormData.form, routes.AssetController.create(entityId), entityId, groups, request.messages("drp.asset.new")))
+    }
   }
 
   def create(entityId: Long) = Action.async { implicit request =>
+    val eid = EntityId(entityId)
     AssetFormData.form.bindFromRequest().fold(
       formWithErrors =>
-        Future.successful(BadRequest(views.html.assetForm(formWithErrors, routes.AssetController.create(entityId), entityId, request.messages("drp.asset.new")))),
+        groupsFor(eid).map(groups => BadRequest(views.html.assetForm(formWithErrors, routes.AssetController.create(entityId), entityId, groups, request.messages("drp.asset.new")))),
       data =>
-        service.create(EntityId(entityId), data.assetType, data.value, data.metadata).map {
+        service.create(eid, data.assetType, data.value, data.metadata, data.groupId).flatMap {
           case Right(_) =>
-            Redirect(routes.EntityController.view(entityId)).flashing("success" -> request.messages("drp.asset.created"))
+            Future.successful(Redirect(routes.EntityController.view(entityId)).flashing("success" -> request.messages("drp.asset.created")))
           case Left(err) =>
-            BadRequest(views.html.assetForm(AssetFormData.form.fill(data).withGlobalError(request.messages(err.code)), routes.AssetController.create(entityId), entityId, request.messages("drp.asset.new")))
+            groupsFor(eid).map(groups => BadRequest(views.html.assetForm(AssetFormData.form.fill(data).withGlobalError(request.messages(err.code)), routes.AssetController.create(entityId), entityId, groups, request.messages("drp.asset.new"))))
         }
     )
   }
 
   def editForm(id: Long) = Action.async { implicit request =>
-    service.get(AssetId(id)).map {
+    service.get(AssetId(id)).flatMap {
+      case None => Future.successful(NotFound(request.messages("drp.asset.notFound")))
       case Some(a) =>
-        Ok(views.html.assetForm(AssetFormData.form.fill(AssetFormData.from(a)), routes.AssetController.update(id), a.entityId.value, request.messages("drp.asset.edit")))
-      case None => NotFound(request.messages("drp.asset.notFound"))
+        groupsFor(a.entityId).map { groups =>
+          Ok(views.html.assetForm(AssetFormData.form.fill(AssetFormData.from(a)), routes.AssetController.update(id), a.entityId.value, groups, request.messages("drp.asset.edit")))
+        }
     }
   }
 
@@ -48,13 +58,13 @@ class AssetController @Inject() (cc: MessagesControllerComponents, service: Asse
       case Some(existing) =>
         AssetFormData.form.bindFromRequest().fold(
           formWithErrors =>
-            Future.successful(BadRequest(views.html.assetForm(formWithErrors, routes.AssetController.update(id), existing.entityId.value, request.messages("drp.asset.edit")))),
+            groupsFor(existing.entityId).map(groups => BadRequest(views.html.assetForm(formWithErrors, routes.AssetController.update(id), existing.entityId.value, groups, request.messages("drp.asset.edit")))),
           data =>
-            service.update(AssetId(id), data.assetType, data.value, data.metadata).map {
+            service.update(AssetId(id), data.assetType, data.value, data.metadata, data.groupId).flatMap {
               case Right(a) =>
-                Redirect(routes.EntityController.view(a.entityId.value)).flashing("success" -> request.messages("drp.asset.updated"))
+                Future.successful(Redirect(routes.EntityController.view(a.entityId.value)).flashing("success" -> request.messages("drp.asset.updated")))
               case Left(err) =>
-                BadRequest(views.html.assetForm(AssetFormData.form.fill(data).withGlobalError(request.messages(err.code)), routes.AssetController.update(id), existing.entityId.value, request.messages("drp.asset.edit")))
+                groupsFor(existing.entityId).map(groups => BadRequest(views.html.assetForm(AssetFormData.form.fill(data).withGlobalError(request.messages(err.code)), routes.AssetController.update(id), existing.entityId.value, groups, request.messages("drp.asset.edit"))))
             }
         )
     }

@@ -3,18 +3,20 @@ package drp.asset.web
 import play.api.data.Form
 import play.api.data.Forms._
 
-import drp.asset.domain.{Asset, AssetMetadata}
+import drp.asset.domain.{Asset, AssetGroupId, AssetMetadata}
 
-/** Write model for the asset form — discrete reference fields; the system assembles metadata (FR-016). */
+/** Write model for the asset form — discrete reference fields + optional group; system assembles metadata. */
 final case class AssetFormData(
     assetType: String,
     value: String,
     homepageUrl: String,
     loginPageUrl: String,
     logoRef: String,
-    faviconRef: String
+    faviconRef: String,
+    assetGroupId: Option[Long]
 ) {
   def metadata: AssetMetadata = AssetMetadata.of(homepageUrl, loginPageUrl, logoRef, faviconRef)
+  def groupId: Option[AssetGroupId] = assetGroupId.map(AssetGroupId)
 }
 
 object AssetFormData {
@@ -25,7 +27,8 @@ object AssetFormData {
       "homepageUrl"  -> text,
       "loginPageUrl" -> text,
       "logoRef"      -> text,
-      "faviconRef"   -> text
+      "faviconRef"   -> text,
+      "assetGroupId" -> optional(longNumber)
     )(AssetFormData.apply)(AssetFormData.unapply)
   )
 
@@ -36,6 +39,7 @@ object AssetFormData {
       a.metadata.homepageUrl.getOrElse(""),
       a.metadata.loginPageUrl.getOrElse(""),
       a.metadata.logoRef.getOrElse(""),
-      a.metadata.faviconRef.getOrElse("")
+      a.metadata.faviconRef.getOrElse(""),
+      a.assetGroupId.map(_.value)
     )
 }

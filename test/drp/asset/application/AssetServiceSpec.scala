@@ -10,7 +10,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 import drp.asset.domain.{AssetId, AssetMetadata, Entity, EntityId}
-import drp.asset.infrastructure.inmemory.{InMemoryAssetRepository, InMemoryEntityRepository}
+import drp.asset.infrastructure.inmemory.{InMemoryAssetGroupRepository, InMemoryAssetRepository, InMemoryEntityRepository}
 import drp.shared.application.Clock
 import drp.shared.domain.DomainError
 
@@ -22,7 +22,8 @@ class AssetServiceSpec extends AnyWordSpec with Matchers {
   private def fixture = {
     val entityRepo = new InMemoryEntityRepository(clock)
     val assetRepo = new InMemoryAssetRepository(clock)
-    val service = new AssetServiceImpl(entityRepo, assetRepo, clock)
+    val groupRepo = new InMemoryAssetGroupRepository(clock)
+    val service = new AssetServiceImpl(entityRepo, assetRepo, groupRepo, clock)
     val entity = await(entityRepo.add(Entity.create("Akbank", "brand", clock.now()).toOption.get))
     (service, entity.id)
   }

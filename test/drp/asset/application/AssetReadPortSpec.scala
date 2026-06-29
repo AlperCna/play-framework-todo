@@ -11,7 +11,7 @@ import org.scalatest.wordspec.AnyWordSpec
 
 import drp.asset.application.ports.ExclusionView
 import drp.asset.domain.{Entity, EntityId}
-import drp.asset.infrastructure.inmemory.{InMemoryAssetRepository, InMemoryEntityRepository, InMemoryExclusionRepository}
+import drp.asset.infrastructure.inmemory.{InMemoryAssetGroupRepository, InMemoryAssetRepository, InMemoryEntityRepository, InMemoryExclusionRepository}
 import drp.shared.application.Clock
 
 class AssetReadPortSpec extends AnyWordSpec with Matchers {
@@ -23,8 +23,9 @@ class AssetReadPortSpec extends AnyWordSpec with Matchers {
     val entityRepo = new InMemoryEntityRepository(clock)
     val assetRepo = new InMemoryAssetRepository(clock)
     val exclusionRepo = new InMemoryExclusionRepository(clock)
+    val groupRepo = new InMemoryAssetGroupRepository(clock)
     val entitySvc = new EntityServiceImpl(entityRepo, clock)
-    val assetSvc = new AssetServiceImpl(entityRepo, assetRepo, clock)
+    val assetSvc = new AssetServiceImpl(entityRepo, assetRepo, groupRepo, clock)
     val exclusionSvc = new ExclusionServiceImpl(entityRepo, exclusionRepo, clock)
     val readPort = new AssetReadPortImpl(entityRepo, assetRepo, exclusionRepo)
     val eid = await(entitySvc.create("Akbank", "brand")).toOption.get.id

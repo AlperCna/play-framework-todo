@@ -6,6 +6,7 @@ import drp.asset.domain.Asset
 final case class AssetViewModel(
     id: Long,
     entityId: Long,
+    assetGroupId: Option[Long],
     assetType: String,
     value: String,
     homepageUrl: String,
@@ -22,6 +23,7 @@ object AssetViewModel {
     AssetViewModel(
       a.id.value,
       a.entityId.value,
+      a.assetGroupId.map(_.value),
       a.assetType.code,
       a.value,
       a.metadata.homepageUrl.getOrElse(""),

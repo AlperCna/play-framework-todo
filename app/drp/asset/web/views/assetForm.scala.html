@@ -1,4 +1,4 @@
-@(form: play.api.data.Form[drp.asset.web.AssetFormData], postAction: play.api.mvc.Call, entityId: Long, title: String)(implicit request: play.api.mvc.MessagesRequestHeader)
+@(form: play.api.data.Form[drp.asset.web.AssetFormData], postAction: play.api.mvc.Call, entityId: Long, groups: Seq[drp.asset.web.AssetGroupViewModel], title: String)(implicit request: play.api.mvc.MessagesRequestHeader)
 @drp.shared.web.views.html.main(title) {
   <h1>@title</h1>
   @if(form.hasGlobalErrors) {
@@ -16,6 +16,16 @@
       </label>
     </p>
     <p><label>Value <input type="text" name="value" value="@form("value").value.getOrElse("")"></label></p>
+    <p>
+      <label>Group
+        <select name="assetGroupId">
+          <option value="">— none —</option>
+          @for(g <- groups) {
+            <option value="@g.id" @if(form("assetGroupId").value.contains(g.id.toString)){selected}>@g.name</option>
+          }
+        </select>
+      </label>
+    </p>
     <fieldset>
       <legend>Reference metadata (optional)</legend>
       <p><label>Homepage URL <input type="text" name="homepageUrl" value="@form("homepageUrl").value.getOrElse("")"></label></p>

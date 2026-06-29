@@ -110,18 +110,18 @@
 **Goal**: Optional groups under an entity; assets reference a same-entity group or none.
 **Independent test**: Under "Akbank" create group "Akbank Direkt"; assign an asset; ungrouped asset also valid; cross-entity group prevented.
 
-- [ ] T053 [P] [US4] `app/drp/asset/domain/AssetGroup.scala` — `AssetGroupId` + `AssetGroup.create(entityId, name)` (blank name → error).
-- [ ] T054 [P] [US4] `test/drp/asset/domain/AssetGroupSpec.scala` — smart-ctor validation.
-- [ ] T055 [US4] `app/drp/asset/application/ports/AssetGroupRepository.scala` — port (`add`/`get`/`update`/`listByEntity`).
-- [ ] T056 [US4] `app/drp/asset/infrastructure/inmemory/InMemoryAssetGroupRepository.scala`.
-- [ ] T057 [US4] `app/drp/asset/application/AssetGroupService.scala` + impl — parent entity exists; unique `(entity,name)` pre-check.
-- [ ] T058 [P] [US4] `test/drp/asset/application/AssetGroupServiceSpec.scala` via in-memory repos — create; same-entity assignment OK; cross-entity assignment prevented (with `AssetService`).
-- [ ] T059 [US4] `app/drp/asset/infrastructure/tables/AssetGroupsTable.scala` (Slick) + `slick/SlickAssetGroupRepository.scala`.
-- [ ] T060 [US4] Wire `AssetGroupService` + `AssetGroupRepository` in `AssetModule`; expose group selection in `AssetController`/`AssetFormData`.
-- [ ] T061 [P] [US4] `app/drp/asset/web/AssetGroupFormData.scala` + `AssetGroupViewModel.scala`.
-- [ ] T062 [US4] `app/drp/asset/web/AssetGroupController.scala` — newForm/create/editForm/update.
-- [ ] T063 [P] [US4] Twirl `app/drp/asset/web/views/assetGroupForm.scala.html` + group select in `assetForm` + render groups in `entityView`.
-- [ ] T064 [US4] Add `/drp/entities/:entityId/asset-groups` + `/drp/asset-groups/:id/edit|update` routes to `conf/routes`.
+- [X] T053 [P] [US4] `app/drp/asset/domain/AssetGroup.scala` — `AssetGroupId` + `AssetGroup.create(entityId, name)` (blank name → error).
+- [X] T054 [P] [US4] `test/drp/asset/domain/AssetGroupSpec.scala` — smart-ctor validation.
+- [X] T055 [US4] `app/drp/asset/application/ports/AssetGroupRepository.scala` — port (`add`/`get`/`update`/`listByEntity`).
+- [X] T056 [US4] `app/drp/asset/infrastructure/inmemory/InMemoryAssetGroupRepository.scala`.
+- [X] T057 [US4] `app/drp/asset/application/AssetGroupService.scala` + impl — parent entity exists; unique `(entity,name)` pre-check.
+- [X] T058 [P] [US4] `test/drp/asset/application/AssetGroupServiceSpec.scala` via in-memory repos — create; same-entity assignment OK; cross-entity assignment prevented (with `AssetService`).
+- [X] T059 [US4] `app/drp/asset/infrastructure/tables/AssetGroupsTable.scala` (Slick) + `slick/SlickAssetGroupRepository.scala`.
+- [X] T060 [US4] Wire `AssetGroupService` + `AssetGroupRepository` in `AssetModule`; expose group selection in `AssetController`/`AssetFormData`.
+- [X] T061 [P] [US4] `app/drp/asset/web/AssetGroupFormData.scala` + `AssetGroupViewModel.scala`.
+- [X] T062 [US4] `app/drp/asset/web/AssetGroupController.scala` — newForm/create/editForm/update.
+- [X] T063 [P] [US4] Twirl `app/drp/asset/web/views/assetGroupForm.scala.html` + group select in `assetForm` + render groups in `entityView`.
+- [X] T064 [US4] Add `/drp/entities/:entityId/asset-groups` + `/drp/asset-groups/:id/edit|update` routes to `conf/routes`.
 
 **Checkpoint**: all four record types work end-to-end.
 
@@ -129,11 +129,11 @@
 
 ## Phase 7: Polish & Cross-Cutting
 
-- [ ] T065 [P] Add short WHAT comments to public ports/traits/services where the signature isn't self-evident (Constitution V).
-- [ ] T066 [P] Add i18n keys for every `DomainError.code` + form labels to `conf/messages` / `conf/messages.tr` / `conf/messages.en`.
-- [ ] T067 Scope/architecture self-check: `app/drp/**/domain` has no Play/Slick/JSON imports; **no `todo.*` import anywhere in `app/drp`**; `slick.dbs.default` + `app/todo/**` unmodified; no delete route/action anywhere; entity list paginated, per-entity asset/exclusion lists bulk (no DB-call-in-loop); `metadata` references-only; `V007` written but NOT executed (Constitution I, II, IV, Migration discipline).
+- [X] T065 [P] Add short WHAT comments to public ports/traits/services where the signature isn't self-evident (Constitution V).
+- [X] T066 [P] Add i18n keys for every `DomainError.code` + form labels to `conf/messages` / `conf/messages.tr` / `conf/messages.en`.
+- [X] T067 Scope/architecture self-check: `app/drp/**/domain` has no Play/Slick/JSON imports; **no `todo.*` import anywhere in `app/drp`**; `slick.dbs.default` + `app/todo/**` unmodified; no delete route/action anywhere; entity list paginated, per-entity asset/exclusion lists bulk (no DB-call-in-loop); `metadata` references-only; `V007` written but NOT executed (Constitution I, II, IV, Migration discipline).
 - [ ] T068 Run `sbt test` (all suites green) and execute the `quickstart.md` manual walk-through (after a human applies `V001..V007`).
-- [ ] T069 [P] Note in `quickstart.md`/PR description that `V007` must be applied by a human before running.
+- [X] T069 [P] Note in `quickstart.md`/PR description that `V007` must be applied by a human before running.
 
 ---
 

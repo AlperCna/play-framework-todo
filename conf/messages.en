@@ -143,3 +143,46 @@ category.list.col.actions = Actions
 category.action.edit = Edit
 category.action.delete = Delete
 category.action.deleteConfirm = Delete this?
+
+# =========================================================================
+# DRP — Protected Entity Setup (US-362)
+# =========================================================================
+
+# --- UI texts (controller flash / titles) ---
+drp.entity.new = New Entity
+drp.entity.edit = Edit Entity
+drp.entity.created = Entity created.
+drp.entity.updated = Entity updated.
+drp.entity.notFound = Entity not found.
+drp.asset.new = New Asset
+drp.asset.edit = Edit Asset
+drp.asset.created = Asset created.
+drp.asset.updated = Asset updated.
+drp.asset.notFound = Asset not found.
+drp.exclusion.new = New Exclusion
+drp.exclusion.edit = Edit Exclusion
+drp.exclusion.created = Exclusion created.
+drp.exclusion.updated = Exclusion updated.
+drp.exclusion.notFound = Exclusion not found.
+drp.assetGroup.new = New Asset Group
+drp.assetGroup.edit = Edit Asset Group
+drp.assetGroup.created = Asset group created.
+drp.assetGroup.updated = Asset group updated.
+drp.assetGroup.notFound = Asset group not found.
+
+# --- DRP domain error messages (DomainError.code -> message) ---
+error.drp.entity.emptyName = Entity name cannot be empty.
+error.drp.entity.duplicateName = An entity with this name already exists.
+error.drp.entity.notFound = Entity not found.
+error.drp.asset.emptyValue = Asset value cannot be empty.
+error.drp.asset.invalidType = Invalid asset type (domain or subdomain).
+error.drp.asset.duplicate = This asset already exists for this entity.
+error.drp.asset.notFound = Asset not found.
+error.drp.assetGroup.emptyName = Asset group name cannot be empty.
+error.drp.assetGroup.duplicateName = An asset group with this name already exists for this entity.
+error.drp.assetGroup.entityMismatch = An asset can only join a group that belongs to the same entity.
+error.drp.assetGroup.notFound = Asset group not found.
+error.drp.exclusion.emptyValue = Exclusion value cannot be empty.
+error.drp.exclusion.invalidMatchType = Invalid match type.
+error.drp.exclusion.duplicate = This exclusion already exists for this entity.
+error.drp.exclusion.notFound = Exclusion not found.
