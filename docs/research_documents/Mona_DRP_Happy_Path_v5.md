@@ -44,7 +44,7 @@ Bu akış, her şeyin yolunda gittiği (happy path) ideal senaryoyu izler. Örne
   * `candidates` tablosunda satır: `entity_id`, `source`, `value` (tam FQDN/URL — registrable domain değil), `status = "validated"`, **`discovery_id` (FK → `candidate_discoveries.id`)**, `metadata` (JSONB <2KB; sadece küçük provenance: `complaint_id`, `ct_cert_id`…), `discovered_at` (ilk keşif zamanı — provenance).
     * **Terfi bağı candidate tarafında:** "bu keşif terfi etti mi?" = `discovery_id = X` olan candidate var mı (tek index lookup). `candidate_discoveries`'e geri yazım yok.
     * **Kaynak asset'e erişim:** candidate → `discovery_id` → `candidate_discoveries.asset_id`. (Bu yüzden `candidates`'ta ayrı `asset_id` yok.)
-  * `candidates.status` değerleri: `validated → crawled → analyzed → scored → reviewed → closed`; yan/terminal: `eliminated`, `error` (pipeline adımı patlarsa stuck kalmamak için). `whitelisted` candidate status değildir; whitelist sonucu candidate öncesinde `candidate_discoveries.skip_reason = "whitelisted"` olarak kalır.
+  * `candidates.status` değerleri: `validated → crawled → analyzed → scored → reviewed → closed`; yan/terminal: `eliminated`, `error` (pipeline adımı patlarsa stuck kalmamak için), `whitelisted` (yalnızca candidate'a gelmiş bir adayın istisnai manuel kapatması için).
   * Not: `validated` = DNS/HTTP geçip terfi etmiş, crawl-öncesi **asenkron bekleme** durumu. Crawl hemen yapılmayabilir; aday `crawl_queue`'da bekler. "Şu an crawl ediliyor" gibi in-flight bilgi status'ta tutulmaz — onu **PGMQ** taşır, başarısızlığı `error` taşır.
 
 ### Bir candidate'in `validated`'dan `closed`'a — pipeline'i nasıl işler
