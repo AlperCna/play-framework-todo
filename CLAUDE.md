@@ -23,6 +23,7 @@ referans modül gibi düşünülmüştür. DRP modülleri bu pattern'leri örnek
 | `project_architecture/mona_drp_modular_monolith_skeleton_decision.md` | Modüler monolit iskelet kararı |
 | `project_architecture/todo_modular_monolith_migration.md` | Todo iskelesinden çıkarılan pattern dersleri |
 | `drp-local-setup.md` | Yerel geliştirme ortamı kurulumu (Docker + migration) |
+| `acik-kararlar.md` | **Açık / netleşmemiş teknik kararlar** (ör. worker runtime) — netleşince CLAUDE.md/constitution'a taşınır |
 
 ---
 
@@ -50,8 +51,8 @@ Demo senaryosu: **Akbank** (`akbank.com`) korunan marka, `akbank-guvenli-giris.c
 ## 2. Mevcut Repo Durumu (Doğrulanmış)
 
 Repo iki kod tabanı içerir: çalışan **`app/todo/`** iskelesi (modüler monolit pattern referansı —
-geçici, kaldırılacak) ve **`app/drp/`** hedef modülleri (şu an yalnızca `.gitkeep`'li boş iskelet;
-henüz Scala kodu yazılmadı).
+geçici, kaldırılacak) ve **`app/drp/`** hedef modülleri (feature-by-feature inşa edilir; modüller boş
+`.gitkeep` ya da kısmen kodlanmış olabilir — güncel durum için dizin ağacına / aktif feature bloğuna bak).
 
 ### Tech Stack
 
@@ -65,7 +66,7 @@ henüz Scala kodu yazılmadı).
 | Test | ScalaTest + scalatestplus-play |
 | Actor | Akka Typed (`CompletedTaskCleaner`) |
 | View | Twirl server-rendered (**React yok, böyle kalacak**) |
-| Migration | Manuel versiyonlu SQL — `app/migrations/drp-postgres/V001..V006` (✅ tamamlandı, 16 tablo) |
+| Migration | Manuel versiyonlu SQL — `app/migrations/drp-postgres/V001..V006` (16 tablo) |
 | Local Dev | Docker Compose (`ghcr.io/pgmq/pg18-pgmq:v1.10.0`, port 55432) — `scripts/setup.ps1` / `setup.sh` |
 
 ### Mevcut Paket Yapısı
@@ -80,7 +81,7 @@ app/
 │   ├── user/             ← {domain, application, infrastructure, web} — pac4j auth + SecurityModule
 │   └── boot/             ← AppModule (tüm modülleri compose eden tek giriş noktası)
 │
-├── drp/                  ← HEDEF DRP KODU (şu an yalnızca .gitkeep — kod yazılmadı)
+├── drp/                  ← HEDEF DRP KODU (feature-by-feature dolar; modül boş veya kodlanmış olabilir)
 │   ├── shared/           → ortak primitive, error/result, helper, ID tipleri
 │   ├── asset/            → entities, asset_groups, assets, exclusions
 │   ├── discovery/        → candidate_discoveries
@@ -149,15 +150,18 @@ app/drp/
 
 ### Kritik Altyapı Değişiklikleri
 
-| Şu an / Durum | Hedef | Durum |
-|---|---|---|
-| MS SQL Server | **PostgreSQL** + `slick-pg` (JSONB için zorunlu) | ⬜ Slick bağlantısı bekliyor |
-| Migration yok | **Manuel, versiyonlu PostgreSQL SQL dosyaları** (`app/migrations/drp-postgres`) | ✅ V001–V006 tamamlandı |
-| Docker yok | `ghcr.io/pgmq/pg18-pgmq:v1.10.0` — `scripts/setup.ps1` ile tek komut | ✅ Tamamlandı |
-| Akka actor cleanup | **PGMQ** + `JobQueue` trait (interface soyutlaması zorunlu) | ⬜ Bekliyor |
-| 4 tablo (T-SQL) | **16 tablo** (PostgreSQL migration'ları) | ✅ 16 tablo aktif |
-| JSONB yok | `slick-pg` + CHECK constraint'ler | ⬜ Slick layer bekliyor |
-| `outbox_jobs` yok | PGMQ queues (pgmq extension) | ✅ 5 queue hazır |
+> Bu, kalıcı **yön** haritasıdır (todo → DRP hedefi). Hangisinin *tamamlandığı* anlık bir durumdur →
+> burada tutulmaz; güncel durum için `specs/` ve dizin ağacına bak.
+
+| Şu an (todo / SQL Server) | Hedef (DRP) |
+|---|---|
+| MS SQL Server | **PostgreSQL** + `slick-pg` (JSONB için zorunlu) |
+| Migration yok | **Manuel, versiyonlu PostgreSQL SQL dosyaları** (`app/migrations/drp-postgres`) |
+| Docker yok | `ghcr.io/pgmq/pg18-pgmq:v1.10.0` — `scripts/setup.ps1` ile tek komut |
+| Akka actor cleanup | **PGMQ** + `JobQueue` trait (interface soyutlaması zorunlu) |
+| 4 tablo (T-SQL) | **16 tablo** (PostgreSQL migration'ları) |
+| JSONB yok | `slick-pg` + CHECK constraint'ler |
+| `outbox_jobs` yok | PGMQ queues (pgmq extension) |
 
 ---
 
@@ -285,13 +289,16 @@ CT Log Feed, WHOIS Feed, Şikayetvar Scraping, HTML Fingerprint, LLM Risk Özeti
 
 ## 7.2 Teknik Foundation (Önkoşul — Core'dan Önce)
 
-1. ✅ PostgreSQL migration dosyaları (16 tablo + FK + index) — `app/migrations/drp-postgres/V001..V006`
-2. ⬜ Repository / DAO katmanı (Slick)
-3. ⬜ `JobQueue` interface + PGMQ implementasyonu
-4. ⬜ `StorageService` interface + `PostgresBlobStorage`
-5. ⬜ Demo seed datası (entity, asset, candidate)
-6. ✅ Docker Compose (`ghcr.io/pgmq/pg18-pgmq:v1.10.0`) — `scripts/setup.ps1` / `setup.sh` ile tek komut kurulum
-7. ✅ Env variable geçişi — `.env` + `.env.example`; `.gitignore`'a eklendi
+> Core'dan önce gereken foundation parçaları (kalıcı liste). Hangisinin *tamamlandığı* anlıktır →
+> `specs/` ve dizin ağacından oku.
+
+1. PostgreSQL migration dosyaları (16 tablo + FK + index) — `app/migrations/drp-postgres/V001..V006`
+2. Repository / DAO katmanı (Slick)
+3. `JobQueue` interface + PGMQ implementasyonu
+4. `StorageService` interface + `PostgresBlobStorage`
+5. Demo seed datası (entity, asset, candidate)
+6. Docker Compose (`ghcr.io/pgmq/pg18-pgmq:v1.10.0`) — `scripts/setup.ps1` / `setup.sh` ile tek komut kurulum
+7. Env variable geçişi — `.env` + `.env.example`; `.gitignore`'a eklendi
 
 ---
 
@@ -309,7 +316,7 @@ deepfake, self-improving model / Agentic SOC.
 |---|---|---|
 | Backend/API | Scala Play Framework | Server-rendered; React yok |
 | Template engine | Play Twirl | Human review ekranı dahil |
-| Actor/worker | Akka Actor | Crawler, analiz, risk scoring |
+| Actor/worker | *(açık karar)* | Worker yürütme runtime'ı netleşmedi → `docs/acik-kararlar.md`; mesajlaşma `JobQueue`/PGMQ arkasında (§6) |
 | DB | PostgreSQL + `slick-pg` | JSONB + pgmq için |
 | Mesaj kuyruğu | PGMQ (pgmq extension) | `JobQueue` interface arkasında |
 | Dosya depolama | PostgreSQL `bytea` / `blob_storage` | `StorageService` interface arkasında |
@@ -401,9 +408,11 @@ deepfake, self-improving model / Agentic SOC.
 - **Modül parçalaması modül modül** — atomik, bağımsız commit'ler.
 - **Migration stratejisi**: Play Evolutions/Flyway kullanılmaz; DRP PostgreSQL şeması manuel çalıştırılan `app/migrations/drp-postgres/V001..V006` dosyalarıyla yönetilir.
 - **Todo baseline notu**: mevcut `app/migrations/initialize.sql` korunur; DRP migration seti ayrı PostgreSQL hedef şemasıdır.
-- Kod içi yorum: WHY non-obvious olmadıkça ekleme.
+- Kod yorumu (Constitution V): public soyutlama (paket/dosya/trait/public metot) imzadan anlaşılmıyorsa kısa bir **WHAT** ("ne yapar") yorumu taşır; **inline** yorum yalnız non-obvious **WHY** için — HOW'un satır-satır anlatımı yok.
 - JSONB içine büyük içerik (HTML/DOM/screenshot) gömme → `blob_storage`.
 - Pipeline worker'ları idempotent yaz.
+- Liste okuması varsayılan **sayfalı** (`Page`/`PageRequest`); unbounded `SELECT *` yalnız küçük/sabit-sınırlı kümede + gerekçeyle (Constitution IV).
+- Her yeni repository **port'u** için bir **in-memory test adapter** yaz (servis DB'siz testlenebilsin); onsuz eklemek gerekçe ister (Constitution Dev-Workflow).
 
 ---
 
@@ -412,6 +421,8 @@ deepfake, self-improving model / Agentic SOC.
 - **Migration aracı**: Play Evolutions/Flyway yok; manuel, versiyonlu SQL dosyaları kullanılacak.
 - **Migration konumu**: DRP PostgreSQL dosyaları `app/migrations/drp-postgres/` altında tutulacak.
 - **Şema sahipliği**: MVP'de tek PostgreSQL şeması ve açık FK'lar kullanılacak; modül sınırı kod paketleri ve port'lar üzerinden korunacak.
+
+> Henüz **netleşmemiş** kararlar (kesin olmayan teknik seçimler) ayrı tutulur: `docs/acik-kararlar.md` — netleşince buraya/constitution'a taşınır.
 
 <!-- SPECKIT START -->
 **Active feature**: `specs/002-exclusion-registration/` — Exclusion (Allowlist) Registration
