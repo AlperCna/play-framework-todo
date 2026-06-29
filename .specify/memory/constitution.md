@@ -1,6 +1,13 @@
 <!--
 Sync Impact Report
 
+== Amendment 2026-06-29: 4.0.0 → 4.0.1 (PATCH) ==
+- Principle VI (Type-Conditional Behavior Preservation): added an explicit bullet for
+  Type = Feature Implementation (greenfield baseline — no preservation constraint beyond I & II).
+  Makes explicit what was already implied (and already in scope-reviewer's type lens + specs/001
+  plan); no rule change → PATCH.
+- Constitution-Aciklama.md Layer-1 (Principle VI) updated to match.
+
 == Amendment 2026-06-29: 3.0.1 → 4.0.0 (MAJOR) ==
 - Principle IV (Data Access Discipline): pagination strengthened from "large sets MUST paginate" to
   "pagination is the DEFAULT for any growing-set list read; a full/unbounded `SELECT *` read is allowed
@@ -152,6 +159,9 @@ The us-input `Type` selects what "correct" means (the 6 supported values:
 Feature Implementation, Feature Enhancement, Bug Fixing, Refactoring, Performance Optimization,
 Code Understanding):
 
+- `Type` = Feature Implementation: greenfield / new behavior — no behavior-preservation constraint
+  beyond Principles I (reuse the established mechanisms; no parallel/duplicate) and II (scope). The bar
+  is "the new behavior works as specified", not "existing behavior is unchanged".
 - `Type` ∈ {Refactoring, Performance Optimization}: observable external behavior (inputs/outputs, public
   API **and port** contracts, side effects, data shapes) MUST be preserved byte-for-byte; new functional
   requirements and "opportunistic improvements" are FORBIDDEN.
@@ -229,4 +239,4 @@ and `docs/`, not here.
   principles I–VI by number — keep them in sync when renumbering). Any complexity that bends a principle
   MUST be justified in `plan.md`'s Complexity Tracking.
 
-**Version**: 4.0.0 | **Ratified**: 2026-06-26 | **Last Amended**: 2026-06-29
+**Version**: 4.0.1 | **Ratified**: 2026-06-26 | **Last Amended**: 2026-06-29
