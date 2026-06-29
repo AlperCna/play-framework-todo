@@ -426,5 +426,6 @@ deepfake, self-improving model / Agentic SOC.
 > Henüz **netleşmemiş** kararlar (kesin olmayan teknik seçimler) ayrı tutulur: `docs/acik-kararlar.md` — netleşince buraya/constitution'a taşınır.
 
 <!-- SPECKIT START -->
-_Aktif feature yok — `/speckit-specify` ile başlat._
+**Active feature**: `specs/362-Protected-Entity-Setup/` — Protected Entity Setup (Entity, Asset, Asset Group & Exclusion CRUD foundation). First real DRP module: `app/drp/asset/` + self-contained `app/drp/shared/` (mirrors todo patterns, no `app/todo` import). Stands up the PostgreSQL/slick-pg foundation (`slick.dbs.drp` + `MonaPgProfile`); tables exist in `V001`; adds `V007` for `entities.name` UNIQUE. Sync-only, no-delete, no auth gate.
+Plan: `specs/362-Protected-Entity-Setup/plan.md` (with `spec.md`, `research.md`, `data-model.md`, `quickstart.md`, `contracts/`). Read that plan for technologies, project structure, and commands for the current work.
 <!-- SPECKIT END -->

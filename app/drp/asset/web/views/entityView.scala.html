@@ -1,0 +1,66 @@
+@(entity: drp.asset.web.EntityViewModel, assets: Seq[drp.asset.web.AssetViewModel], exclusions: Seq[drp.asset.web.ExclusionViewModel], groups: Seq[drp.asset.web.AssetGroupViewModel])(implicit request: play.api.mvc.MessagesRequestHeader)
+@drp.shared.web.views.html.main(entity.name) {
+  <h1>@entity.name</h1>
+  @request.flash.get("success").map { msg => <p class="flash">@msg</p> }
+  <dl>
+    <dt>Type</dt><dd>@entity.entityType</dd>
+    <dt>Created</dt><dd>@entity.createdAt</dd>
+    <dt>Updated</dt><dd>@entity.updatedAt</dd>
+  </dl>
+
+  <h2>Asset groups</h2>
+  <p><a href="@drp.asset.web.routes.AssetGroupController.newForm(entity.id)">+ Add group</a></p>
+  @if(groups.isEmpty) {
+    <p>No groups yet.</p>
+  } else {
+    <ul>
+    @for(g <- groups) {
+      <li>@g.name — <a href="@drp.asset.web.routes.AssetGroupController.editForm(g.id)">edit</a></li>
+    }
+    </ul>
+  }
+
+  <h2>Assets</h2>
+  <p><a href="@drp.asset.web.routes.AssetController.newForm(entity.id)">+ Add asset</a></p>
+  @if(assets.isEmpty) {
+    <p>No assets yet.</p>
+  } else {
+    <table>
+      <thead><tr><th>Type</th><th>Value</th><th>Group</th><th>Homepage</th><th></th></tr></thead>
+      <tbody>
+      @for(a <- assets) {
+        <tr>
+          <td>@a.assetType</td>
+          <td>@a.value</td>
+          <td>@a.assetGroupId.flatMap(gid => groups.find(_.id == gid)).map(_.name).getOrElse("-")</td>
+          <td>@a.homepageUrl</td>
+          <td><a href="@drp.asset.web.routes.AssetController.editForm(a.id)">edit</a></td>
+        </tr>
+      }
+      </tbody>
+    </table>
+  }
+
+  <h2>Exclusions (allowlist)</h2>
+  <p><a href="@drp.asset.web.routes.ExclusionController.newForm(entity.id)">+ Add exclusion</a></p>
+  @if(exclusions.isEmpty) {
+    <p>No exclusions yet.</p>
+  } else {
+    <table>
+      <thead><tr><th>Value</th><th>Match type</th><th>Reason</th><th></th></tr></thead>
+      <tbody>
+      @for(x <- exclusions) {
+        <tr>
+          <td>@x.value</td><td>@x.matchType</td><td>@x.reason</td>
+          <td><a href="@drp.asset.web.routes.ExclusionController.editForm(x.id)">edit</a></td>
+        </tr>
+      }
+      </tbody>
+    </table>
+  }
+
+  <p>
+    <a href="@drp.asset.web.routes.EntityController.editForm(entity.id)">edit entity</a> ·
+    <a href="@drp.asset.web.routes.EntityController.list()">‹ back to list</a>
+  </p>
+}
