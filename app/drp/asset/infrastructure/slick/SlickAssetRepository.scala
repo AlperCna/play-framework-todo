@@ -87,8 +87,8 @@ class SlickAssetRepository @Inject() (
 
   override def update(a: Asset): Future[Option[Asset]] = {
     val q = assets.filter(_.id === a.id.value)
-      .map(t => (t.assetType, t.value, t.metadata))
-      .update((AssetType.toCode(a.assetType), a.value, AssetMetadataCodec.toJson(a.metadata)))
+      .map(t => (t.assetGroupId, t.assetType, t.value, t.metadata))
+      .update((a.assetGroupId.map(_.value), AssetType.toCode(a.assetType), a.value, AssetMetadataCodec.toJson(a.metadata)))
     db.run(q).flatMap {
       case 0 => Future.successful(None)
       case _ => db.run(assets.filter(_.id === a.id.value).result.headOption).map(_.map(toDomain))
