@@ -36,6 +36,14 @@ object DomainError {
     val code = "error.drp.asset.notFound"
     val message = s"Asset $id was not found."
   }
+  final case class InvalidMatchType(raw: String) extends DomainError {
+    val code = "error.drp.exclusion.invalidMatchType"
+    val message = s"'$raw' is not a valid match type (exact, registrable_domain, subdomain_of, pattern)."
+  }
+  final case class ExclusionNotFound(id: Long) extends DomainError {
+    val code = "error.drp.exclusion.notFound"
+    val message = s"Exclusion $id was not found."
+  }
 
   final case class EntityNotFound(id: Long) extends DomainError {
     val code = "error.drp.entity.notFound"

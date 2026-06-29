@@ -1,4 +1,4 @@
-@(entity: drp.asset.web.EntityViewModel, assets: Seq[drp.asset.web.AssetViewModel])(implicit request: play.api.mvc.MessagesRequestHeader)
+@(entity: drp.asset.web.EntityViewModel, assets: Seq[drp.asset.web.AssetViewModel], exclusions: Seq[drp.asset.web.ExclusionViewModel])(implicit request: play.api.mvc.MessagesRequestHeader)
 @drp.shared.web.views.html.main(entity.name) {
   <h1>@entity.name</h1>
   @request.flash.get("success").map { msg => <p class="flash">@msg</p> }
@@ -18,16 +18,32 @@
       <tbody>
       @for(a <- assets) {
         <tr>
-          <td>@a.assetType</td>
-          <td>@a.value</td>
-          <td>@a.homepageUrl</td>
+          <td>@a.assetType</td><td>@a.value</td><td>@a.homepageUrl</td>
           <td><a href="@drp.asset.web.routes.AssetController.editForm(a.id)">edit</a></td>
         </tr>
       }
       </tbody>
     </table>
   }
-  @* US3 active exclusions and US4 asset groups will render here. *@
+
+  <h2>Exclusions (allowlist)</h2>
+  <p><a href="@drp.asset.web.routes.ExclusionController.newForm(entity.id)">+ Add exclusion</a></p>
+  @if(exclusions.isEmpty) {
+    <p>No exclusions yet.</p>
+  } else {
+    <table>
+      <thead><tr><th>Value</th><th>Match type</th><th>Reason</th><th></th></tr></thead>
+      <tbody>
+      @for(x <- exclusions) {
+        <tr>
+          <td>@x.value</td><td>@x.matchType</td><td>@x.reason</td>
+          <td><a href="@drp.asset.web.routes.ExclusionController.editForm(x.id)">edit</a></td>
+        </tr>
+      }
+      </tbody>
+    </table>
+  }
+  @* US4 asset groups will render here. *@
 
   <p>
     <a href="@drp.asset.web.routes.EntityController.editForm(entity.id)">edit entity</a> ·

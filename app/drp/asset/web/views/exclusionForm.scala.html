@@ -1,0 +1,30 @@
+@(form: play.api.data.Form[drp.asset.web.ExclusionFormData], postAction: play.api.mvc.Call, entityId: Long, title: String)(implicit request: play.api.mvc.MessagesRequestHeader)
+@drp.shared.web.views.html.main(title) {
+  <h1>@title</h1>
+  @if(form.hasGlobalErrors) {
+    <ul class="errors">@for(err <- form.globalErrors) { <li>@err.message</li> }</ul>
+  }
+  @helper.form(action = postAction) {
+    @helper.CSRF.formField
+    <p><label>Value <input type="text" name="value" value="@form("value").value.getOrElse("")"></label></p>
+    <p>
+      <label>Match type
+        <select name="matchType">
+        @for(code <- drp.asset.domain.MatchType.codes) {
+          <option value="@code" @if(form("matchType").value.contains(code)){selected}>@code</option>
+        }
+        </select>
+      </label>
+    </p>
+    <p>
+      <label>Reason
+        <input type="text" name="reason" list="reasonOptions" value="@form("reason").value.getOrElse("")">
+        <datalist id="reasonOptions">
+        @for(code <- drp.asset.domain.ExclusionReason.knownCodes) { <option value="@code"></option> }
+        </datalist>
+      </label>
+    </p>
+    <button type="submit">Save</button>
+  }
+  <p><a href="@drp.asset.web.routes.EntityController.view(entityId)">‹ back to entity</a></p>
+}

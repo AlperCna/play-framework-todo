@@ -86,20 +86,20 @@
 **Goal**: Entity-scoped exclusions stored verbatim (`created_by="system"`), never evaluated; define the read seam.
 **Independent test**: Under "Akbank" add exclusion `akbankdirekt.com`/`exact`/`owned_unmonitored` → stored verbatim, `created_by="system"`; `activeExclusions(entity)` returns it; no matching.
 
-- [ ] T039 [P] [US3] `app/drp/asset/domain/MatchType.scala` (closed enum + codec) and `ExclusionReason.scala` (open enum + codec).
-- [ ] T040 [P] [US3] `app/drp/asset/domain/Exclusion.scala` — `ExclusionId` + `Exclusion.create(entityId, value, matchType, reason)` (entityId required; blank value → error; `createdBy="system"`).
-- [ ] T041 [P] [US3] `test/drp/asset/domain/ExclusionSpec.scala` — smart-ctor (blank value → error; entity required; verbatim value retained).
-- [ ] T042 [US3] `app/drp/asset/application/ports/ExclusionRepository.scala` — port (`add`/`get`/`existsActive`/`update`/`listActiveByEntity`).
-- [ ] T043 [US3] `app/drp/asset/infrastructure/inmemory/InMemoryExclusionRepository.scala` — active `(entity,value,match_type)` dup check.
-- [ ] T044 [US3] `app/drp/asset/application/ExclusionService.scala` + impl — entity-scoped (parent exists); verbatim; never evaluated.
-- [ ] T045 [US3] `app/drp/asset/application/ports/AssetReadPort.scala` (+ read-models `ExclusionView`, `EntityWithAssets`) + impl — `activeExclusions(entityId)`, `resolveEntityWithAssets(entityId)` (typed read-models; no domain/Slick leak).
-- [ ] T046 [P] [US3] `test/drp/asset/application/ExclusionServiceSpec.scala` + `AssetReadPortSpec` via in-memory repos — register verbatim + `system`; invalid parent rejected; `activeExclusions` returns exactly the entity's active set; no matching applied.
-- [ ] T047 [US3] `app/drp/asset/infrastructure/tables/ExclusionsTable.scala` (Slick) + `slick/SlickExclusionRepository.scala` + Slick `AssetReadPort` impl.
-- [ ] T048 [US3] Wire `ExclusionService` + `ExclusionRepository` + `AssetReadPort` in `AssetModule`.
-- [ ] T049 [P] [US3] `app/drp/asset/web/ExclusionFormData.scala` + `ExclusionViewModel.scala`.
-- [ ] T050 [US3] `app/drp/asset/web/ExclusionController.scala` — newForm/create/editForm/update.
-- [ ] T051 [P] [US3] Twirl `app/drp/asset/web/views/exclusionForm.scala.html` + render active exclusions inside `entityView`.
-- [ ] T052 [US3] Add `/drp/entities/:entityId/exclusions` + `/drp/exclusions/:id/edit|update` routes to `conf/routes`.
+- [X] T039 [P] [US3] `app/drp/asset/domain/MatchType.scala` (closed enum + codec) and `ExclusionReason.scala` (open enum + codec).
+- [X] T040 [P] [US3] `app/drp/asset/domain/Exclusion.scala` — `ExclusionId` + `Exclusion.create(entityId, value, matchType, reason)` (entityId required; blank value → error; `createdBy="system"`).
+- [X] T041 [P] [US3] `test/drp/asset/domain/ExclusionSpec.scala` — smart-ctor (blank value → error; entity required; verbatim value retained).
+- [X] T042 [US3] `app/drp/asset/application/ports/ExclusionRepository.scala` — port (`add`/`get`/`existsActive`/`update`/`listActiveByEntity`).
+- [X] T043 [US3] `app/drp/asset/infrastructure/inmemory/InMemoryExclusionRepository.scala` — active `(entity,value,match_type)` dup check.
+- [X] T044 [US3] `app/drp/asset/application/ExclusionService.scala` + impl — entity-scoped (parent exists); verbatim; never evaluated.
+- [X] T045 [US3] `app/drp/asset/application/ports/AssetReadPort.scala` (+ read-models `ExclusionView`, `EntityWithAssets`) + impl — `activeExclusions(entityId)`, `resolveEntityWithAssets(entityId)` (typed read-models; no domain/Slick leak).
+- [X] T046 [P] [US3] `test/drp/asset/application/ExclusionServiceSpec.scala` + `AssetReadPortSpec` via in-memory repos — register verbatim + `system`; invalid parent rejected; `activeExclusions` returns exactly the entity's active set; no matching applied.
+- [X] T047 [US3] `app/drp/asset/infrastructure/tables/ExclusionsTable.scala` (Slick) + `slick/SlickExclusionRepository.scala` + Slick `AssetReadPort` impl.
+- [X] T048 [US3] Wire `ExclusionService` + `ExclusionRepository` + `AssetReadPort` in `AssetModule`.
+- [X] T049 [P] [US3] `app/drp/asset/web/ExclusionFormData.scala` + `ExclusionViewModel.scala`.
+- [X] T050 [US3] `app/drp/asset/web/ExclusionController.scala` — newForm/create/editForm/update.
+- [X] T051 [P] [US3] Twirl `app/drp/asset/web/views/exclusionForm.scala.html` + render active exclusions inside `entityView`.
+- [X] T052 [US3] Add `/drp/entities/:entityId/exclusions` + `/drp/exclusions/:id/edit|update` routes to `conf/routes`.
 
 **Checkpoint**: US1–US3 work; the discovery read seam is defined.
 
