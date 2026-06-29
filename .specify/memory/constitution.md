@@ -1,6 +1,14 @@
 <!--
 Sync Impact Report
 
+== Amendment 2026-06-29: 4.0.1 → 4.0.2 (PATCH) ==
+- Development Workflow & Quality Gates: made the in-memory test-adapter expectation explicit — each new
+  repository port ships with an in-memory test adapter (next to its Slick adapter) for DB-less service
+  unit tests; adding a port without one must be justified. Also noted that DB-enforced invariants need
+  integration tests (not covered by the in-memory backend). Codifies the existing convention (todo
+  scaffold + specs/001-002, which already comply) → PATCH.
+- Constitution-Aciklama.md Layer-1 (Development Workflow) updated to match.
+
 == Amendment 2026-06-29: 4.0.0 → 4.0.1 (PATCH) ==
 - Principle VI (Type-Conditional Behavior Preservation): added an explicit bullet for
   Type = Feature Implementation (greenfield baseline — no preservation constraint beyond I & II).
@@ -224,10 +232,13 @@ and `docs/`, not here.
   constitution.
 - A git checkpoint (commit) MUST be made after each approved phase; work proceeds module-by-module with
   atomic, independent commits.
-- Validation: the existing **ScalaTest** suites under `test/` MUST keep passing at every step (the
-  in-memory repository backend lets services be tested without a live DB). New behavior is validated by
-  human review + the feature's `quickstart.md`. This rigor will tighten later (characterization tests for
-  behavior-preserving types first).
+- Validation: the existing **ScalaTest** suites under `test/` MUST keep passing at every step. Each new
+  repository **port** ships with an **in-memory test adapter** (next to its Slick adapter) so the owning
+  service is unit-testable without a live DB — the established `InMemory*Repository` pattern (todo
+  scaffold); adding a port without one must be justified. New behavior is validated by human review +
+  the feature's `quickstart.md`. This rigor will tighten later (characterization tests for
+  behavior-preserving types first; DB-enforced invariants — constraints, transactions, concurrency —
+  are NOT covered by the in-memory backend and need integration tests).
 
 ## Governance
 
@@ -239,4 +250,4 @@ and `docs/`, not here.
   principles I–VI by number — keep them in sync when renumbering). Any complexity that bends a principle
   MUST be justified in `plan.md`'s Complexity Tracking.
 
-**Version**: 4.0.1 | **Ratified**: 2026-06-26 | **Last Amended**: 2026-06-29
+**Version**: 4.0.2 | **Ratified**: 2026-06-26 | **Last Amended**: 2026-06-29
